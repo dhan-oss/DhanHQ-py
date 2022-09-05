@@ -10,8 +10,8 @@ DhanHQ-py Rest API is used to automate investing and trading. Order execution in
 
 ## Documentation
 
-- [Python client documentation](https://github.com/dhan-oss/dhanhq)
-- [Dhan HQ API documentation](https://dhanhq.co/docs/v1/)
+- [Dhan HTTP API documentation](https://api.dhan.co)
+- [DhanHQ API documentation](https://dhanhq.co/docs/v1/)
 
 ## Features
 
