@@ -1,9 +1,9 @@
-# DhanHQ - v1.0
+# DhanHQ-py - v1.0
 
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co)  
 
-DhanHQ Rest API is used to automate investing and trading. Order execution in real time, Portfolio management, Check positions, holdings, funds and more with the simple HTTP API collection.
+DhanHQ-py Rest API is used to automate investing and trading. Order execution in real time, Portfolio management, Check positions, holdings, funds and more with the simple HTTP API collection.
 
 
 [Dhan](https://dhan.co) (c) 2022. Licensed under the Apache License 2.0
