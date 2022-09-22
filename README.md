@@ -118,6 +118,7 @@ dhan.place_order(security_id= '500180', #hdfcbank
     price=0,
     trigger_price=0)
     
+# Place an order for MCX Commodity    
 dhan.place_order(security_id= '114',  #gold
     exchange_segment= 'MCX_COMM',
     transaction_type= 'BUY',
