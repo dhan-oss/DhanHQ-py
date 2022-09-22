@@ -74,19 +74,61 @@ from dhanhq import dhanhq
 
 dhan = dhanhq("client_id","access_token")
 
-# Place an order
-dhan.place_order(security_id= '1333' #hdfc bank
-    exchange_seg= 'NSE_EQ'
-    transaction_type= 'BUY'
-    quantity=10
-    order_type='MARKET'
-    validity= 'DAY'
-    product_type= 'INTRADAY'
-    price=0
+# Place an order for Equity Cash
+dhan.place_order(security_id= '1333', #hdfc bank
+    exchange_seg= 'NSE_EQ',
+    transaction_type= 'BUY',
+    quantity=10,
+    order_type='MARKET',
+    validity= 'DAY',
+    product_type= 'INTRADAY',
+    price=0,
     trigger_price=0)
     
+# Place an order for Futures & Options
+dhan.place_order(security_id= '52175', #hdfcbank
+    exchange_segment= 'NSE_FNO',
+    transaction_type= 'BUY',
+    quantity=550,
+    order_type='MARKET',
+    validity= 'DAY',
+    product_type= 'INTRADAY',
+    price=0,
+    trigger_price=0)
+    
+# Place an order for Currency
+dhan.place_order(security_id= '10093', #usdinr
+    exchange_segment= 'NSE_CURRENCY',
+    transaction_type= 'BUY',
+    quantity=1,
+    order_type='MARKET',
+    validity= 'DAY',
+    product_type= 'INTRADAY',
+    price=0,
+    trigger_price=0)
 
-
+# Place an order for BSE Equity
+dhan.place_order(security_id= '500180', #hdfcbank
+    exchange_segment= 'BSE_EQ',
+    transaction_type= 'BUY',
+    quantity=1,
+    order_type='MARKET',
+    validity= 'DAY',
+    product_type= 'INTRADAY',
+    price=0,
+    trigger_price=0)
+    
+dhan.place_order(security_id= '114',  #gold
+    exchange_segment= 'MCX_COMM',
+    transaction_type= 'BUY',
+    quantity=1,
+    order_type='MARKET',
+    validity= 'DAY',
+    product_type= 'INTRADAY',
+    price=0,
+    trigger_price=0)
+    
+    
 # Fetch all orders
 dhan.get_order_list()
 
