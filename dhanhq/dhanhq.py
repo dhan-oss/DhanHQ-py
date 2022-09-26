@@ -4,29 +4,30 @@ import logging
 from requests import Session
 from json import loads as json_loads, dumps as json_dumps
 
-#declaring constants
-NSE= 'NSE_EQ'
-BSE= 'BSE_EQ'
-CUR= 'NSE_CURRENCY'
-MCX= 'MCX_COMM'
-FNO= 'NSE_FNO'
-BUY= B= 'BUY'
-SELL= S= 'SELL'
-CNC= 'CNC'
-INTRA= "INTRADAY"
-SL= "STOP_LOSS"
-SLM= "STOP_LOSS_MARKET"
-MARGIN= 'MARGIN'
-CO= 'CO'
-BO= 'BO'
-LIMIT= 'LIMIT'
-MARKET= 'MARKET'
-DAY= 'DAY'
-IOC= 'IOC'
-GTC= 'GTC'
-GTD= 'GTD'
 
 class dhanhq:
+    
+    #declaring constants
+    NSE= 'NSE_EQ'
+    BSE= 'BSE_EQ'
+    CUR= 'NSE_CURRENCY'
+    MCX= 'MCX_COMM'
+    FNO= 'NSE_FNO'
+    BUY= B= 'BUY'
+    SELL= S= 'SELL'
+    CNC= 'CNC'
+    INTRA= "INTRADAY"
+    SL= "STOP_LOSS"
+    SLM= "STOP_LOSS_MARKET"
+    MARGIN= 'MARGIN'
+    CO= 'CO'
+    BO= 'BO'
+    LIMIT= 'LIMIT'
+    MARKET= 'MARKET'
+    DAY= 'DAY'
+    IOC= 'IOC'
+    GTC= 'GTC'
+    GTD= 'GTD'
     def __init__(self,client_id,access_token):
         try:
             self.client_id= str(client_id)
