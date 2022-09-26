@@ -76,58 +76,49 @@ dhan = dhanhq("client_id","access_token")
 
 # Place an order for Equity Cash
 dhan.place_order(security_id= 'XXXX',
-    exchange_seg= 'NSE_EQ',
-    transaction_type= 'BUY',
+    exchange_seg= dhan.NSE,
+    transaction_type= dhan.BUY,
     quantity=10,
-    order_type='MARKET',
-    validity= 'DAY',
-    product_type= 'INTRADAY',
-    price=0,
-    trigger_price=0)
+    order_type=dhan.MARKET,
+    product_type= dhan.INTRADAY,
+    price=0)
     
 # Place an order for Futures & Options
 dhan.place_order(security_id= 'XXXX',
-    exchange_segment= 'NSE_FNO',
-    transaction_type= 'BUY',
+    exchange_segment= dhan.FNO,
+    transaction_type= dhan.BUY,
     quantity=550,
-    order_type='MARKET',
-    validity= 'DAY',
-    product_type= 'INTRADAY',
-    price=0,
-    trigger_price=0)
+    order_type=dhan.MARKET,
+    product_type=dhan.INTRA,
+    price=0)
     
 # Place an order for Currency
 dhan.place_order(security_id= 'XXXX',
-    exchange_segment= 'NSE_CURRENCY',
-    transaction_type= 'BUY',
+    exchange_segment= dhan.CUR,
+    transaction_type= dhan.BUY,
     quantity=1,
-    order_type='MARKET',
-    validity= 'DAY',
-    product_type= 'INTRADAY',
-    price=0,
-    trigger_price=0)
+    order_type = dhan.MARKET,
+    validity= dhan.DAY,
+    product_type= dhan.INTRA,
+    price=0)
 
 # Place an order for BSE Equity
 dhan.place_order(security_id= 'XXXX',
-    exchange_segment= 'BSE_EQ',
-    transaction_type= 'BUY',
+    exchange_segment= dhan.BSE,
+    transaction_type= dhan.BUY,
     quantity=1,
-    order_type='MARKET',
-    validity= 'DAY',
-    product_type= 'INTRADAY',
-    price=0,
-    trigger_price=0)
+    order_type=dhan.MARKET,
+    product_type= dhan.INTRA,
+    price=0,)
     
 # Place an order for MCX Commodity    
 dhan.place_order(security_id= 'XXXX',
-    exchange_segment= 'MCX_COMM',
-    transaction_type= 'BUY',
+    exchange_segment= dhan.BSE,
+    transaction_type= dhan.BUY,
     quantity=1,
-    order_type='MARKET',
-    validity= 'DAY',
-    product_type= 'INTRADAY',
-    price=0,
-    trigger_price=0)
+    order_type=dhan.MARKET,
+    product_type= dhan.INTRA,
+    price=0)
     
     
 # Fetch all orders
