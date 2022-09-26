@@ -75,7 +75,7 @@ from dhanhq import dhanhq
 dhan = dhanhq("client_id","access_token")
 
 # Place an order for Equity Cash
-dhan.place_order(security_id= 'XXXX',
+dhan.place_order(security_id= '1333',   #hdfcbank
     exchange_seg= dhan.NSE,
     transaction_type= dhan.BUY,
     quantity=10,
@@ -84,7 +84,7 @@ dhan.place_order(security_id= 'XXXX',
     price=0)
     
 # Place an order for Futures & Options
-dhan.place_order(security_id= 'XXXX',
+dhan.place_order(security_id= '52175',  #hdfcbank
     exchange_segment= dhan.FNO,
     transaction_type= dhan.BUY,
     quantity=550,
@@ -93,7 +93,7 @@ dhan.place_order(security_id= 'XXXX',
     price=0)
     
 # Place an order for Currency
-dhan.place_order(security_id= 'XXXX',
+dhan.place_order(security_id= '10093',  #usdinr
     exchange_segment= dhan.CUR,
     transaction_type= dhan.BUY,
     quantity=1,
@@ -103,7 +103,7 @@ dhan.place_order(security_id= 'XXXX',
     price=0)
 
 # Place an order for BSE Equity
-dhan.place_order(security_id= 'XXXX',
+dhan.place_order(security_id= '500180',   #hdfcbank
     exchange_segment= dhan.BSE,
     transaction_type= dhan.BUY,
     quantity=1,
@@ -112,7 +112,7 @@ dhan.place_order(security_id= 'XXXX',
     price=0,)
     
 # Place an order for MCX Commodity    
-dhan.place_order(security_id= 'XXXX',
+dhan.place_order(security_id= '114',    #gold
     exchange_segment= dhan.BSE,
     transaction_type= dhan.BUY,
     quantity=1,
