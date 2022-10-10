@@ -76,7 +76,7 @@ dhan = dhanhq("client_id","access_token")
 
 # Place an order for Equity Cash
 dhan.place_order(security_id= '1333',   #hdfcbank
-    exchange_seg= dhan.NSE,
+    exchange_segment= dhan.NSE,
     transaction_type= dhan.BUY,
     quantity=10,
     order_type=dhan.MARKET,
