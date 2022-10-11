@@ -167,5 +167,5 @@ Refer to the [Python client documentation](https://github.com/dhan-oss/dhanhq) f
 
 ## Changelog
 
-[Check release notes](https://github.com/dhanhq/dhanhq/releases)
+[Check release notes](https://github.com/dhan-oss/DhanHQ-py/releases)
 
