@@ -1,4 +1,4 @@
-# DhanHQ-py - v1.0
+# DhanHQ-py - v1.1
 
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co)  
@@ -168,3 +168,4 @@ Refer to the [Python client documentation](https://github.com/dhan-oss/dhanhq) f
 ## Changelog
 
 [Check release notes](https://github.com/dhanhq/dhanhq/releases)
+

@@ -1,7 +1,7 @@
 #class to use dhan api
 
 import logging
-from requests import Session
+import requests
 from json import loads as json_loads, dumps as json_dumps
 
 
@@ -38,7 +38,8 @@ class dhanhq:
                 'access-token': access_token,
                 'content-type': 'application/json',
             }
-            self.session= Session()
+            requests.packages.urllib3.util.connection.HAS_IPV6 = False
+            self.session= requests.Session()
         except Exception as e:
             logging.error('Exception in dhanhq>>init : %s',e)
 
