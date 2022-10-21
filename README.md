@@ -80,7 +80,7 @@ dhan.place_order(security_id= '1333',   #hdfcbank
     transaction_type= dhan.BUY,
     quantity=10,
     order_type=dhan.MARKET,
-    product_type= dhan.INTRADAY,
+    product_type= dhan.INTRA,
     price=0)
     
 # Place an order for Futures & Options
