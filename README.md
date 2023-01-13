@@ -1,4 +1,4 @@
-# DhanHQ-py - v1.1
+# DhanHQ-py - v1.1.1
 
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co)  
