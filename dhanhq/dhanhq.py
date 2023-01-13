@@ -169,7 +169,7 @@ class dhanhq:
                 payload["correlationId"]= tag,
             if after_market_order== True:
                 if amo_time in ['OPEN','OPEN_30','OPEN_60']:
-                    payload['amoTime']:amo_time
+                    payload['amoTime']=amo_time
                 else:
                     raise Exception("amo_time value must be ['OPEN','OPEN_30','OPEN_60']")
             if trigger_price>0:
