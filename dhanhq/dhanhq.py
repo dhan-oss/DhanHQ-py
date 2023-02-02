@@ -3,6 +3,9 @@
 import logging
 import requests
 from json import loads as json_loads, dumps as json_dumps
+from pathlib import Path
+from webbrowser import open as web_open
+from datetime import datetime, timedelta
 
 
 class dhanhq:
@@ -22,12 +25,14 @@ class dhanhq:
     MARGIN= 'MARGIN'
     CO= 'CO'
     BO= 'BO'
+    MTF= 'MTF'
     LIMIT= 'LIMIT'
     MARKET= 'MARKET'
     DAY= 'DAY'
     IOC= 'IOC'
     GTC= 'GTC'
     GTD= 'GTD'
+    EQ= 'EQ'
     def __init__(self,client_id,access_token):
         try:
             self.client_id= str(client_id)
@@ -142,7 +147,9 @@ class dhanhq:
 
     def place_order(self,security_id,exchange_segment,transaction_type,quantity,\
         order_type,product_type,price,trigger_price=0,disclosed_quantity=0,\
-        after_market_order=False,validity='DAY',amo_time='OPEN',tag=None):
+        after_market_order=False,validity='DAY',amo_time='OPEN',\
+        bo_profit_value=None,bo_stop_loss_Value=None,\
+        drv_expiry_date=None,drv_options_type=None,drv_strike_price=None,tag=None):
         """Place new Orders"""
         #place order in Dhan account
         #security_id(str),exchange_segment(str),transaction_type(str),
@@ -164,6 +171,11 @@ class dhanhq:
                     "disclosedQuantity": int(disclosed_quantity),
                     "price": float(price),
                     "afterMarketOrder": after_market_order,
+                    "boProfitValue":bo_profit_value,
+                    "boStopLoassValue":bo_stop_loss_Value,
+                    "drvExpiryDate":drv_expiry_date,
+                    "drvOptionType":drv_options_type,
+                    "drvStrikePrice":drv_strike_price
                 }
             if tag!=None and tag!='':
                 payload["correlationId"] = tag,
@@ -176,6 +188,7 @@ class dhanhq:
                 payload["triggerPrice"]= float(trigger_price)
             elif trigger_price==0:
                 payload["triggerPrice"]= 0.0
+
             payload= json_dumps(payload)
             response= self.session.post(url,data=payload,headers=self.header,timeout=self.timeout)
             return self._parse_response(response)
@@ -317,3 +330,132 @@ class dhanhq:
                 'remarks':str(e),
                 'data':'',
             }
+
+    def place_slice_order(self,security_id,exchange_segment,transaction_type,quantity,\
+        order_type,product_type,price,trigger_price=0,disclosed_quantity=0,\
+        after_market_order=False,validity='DAY',amo_time='OPEN',\
+        bo_profit_value=None,bo_stop_loss_Value=None,\
+        drv_expiry_date=None,drv_options_type=None,drv_strike_price=None,tag=None):
+        """Place new Slice Orders"""
+        #place order in Dhan account
+        #security_id(str),exchange_segment(str),transaction_type(str),
+        #quantity(int),order_type(str),validity(str),product_type(str),
+        #price(float),trigger_price(float),disclosed_quantity(int),
+        #after_market_order(Boolean),amo_time(str),tag(str)
+        
+        try:
+            url= self.base_url+'/orders/slicing'
+            payload={
+                    "dhanClientId": self.client_id,
+                    "transactionType": transaction_type.upper(),
+                    "exchangeSegment": exchange_segment.upper(),
+                    "productType": product_type.upper(),
+                    "orderType": order_type.upper(),
+                    "validity": validity.upper(),
+                    "securityId": security_id,
+                    "quantity": int(quantity),
+                    "disclosedQuantity": int(disclosed_quantity),
+                    "price": float(price),
+                    "afterMarketOrder": after_market_order,
+                    "boProfitValue":bo_profit_value,
+                    "boStopLoassValue":bo_stop_loss_Value,
+                    "drvExpiryDate":drv_expiry_date,
+                    "drvOptionType":drv_options_type,
+                    "drvStrikePrice":drv_strike_price
+                }
+            if tag!=None and tag!='':
+                payload["correlationId"] = tag,
+            if after_market_order== True:
+                if amo_time in ['OPEN','OPEN_30','OPEN_60']:
+                    payload['amoTime'] = amo_time
+                else:
+                    raise Exception("amo_time value must be ['OPEN','OPEN_30','OPEN_60']")
+            if trigger_price>0:
+                payload["triggerPrice"]= float(trigger_price)
+            elif trigger_price==0:
+                payload["triggerPrice"]= 0.0
+
+            payload= json_dumps(payload)
+            response= self.session.post(url,data=payload,headers=self.header,timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>place_order: %s',e)
+            return {
+                'status':'failure',
+                'remarks':str(e),
+                'data':'',
+            }
+
+    def generate_tpin(self):
+        """Generate T-Pin on registered mobile number"""
+        try:
+            url= self.base_url+'/edis/tpin'
+            response= self.session.get(url,headers=self.header,timeout=self.timeout)
+            if response.status_code==202:
+                return {
+                    'status':'success',
+                    'remarks':'Otp sent',
+                    'data':''
+                }
+            else:
+                return {
+                    'status':'failure',
+                    'remarks':'status code :'+response.status_code,
+                    'data':'',
+                }
+        except Exception as e:
+            logging.error('Exception in dhanhq>>generate_tpin : %s',e)
+            return {
+                'status':'failure',
+                'remarks':str(e),
+                'data':'',
+            }
+
+    def open_browser_for_tpin(self,isin,qty,exchange,segment='EQ',bulk= False):
+        """Opens default web browser for enter tpin"""
+        try:
+            url= self.base_url+'/edis/form'
+            data= {
+                    "isin": isin,  
+                    "qty": qty,
+                    "exchange": exchange,
+                    "segment": segment,
+                    "bulk": bulk
+                }
+            data= json_dumps(data)
+            response= self.session.post(url,headers=self.header,data=data,timeout=self.timeout)
+            data= json_loads(response.content)
+            form_html= data['edisFormHtml']
+            form_html= form_html.replace('\\','')
+            with open("temp_form.html", "w") as f:
+                f.write(form_html)
+            filename = f'file:\\\{Path.cwd()}\\temp_form.html'
+            web_open(filename)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>open_browser_for_tpin : %s',e)
+            return {
+                'status':'failure',
+                'remarks':str(e),
+                'data':'',
+            }
+            
+    def edis_inquiry(self,isin):
+        """Inquires about provided isin"""
+        try:
+            url= f'{self.base_url}/edis/inquire/{isin}'
+            response= self.session.get(url,headers=self.header,timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>edis_inquiry : %s',e)
+            return {
+                'status':'failure',
+                'remarks':str(e),
+                'data':'',
+            }
+
+    def convert_to_date_time(self,JulianDate):
+        """Convert julian date to python datetime object"""
+        Dt1980= datetime(year=1980,month=1,day=1,hour=5,minute=30)
+        DtObj= Dt1980+ timedelta(seconds=JulianDate)
+        return DtObj

@@ -1,60 +1,44 @@
-# DhanHQ-py - v1.1
+# DhanHQ-py : v1.2
+
+[![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co)  
 
-DhanHQ-py Rest API is used to automate investing and trading. Order execution in real time, Portfolio management, Check positions, holdings, funds and more with the simple API collection.
+DhanHQ-py Rest API is used to automate investing and trading. Execute orders in real time along with position management, historical data, tradebook and more with simple API collection.
 
 
-[Dhan](https://dhan.co) (c) 2022. Licensed under the Apache License 2.0
+[Dhan](https://dhan.co) (c) 2022. Licensed under the [MIT License](https://github.com/dhan-oss/DhanHQ-py/blob/main/LICENSE)
 
-## Documentation
+### Documentation
 
-- [Dhan HTTP API documentation](https://api.dhan.co)
-- [DhanHQ API documentation](https://dhanhq.co/docs/v1/)
+- [DhanHQ Developer Kit](https://api.dhan.co)
+- [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
 - [DhanHQ Swagger Documentation](https://api.dhan.co/swagger-ui.html)
+
+### v1.2 - What's New
+
+- eDIS Authorisation
+- Order Slicing API
+- MTF on APIs
+
 
 ## Features
 
-* **Get Order list**  
-Retrieve a list of all orders requested in a day with their last updated status.
+* **Order Management**  
+The order management APIs lets you place a new order, cancel or modify the pending order, retrieve the order status, trade status, order book & tradebook.
 
-* **Get Order by ID**  
-Retrieve the details and status of an order from the orderbook placed during the day.
+* **Portfolio**  
+With this set of APIs, retrieve your holdings and positions in your portfolio.
 
-* **Modify Order**  
-Modify pending order in orderbook. The variables that can be modified are price, quantity, order type & validity.
-
-* **Cancel Order**  
-Cancel a pending order in the orderbook using the order id of an order.
-
-* **Place Order**  
-Place new orders.
-
-* **Get Order by Correlation ID**  
-Retrieves the order status using a field called correlation id, Provided by API consumer during order placement.
-
-
-* **Get Positions**  
-Retrieve a list of all open positions for the day. This includes all F&O carryforward positions as well.
-
-* **Get Holdings**  
-Retrieve all holdings bought/sold in previous trading sessions. All T1 and delivered quantities can be fetched.
-
-* **Intraday Daily Minute Charts**  
-Retrieve OHLC & Volume of 1 minute candle for desired instrument for current day. This data available for all segments including futures & options.
-
-* **Historical Minute Charts**  
-Retrieve OHLC & Volume of daily candle for desired instrument. The data for any scrip is available back upto the date of its inception.
-
-* **Get trade book**  
-Retrieve a list of all trades executed in a day.
-
-* **Get trade history**  
-Retrieve the trade history Often during partial trades or Bracket/ Cover Orders, traders get confused in reading trade from tradebook. The response of this API will include all the trades generated for a particular order id.
+* **Historical Data**  
+Get historical candle data for the desired scrip across segments & exchange, both Intraday 1 minute OHLC and Daily OHLC.
 
 * **Get fund limits**  
 Get all information of your trading account like balance, margin utilised, collateral, etc.
+
+* **eDIS Authorisation**
+To sell holding stocks, one needs to complete the CDSL eDIS flow, generate T-PIN & mark stock to complete the sell action.
 
 ## Quickstart
 
@@ -66,27 +50,26 @@ pip install dhanhq
 
 
 
-## Hands-on
+### Hands-on
 
 ```python
 from dhanhq import dhanhq
 
-
 dhan = dhanhq("client_id","access_token")
 
 # Place an order for Equity Cash
-dhan.place_order(security_id= '1333',   #hdfcbank
-    exchange_segment= dhan.NSE,
-    transaction_type= dhan.BUY,
+dhan.place_order(security_id='1333',   #hdfcbank
+    exchange_segment=dhan.NSE,
+    transaction_type=dhan.BUY,
     quantity=10,
     order_type=dhan.MARKET,
-    product_type= dhan.INTRA,
+    product_type=dhan.INTRA,
     price=0)
     
 # Place an order for Futures & Options
-dhan.place_order(security_id= '52175',  #hdfcbank
-    exchange_segment= dhan.FNO,
-    transaction_type= dhan.BUY,
+dhan.place_order(security_id='52175',  #NiftyPE
+    exchange_segment=dhan.FNO,
+    transaction_type=dhan.BUY,
     quantity=550,
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
@@ -103,12 +86,12 @@ dhan.place_order(security_id= '10093',  #usdinr
     price=0)
 
 # Place an order for BSE Equity
-dhan.place_order(security_id= '500180',   #hdfcbank
-    exchange_segment= dhan.BSE,
-    transaction_type= dhan.BUY,
+dhan.place_order(security_id='500180',   #hdfcbank
+    exchange_segment=dhan.BSE,
+    transaction_type=dhan.BUY,
     quantity=1,
     order_type=dhan.MARKET,
-    product_type= dhan.INTRA,
+    product_type=dhan.INTRA,
     price=0,)
     
 # Place an order for MCX Commodity    
@@ -120,7 +103,24 @@ dhan.place_order(security_id= '114',    #gold
     product_type= dhan.INTRA,
     price=0)
     
-    
+# Place Slice Order
+dhan.place_slice_order(security_id='52175',  #NiftyPE
+    exchange_segment=dhan.FNO,
+    transaction_type=dhan.BUY,
+    quantity=2000,              #nifty freeze quantity is 1800
+    order_type=dhan.MARKET,
+    product_type=dhan.INTRA,
+    price=0)
+   
+# Place MTF Order
+dhan.place_order(security_id='1333',   #hdfcbank
+    exchange_segment=dhan.NSE,
+    transaction_type=dhan.BUY,
+    quantity=100,
+    order_type=dhan.MARKET,
+    product_type=dhan.MTF,
+    price=0)
+  
 # Fetch all orders
 dhan.get_order_list()
 
@@ -148,6 +148,9 @@ dhan.intraday_daily_minute_charts(security_id,exchange_segment,instrument_type)
 # Historical Minute charts
 dhan.historical_minute_charts(symbol,exchange_segment,instrument_type,expiry_code,from_date,to_date)
 
+# Time Converter
+dhan.convert_to_date_time(Julian Date)
+
 # Get trade book
 dhan.get_trade_book(order_id)
 
@@ -157,15 +160,20 @@ dhan.get_trade_history(from_date,to_date,page_number=0)
 # Get fund limits
 dhan.get_fund_limits()
 
+# Generate TPIN
+dhan.generate_tpin()
+
+# Enter TPIN in Form
+dhan.open_browser_for_tpin(isin='INE00IN01015',
+    qty=1,
+    exchange='NSE')
+
+# EDIS Status and Inquiry
+dhan.edis_inquiry()
+
 
 ```
-
-Refer to the [Python client documentation](https://github.com/dhan-oss/dhanhq) for the complete list of supported methods.
-
-
-
 
 ## Changelog
 
 [Check release notes](https://github.com/dhan-oss/DhanHQ-py/releases)
-
