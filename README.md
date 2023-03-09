@@ -1,4 +1,4 @@
-# DhanHQ-py : v1.2
+# DhanHQ-py : v1.2.1
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -16,11 +16,9 @@ DhanHQ-py Rest API is used to automate investing and trading. Execute orders in 
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
 - [DhanHQ Swagger Documentation](https://api.dhan.co/swagger-ui.html)
 
-### v1.2 - What's New
+### v1.2.1 - What's New
 
-- eDIS Authorisation
-- Order Slicing API
-- MTF on APIs
+- Bug fixes in Order placement using correlation ID
 
 
 ## Features
