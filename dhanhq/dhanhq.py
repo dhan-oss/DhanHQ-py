@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 
 class dhanhq:
-    
+
     #declaring constants
     NSE= 'NSE_EQ'
     BSE= 'BSE_EQ'
@@ -156,7 +156,7 @@ class dhanhq:
         #quantity(int),order_type(str),validity(str),product_type(str),
         #price(float),trigger_price(float),disclosed_quantity(int),
         #after_market_order(Boolean),amo_time(str),tag(str)
-        
+
         try:
             url= self.base_url+'/orders'
             payload={
@@ -178,7 +178,7 @@ class dhanhq:
                     "drvStrikePrice":drv_strike_price
                 }
             if tag!=None and tag!='':
-                payload["correlationId"] = tag,
+                payload["correlationId"] = tag
             if after_market_order== True:
                 if amo_time in ['OPEN','OPEN_30','OPEN_60']:
                     payload['amoTime'] = amo_time
@@ -242,7 +242,7 @@ class dhanhq:
                 'remarks':str(e),
                 'data':'',
             }
-    
+
     def intraday_daily_minute_charts(self,security_id,exchange_segment,instrument_type):
         """Retrieve OHLC & Volume of 1 minute candle for desired instrument for current day. This data available for all segments including futures & options."""
         try:
@@ -342,7 +342,7 @@ class dhanhq:
         #quantity(int),order_type(str),validity(str),product_type(str),
         #price(float),trigger_price(float),disclosed_quantity(int),
         #after_market_order(Boolean),amo_time(str),tag(str)
-        
+
         try:
             url= self.base_url+'/orders/slicing'
             payload={
@@ -364,7 +364,7 @@ class dhanhq:
                     "drvStrikePrice":drv_strike_price
                 }
             if tag!=None and tag!='':
-                payload["correlationId"] = tag,
+                payload["correlationId"] = tag
             if after_market_order== True:
                 if amo_time in ['OPEN','OPEN_30','OPEN_60']:
                     payload['amoTime'] = amo_time
@@ -416,7 +416,7 @@ class dhanhq:
         try:
             url= self.base_url+'/edis/form'
             data= {
-                    "isin": isin,  
+                    "isin": isin,
                     "qty": qty,
                     "exchange": exchange,
                     "segment": segment,
@@ -439,7 +439,7 @@ class dhanhq:
                 'remarks':str(e),
                 'data':'',
             }
-            
+
     def edis_inquiry(self,isin):
         """Inquires about provided isin"""
         try:
