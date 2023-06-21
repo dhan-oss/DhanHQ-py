@@ -172,7 +172,7 @@ class dhanhq:
                     "price": float(price),
                     "afterMarketOrder": after_market_order,
                     "boProfitValue":bo_profit_value,
-                    "boStopLoassValue":bo_stop_loss_Value,
+                    "boStopLossValue":bo_stop_loss_Value,
                     "drvExpiryDate":drv_expiry_date,
                     "drvOptionType":drv_options_type,
                     "drvStrikePrice":drv_strike_price
@@ -358,7 +358,7 @@ class dhanhq:
                     "price": float(price),
                     "afterMarketOrder": after_market_order,
                     "boProfitValue":bo_profit_value,
-                    "boStopLoassValue":bo_stop_loss_Value,
+                    "boStopLossValue":bo_stop_loss_Value,
                     "drvExpiryDate":drv_expiry_date,
                     "drvOptionType":drv_options_type,
                     "drvStrikePrice":drv_strike_price

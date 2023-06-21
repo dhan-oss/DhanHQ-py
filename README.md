@@ -1,4 +1,4 @@
-# DhanHQ-py : v1.2.1
+# DhanHQ-py : v1.2.2
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -16,9 +16,9 @@ DhanHQ-py Rest API is used to automate investing and trading. Execute orders in 
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
 - [DhanHQ Swagger Documentation](https://api.dhan.co/swagger-ui.html)
 
-### v1.2.1 - What's New
+### v1.2.2 - What's New
 
-- Bug fixes in Order placement using correlation ID
+- Bug fixes in Bracket Order Placement
 
 
 ## Features
