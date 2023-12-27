@@ -16,6 +16,8 @@ class dhanhq:
     CUR= 'NSE_CURRENCY'
     MCX= 'MCX_COMM'
     FNO= 'NSE_FNO'
+    NSE_FNO = 'NSE_FNO'
+    BSE_FNO = 'BSE_FNO'
     BUY= B= 'BUY'
     SELL= S= 'SELL'
     CNC= 'CNC'
@@ -262,8 +264,53 @@ class dhanhq:
                 'remarks':str(e),
                 'data':'',
             }
+        
+    # Update nomenclature for v1.2.4
+    def intraday_minute_data(self,security_id,exchange_segment,instrument_type):
+        """Retrieve OHLC & Volume of 1 minute candle for desired instrument for current day. This data available for all segments including futures & options."""
+        try:
+            url= self.base_url+f'/charts/intraday'
+            payload= {
+                'securityId':security_id,
+                'exchangeSegment':exchange_segment,
+                'instrument':instrument_type
+            }
+            payload= json_dumps(payload)
+            response= self.session.post(url,headers=self.header,timeout=self.timeout,data=payload)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>intraday_daily_minute_charts: %s',e)
+            return {
+                'status':'failure',
+                'remarks':str(e),
+                'data':'',
+            }
 
     def historical_minute_charts(self,symbol,exchange_segment,instrument_type,expiry_code,from_date,to_date):
+        """Retrieve OHLC & Volume of daily candle for desired instrument. The data for any scrip is available back upto the date of its inception."""
+        try:
+            url= self.base_url+f'/charts/historical'
+            payload= {
+                    "symbol": symbol,
+                    "exchangeSegment": exchange_segment,
+                    "instrument": instrument_type,
+                    "expiryCode": expiry_code,
+                    "fromDate": from_date,
+                    "toDate": to_date
+                    }
+            payload= json_dumps(payload)
+            response= self.session.post(url,headers=self.header,timeout=self.timeout,data=payload)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>intraday_history_minute_charts: %s',e)
+            return {
+                'status':'failure',
+                'remarks':str(e),
+                'data':'',
+            }
+    
+    # Update nomenclature for v1.2.4
+    def historical_daily_data(self,symbol,exchange_segment,instrument_type,expiry_code,from_date,to_date):
         """Retrieve OHLC & Volume of daily candle for desired instrument. The data for any scrip is available back upto the date of its inception."""
         try:
             url= self.base_url+f'/charts/historical'
