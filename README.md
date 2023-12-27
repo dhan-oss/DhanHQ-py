@@ -1,4 +1,4 @@
-# DhanHQ-py : v1.2.2
+# DhanHQ-py : v1.2.3
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -14,12 +14,13 @@ DhanHQ-py Rest API is used to automate investing and trading. Execute orders in 
 
 - [DhanHQ Developer Kit](https://api.dhan.co)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
-- [DhanHQ Swagger Documentation](https://api.dhan.co/swagger-ui.html)
 
-### v1.2.2 - What's New
+### v1.2.3 - What's New
 
-- Bug fixes in Bracket Order Placement
-
+- BSE Futures & Options now added as part of library - use tag `BSE_FNO`
+- Additional function added for fetching Historical Data:
+    - `intraday_minute_data` - 1 min OHLC data for Intraday
+    - `historical_daily_data` - Daily OHLC data
 
 ## Features
 
@@ -64,9 +65,9 @@ dhan.place_order(security_id='1333',   #hdfcbank
     product_type=dhan.INTRA,
     price=0)
     
-# Place an order for Futures & Options
+# Place an order for NSE Futures & Options
 dhan.place_order(security_id='52175',  #NiftyPE
-    exchange_segment=dhan.FNO,
+    exchange_segment=dhan.NSE_FNO,
     transaction_type=dhan.BUY,
     quantity=550,
     order_type=dhan.MARKET,
@@ -91,10 +92,19 @@ dhan.place_order(security_id='500180',   #hdfcbank
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
     price=0,)
+
+# Place an order for BSE Futures & Options
+dhan.place_order(security_id='1135553',   #SensexPE
+    exchange_segment=dhan.BSE_FNO,
+    transaction_type=dhan.BUY,
+    quantity=1,
+    order_type=dhan.MARKET,
+    product_type=dhan.INTRA,
+    price=0,)
     
 # Place an order for MCX Commodity    
 dhan.place_order(security_id= '114',    #gold
-    exchange_segment= dhan.BSE,
+    exchange_segment= dhan.MCX,
     transaction_type= dhan.BUY,
     quantity=1,
     order_type=dhan.MARKET,
@@ -103,7 +113,7 @@ dhan.place_order(security_id= '114',    #gold
     
 # Place Slice Order
 dhan.place_slice_order(security_id='52175',  #NiftyPE
-    exchange_segment=dhan.FNO,
+    exchange_segment=dhan.NSE_FNO,
     transaction_type=dhan.BUY,
     quantity=2000,              #nifty freeze quantity is 1800
     order_type=dhan.MARKET,
@@ -140,11 +150,11 @@ dhan.get_positions()
 # Get holdings
 dhan.get_holdings()
 
-# Intraday daily minute charts
-dhan.intraday_daily_minute_charts(security_id,exchange_segment,instrument_type)
+# Intraday Minute Data
+dhan.intraday_minute_data(security_id,exchange_segment,instrument_type)
 
-# Historical Minute charts
-dhan.historical_minute_charts(symbol,exchange_segment,instrument_type,expiry_code,from_date,to_date)
+# Historical Daily Data
+dhan.historical_daily_data(symbol,exchange_segment,instrument_type,expiry_code,from_date,to_date)
 
 # Time Converter
 dhan.convert_to_date_time(Julian Date)
