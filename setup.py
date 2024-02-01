@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '1.2.3'
+VERSION = '1.3'
 PACKAGE_NAME = 'dhanhq'
 AUTHOR = 'Dhan'
 AUTHOR_EMAIL = 'dhan-oss@dhan.co'
@@ -14,7 +14,8 @@ DESCRIPTION = 'The official Python client for communicating with the Dhan API'
 LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
-INSTALL_REQUIRES = ["pandas>=1.4.3","requests>=2.28.1"]
+INSTALL_REQUIRES = ["pandas>=1.4.3",
+                    "requests>=2.28.1"]
 
 setup(name=PACKAGE_NAME,
       version=VERSION,
