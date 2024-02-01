@@ -16,7 +16,7 @@ LONG_DESC_TYPE = "text/markdown"
 
 INSTALL_REQUIRES = ["pandas>=1.4.3",
                     "requests>=2.28.1"]
-
+                    
 setup(name=PACKAGE_NAME,
       version=VERSION,
       description=DESCRIPTION,

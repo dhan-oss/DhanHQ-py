@@ -1,2 +1,2 @@
-from .dhanhq import dhanhq
-from .dhanhq import marketfeed
+from dhanhq.dhanhq import dhanhq
+from dhanhq.marketfeed import DhanFeed
