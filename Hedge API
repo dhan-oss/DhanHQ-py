@@ -1,0 +1,87 @@
+import requests
+import numpy as np
+import datetime
+import time
+
+class DhanAPI:
+    def __init__(self, client_id, market_data_access_token, trading_access_token, mean_latency):
+        self.client_id = "1100675960"
+        self.market_data_access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzE0MzE2OTMwLCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL0F5dXNoaGhoaDMwL0hFREdFLUFQSSIsImRoYW5DbGllbnRJZCI6IjExMDA2NzU5NjAifQ.T-n1cmVGz8-4puygEDNikCkR0z-gE2A0MXXpj8zuWFb7oJVN3bsXOj_dLIY7_G0qMC0Y947UqGM7qsMQVM2QYw"
+        self.trading_access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzE0MzE2OTMwLCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL0F5dXNoaGhoaDMwL0hFREdFLUFQSSIsImRoYW5DbGllbnRJZCI6IjExMDA2NzU5NjAifQ.T-n1cmVGz8-4puygEDNikCkR0z-gE2A0MXXpj8zuWFb7oJVN3bsXOj_dLIY7_G0qMC0Y947UqGM7qsMQVM2QYw"
+        self.base_url = "https://api.dhan.co"
+        self.mean_latency = mean_latency
+
+    def execute_with_latency(self, request_function, *args, **kwargs):
+        start_time = time.time()
+        response = request_function(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        time.sleep(max(0, self.mean_latency - elapsed_time))
+        return response
+
+    def fetch_market_data(self, url):
+        headers = {'accept': 'application/json', 'Authorization': f'Bearer {self.market_data_access_token}'}
+        try:
+            response = self.execute_with_latency(requests.get, url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print("Failed to fetch data. Status code:", response.status_code)
+                return None
+        except Exception as e:
+            print("Error fetching data:", e)
+            return None
+
+    def place_order(self, security_id, exchange_segment, transaction_type, quantity, order_type, product_type, price, stop_loss=0, target=0):
+        try:
+            if not self.is_last_10_minutes_of_hour():
+                print("Trade execution is allowed only in the final 10 minutes of an hourly close.")
+                return False
+            
+            headers = {'Authorization': f'Bearer {self.trading_access_token}'}
+            data = {
+                'security_id': security_id,
+                'exchange_segment': exchange_segment,
+                'transaction_type': transaction_type,
+                'quantity': quantity,
+                'order_type': order_type,
+                'product_type': product_type,
+                'price': price,
+                'stop_loss': stop_loss,
+                'target': target
+            }
+            response = self.execute_with_latency(requests.post, f"{self.base_url}/place_order", headers=headers, json=data)
+            if response.status_code == 200:
+                return True
+            else:
+                print("Failed to place order. Status code:", response.status_code)
+                return False
+        except Exception as e:
+            print(f"Error placing order: {e}")
+            return False
+
+    def is_last_10_minutes_of_hour(self):
+        current_time = datetime.datetime.now().time()
+        return current_time.minute >= 50  # Checks if it's 50 minutes or later in the hour
+
+class MeanReversionTrader:
+    def __init__(self, api, iv_threshold):
+        self.api = api
+        self.iv_threshold = iv_threshold
+
+    # Other methods and functionalities as per previous code snippets...
+
+# Access tokens for both Market Data API and Trading API
+market_data_access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzE0MzAzMDgzLCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMDY3NTk2MCJ9.sJFc4zUnWkNN-gA8OQYA5epDDhbY2gTn_flbML5-sGNsGkN_4_A3oUxmX_3l1IVj5mYwVpgXceKAoVF4_y17vA"
+trading_access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzE0MzAzMDgzLCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMDY3NTk2MCJ9.sJFc4zUnWkNN-gA8OQYA5epDDhbY2gTn_flbML5-sGNsGkN_4_A3oUxmX_3l1IVj5mYwVpgXceKAoVF4_y17vA"
+
+# Create an instance of the DhanAPI class
+api = DhanAPI(client_id="Your_Client_ID", market_data_access_token=market_data_access_token, trading_access_token=trading_access_token, mean_latency=5)
+
+# Initialize the MeanReversionTrader with the API instance
+trader = MeanReversionTrader(api=api, iv_threshold=0.2)  # Example IV threshold
+
+# Now you can use the 'trader' object to execute the mean reversion trading strategy
+# and interact with the API for fetching market data and placing orders.
+
+
