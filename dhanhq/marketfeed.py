@@ -31,10 +31,10 @@ Ticker = 15
 Quote = 17
 Depth = 19
 
-"""Constants for Unsubsribe Code"""
-UnSub_Ticker = 16
-UnSub_Quote = 18
-UnSub_Depth = 20
+"""Constants for Unsubscribe Code"""
+Un_Ticker = 16
+Un_Quote = 18
+Un_Depth = 20
 
 class DhanSDKHelper:
     def __init__(self, sdk_instance):
@@ -89,11 +89,11 @@ class DhanFeed:
             Get the corresponding unsubscribe code for a given subscription code.
         """
         if subscription_code == Ticker:
-            return UnSub_Ticker
+            return Un_Ticker
         elif subscription_code == Quote:
-            return UnSub_Quote
+            return Un_Quote
         elif subscription_code == Depth:
-            return UnSub_Depth
+            return Un_Depth
         else:
             raise ValueError(f"Invalid subscription code: {subscription_code}")
 
