@@ -220,12 +220,12 @@ async def on_connect(instance):
 async def on_message(instance, message):
     print("Received:", message)
 
-print("Subscription code :"subscription_code)
+print("Subscription code :", subscription_code)
 
 feed = marketfeed.DhanFeed(client_id,
     access_token,
-    instruments
-    subscription_code
+    instruments,
+    subscription_code,
     on_connect=on_connect,
     on_message=on_message)
 

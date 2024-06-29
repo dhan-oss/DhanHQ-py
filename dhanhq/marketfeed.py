@@ -31,6 +31,10 @@ Ticker = 15
 Quote = 17
 Depth = 19
 
+"""Constants for Unsubscribe Code"""
+Un_Ticker = 16
+Un_Quote = 18
+Un_Depth = 20
 
 class DhanSDKHelper:
     def __init__(self, sdk_instance):
@@ -66,6 +70,7 @@ class DhanFeed:
         self.access_token = access_token
         self.instruments = instruments
         self.subscription_code = subscription_code
+        self.unsubscription_code = self.get_unsubscribe_code(subscription_code)
         self.data = ""
         self._is_first_connect = True
         self.ws = None
@@ -77,6 +82,21 @@ class DhanFeed:
 
         if self.on_connect:
             self.connect()
+    
+
+    def get_unsubscribe_code(self, subscription_code):
+        """
+            Get the corresponding unsubscribe code for a given subscription code.
+        """
+        if subscription_code == Ticker:
+            return Un_Ticker
+        elif subscription_code == Quote:
+            return Un_Quote
+        elif subscription_code == Depth:
+            return Un_Depth
+        else:
+            raise ValueError(f"Invalid subscription code: {subscription_code}")
+
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
@@ -309,7 +329,7 @@ class DhanFeed:
         """Creates the subscription packet with specified instruments and subscription code"""
         num_instruments = len(instruments)
         
-        header = self.create_header(feed_request_code=self.subscription_code,
+        header = self.create_header(feed_request_code=feed_request_code,
                                     message_length=83 + 4 + num_instruments * 21, 
                                     client_id=self.client_id)
         num_instruments_bytes = struct.pack('<I', num_instruments)
@@ -324,19 +344,25 @@ class DhanFeed:
         subscription_packet = header + num_instruments_bytes + instrument_info
         return subscription_packet
 
-    def subscribe_symbols(self, feed_request_code, symbols):
+    def subscribe_symbols(self, symbols):
         """Function to subscribe to additional symbols."""
+
+        feed_request_code=  self.subscription_code # removed_feed_request_code from parameters
+
         unique_symbols_set = set(self.instruments)
         unique_symbols_set.update(symbols)
         self.instruments = list(unique_symbols_set)
         if self.ws and self.ws.open:
-            asyncio.ensure_future(self.ws.send(self.create_subscription_packet(symbols, feed_request_code, subscribe=True)))
+            asyncio.ensure_future(self.ws.send(self.create_subscription_packet(symbols, feed_request_code )))
 
-    def unsubscribe_symbols(self, feed_request_code, symbols):
+    def unsubscribe_symbols(self, symbols):
         """Function to unsubscribe symbols from connection."""
+
+        feed_request_code=  self.unsubscription_code # removed_feed_request_code from parameters
+
         unique_symbols_set = set(self.instruments)
         unique_symbols_set.update(symbols)
         self.instruments = list(unique_symbols_set)
         if self.ws and self.ws.open:
             print("check it", self.instruments)
-            asyncio.ensure_future(self.ws.send(self.create_subscription_packet(symbols, feed_request_code, subscribe=False)))
+            asyncio.ensure_future(self.ws.send(self.create_subscription_packet(symbols, feed_request_code)))
