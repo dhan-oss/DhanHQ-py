@@ -1,4 +1,4 @@
-# DhanHQ-py : v1.3
+# DhanHQ-py : v1.3.1
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -16,6 +16,11 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 - [DhanHQ Developer Kit](https://api.dhan.co)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
+
+### v1.3.1 - Fixes
+
+- Fixed Subscribe and Unsubscribe additional symbols on Websockets
+
 
 ### v1.3 - What's New
 
