@@ -315,7 +315,7 @@ class DhanFeed:
         num_instruments_bytes = struct.pack('<I', num_instruments)
         instrument_info = b""
         for exchange_segment, security_id in instruments:
-            instrument_info += struct.pack('<B20s', exchange_segment, security_id.encode('utf-8'))
+            instrument_info += struct.pack('<B20s', int(exchange_segment), str(security_id).encode('utf-8'))
         
         instruments = [(0, "")]
         for i in range(100 - num_instruments):
