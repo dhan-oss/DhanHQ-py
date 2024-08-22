@@ -14,9 +14,7 @@ DESCRIPTION = 'The official Python client for communicating with the Dhan API'
 LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
-INSTALL_REQUIRES = ["pandas>=1.4.3",
-                    "requests>=2.28.1",
-                    "websockets>=11.0.1",]
+INSTALL_REQUIRES = ["pandas>=1.4.3","requests>=2.28.1","websockets>=11.0.1",]
                     
 setup(name=PACKAGE_NAME,
       version=VERSION,
