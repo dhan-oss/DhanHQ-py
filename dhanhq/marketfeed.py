@@ -1,5 +1,6 @@
+#@title DhanHQ
 """
-    The marketfeed class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket. 
+    The marketfeed class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket.
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
 
     :copyright: (c) 2024 by Dhan.
@@ -8,9 +9,9 @@
 
 import websockets
 import asyncio
-import json
 import struct
 from datetime import datetime
+from collections import defaultdict
 
 # Constants
 """WebSocket URL for DhanHQ Live Market Feed"""
@@ -31,108 +32,97 @@ Ticker = 15
 Quote = 17
 Depth = 19
 
-"""Constants for Unsubscribe Code"""
-Un_Ticker = 16
-Un_Quote = 18
-Un_Depth = 20
-
-class DhanSDKHelper:
-    def __init__(self, sdk_instance):
-        self.sdk_instance = sdk_instance
-
-    """Callback function executed when the WebSocket connection is established."""
-    async def on_connection_established(self, websocket):
-        if self.sdk_instance.on_connect:
-            await self.sdk_instance.on_connect(self.sdk_instance)
-
-    """Callback function executed when a message is received."""
-    async def on_message_received(self, response):
-        if self.sdk_instance.on_message:
-            await self.sdk_instance.on_message(self.sdk_instance, response)
-
-    """Callback function executed when the WebSocket connection is closed."""
-    async def on_close(self, websocket, close_status=None, close_msg=None):
-        print(f"WebSocket closed with status {close_status}: {close_msg}")
-        await websocket.close()
-        self.ws = None
 
 
+"""Creating Instruments List to be subscribed"""
+
+def validate_and_process_tuples(tuples_list, batch_size=100):
+    """Create a list of all instruments to be added and add in batches of 100"""
+    # Check if all tuples have the same size (either all size 2 or all size 3)
+    tuple_lengths = set(len(tup) for tup in tuples_list)
+    if len(tuple_lengths) > 1:
+        raise ValueError("All tuples must be of the same size, either all 2 or all 3.")
+
+    # Assign default type 15 to tuples of size 2
+    processed_tuples = []
+    for tup in tuples_list:
+        if len(tup) == 2:
+            processed_tuples.append((tup[0], tup[1], 15))
+        else:
+            processed_tuples.append(tup)
+
+    # Eliminate duplicate tuples
+    processed_tuples = list(set(processed_tuples))
+
+    # Separate tuples by type and prepare for batching
+    batches = defaultdict(list)
+    for tup in processed_tuples:
+        exchange, instrument_id, type_ = tup
+        batches[type_].append((exchange, instrument_id))
+
+    # Create the final dictionary with batches of the specified size
+    final_dict = {}
+    for type_ in [15, 17, 19]:
+        type_batches = [batches[type_][i:i+batch_size] for i in range(0, len(batches[type_]), batch_size)]
+        final_dict[str(type_)] = type_batches
+
+    return final_dict
 
 class DhanFeed:
-    def __init__(self, client_id, access_token, 
-                 instruments, subscription_code, 
-                 on_connect=None, 
-                 on_message=None, 
-                 on_close=None):
-        """Initializes the DhanSDK instance with user credentials, instruments to subscribe, and callback functions."""
-        
+    def __init__(self, client_id, access_token, instruments):
+        """Initializes the DhanFeed instance with user credentials, instruments to subscribe, and callback functions."""
+
         self.client_id = client_id
         self.access_token = access_token
         self.instruments = instruments
-        self.subscription_code = subscription_code
-        self.unsubscription_code = self.get_unsubscribe_code(subscription_code)
         self.data = ""
         self._is_first_connect = True
         self.ws = None
         self.on_ticks = None
-        self.on_message = on_message
-        self.on_close = on_close
-        self.on_connect = on_connect
         self.loop = asyncio.get_event_loop()
-
-        if self.on_connect:
-            self.connect()
-    
-
-    def get_unsubscribe_code(self, subscription_code):
-        """
-            Get the corresponding unsubscribe code for a given subscription code.
-        """
-        if subscription_code == Ticker:
-            return Un_Ticker
-        elif subscription_code == Quote:
-            return Un_Quote
-        elif subscription_code == Depth:
-            return Un_Depth
-        else:
-            raise ValueError(f"Invalid subscription code: {subscription_code}")
-
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
         self.loop.run_until_complete(self.connect())
 
+    def get_data(self): 
+        """Fetch instruments data while the event loop is open."""
+        return self.loop.run_until_complete(self.get_instrument_data()) 
+
+    def close_connection(self): 
+        """Close WebSocket connection with this."""
+        return self.loop.run_until_complete(self.disconnect()) 
+
     async def connect(self):
-        """Initiates the connection to the Websockets"""
+        """Initiates the connection to the Websockets."""
         if not self.ws or self.ws.closed:
             self.ws = await websockets.connect(WSS_URL)
-            helper = DhanSDKHelper(self)
-            await helper.on_connection_established(self.ws)
             await self.authorize()
             await self.subscribe_instruments()
 
-            # Handling incoming messages in a loop to keep the connection open
-            while True:
-                try:
-                    response = await self.ws.recv()
-                    self.data = self.process_data(response)
-                    await helper.on_message_received(self.data)
-                except websockets.exceptions.ConnectionClosed:
-                    print("Connection has been closed")
-                    break
+    async def get_instrument_data(self): #//STOQCLUB//v
+        """Fetches data and initiates process for conversion."""
+        response = await self.ws.recv()
+        self.data = self.process_data(response)
+        return self.data #//STOQCLUB//^
+
+    async def disconnect(self):
+        """Closes the WebSocket connection."""
+        if self.ws:
+            await self.ws.close()
+            print("Connection closed!")
 
     async def authorize(self):
         """Establishes the WebSocket connection and authorizes the user"""
         try:
-            helper = DhanSDKHelper(self)
-            await helper.on_connection_established(self.ws)
+            print("Authorizing...")
 
             # Authorization packet creation
             api_access_token = self.access_token.encode('utf-8')
             api_access_token = self.pad_with_zeros(api_access_token, 500)
             authentication_type = "2P".encode('utf-8')
             payload = api_access_token + authentication_type
-            
+
             feed_request_code = 11
             message_length = 83 + len(api_access_token) + len(authentication_type)
             client_id = self.client_id.encode('utf-8')
@@ -145,21 +135,30 @@ class DhanFeed:
             # Send authorization packet
             await self.ws.send(authorization_packet)
             self.is_authorized = True
-
+            print("Authorization successful!")
         except Exception as e:
             print(f"Authorization failed: {e}")
             self.is_authorized = False
-        
+
     async def subscribe_instruments(self):
         """Subscribe Instruments on the Open Websocket"""
         if not self.is_authorized:
             print("Not authorized. Please authorize first.")
             return
 
-        # Subscription packet creation
-        subscription_packet = self.create_subscription_packet(self.instruments, self.subscription_code)
-        await self.ws.send(subscription_packet)
+        # Subscription packet creation //STOQCLUB//v
+        group_size = 100
 
+        new_instrument_list = validate_and_process_tuples(self.instruments, group_size)
+
+        if new_instrument_list != {}:
+            for instrument_type in new_instrument_list:
+                if new_instrument_list[instrument_type] != []:
+                    for instrument_group in new_instrument_list[instrument_type]:
+                        self.subscription_code = int(instrument_type) # //STOQCLUB//^
+                        subscription_packet = self.create_subscription_packet(instrument_group, self.subscription_code)
+                        await self.ws.send(subscription_packet)
+    
     def process_data(self, data):
         """Read binary data and initiate processing in received format"""
         first_byte = struct.unpack('<B', data[0:1])[0]
@@ -188,9 +187,9 @@ class DhanFeed:
             "security_id" : unpack_ticker[0][3],
             "LTP" : "{:.2f}".format(unpack_ticker[0][4]),
             "LTT" : self.utc_time(unpack_ticker[0][5])
-        } 
+        }
         return ticker_data
-    
+
     def process_prev_close(self, data):
         """Parse and process Previous Day Data"""
         unpack_pclose = [struct.unpack('<BHBIfI', data[0:16])]
@@ -201,7 +200,7 @@ class DhanFeed:
             "security_id" : unpack_pclose[0][3],
             "prev_close" : "{:.2f}".format(unpack_pclose[0][4]),
             "prev_OI" : unpack_pclose[0][5]
-        } 
+        }
         return prev_close
 
     def process_market_depth(self, data):
@@ -264,7 +263,7 @@ class DhanFeed:
             "low": "{:.2f}".format(unpack_quote[0][14])
         }
         return quote_data
-    
+
     def process_oi(self, data):
         """Parse and process OI Data"""
         unpack_oi = [struct.unpack('<BHBII', data[0:12])]
@@ -275,13 +274,13 @@ class DhanFeed:
             "OI": unpack_oi[0][4]
         }
         return oi_data
-    
+
     def process_status(self, data):
         """Parse and process market status"""
         unpack_status = [struct.unpack('<BHBI', data[0:8])]
         market_status = "Markets Open"
         return market_status
-    
+
     def server_disconnection(self, data):
         """Parse and process server disconnection error"""
         disconnection_packet = [struct.unpack('<BHBIH', data[0:10])]
@@ -301,7 +300,7 @@ class DhanFeed:
         elif disconnection_packet[0][4] == 809:
             print ("Disconnected: Authentication Failed - check ")
             self.on_close = True
-        
+
     async def on_connection_opened(self, websocket):
         "Callback function executed when the WebSocket connection is opened."
         await websocket.send(self.create_subscription_packet(self.instruments, subscribe=True))
@@ -328,41 +327,58 @@ class DhanFeed:
     def create_subscription_packet(self, instruments, feed_request_code):
         """Creates the subscription packet with specified instruments and subscription code"""
         num_instruments = len(instruments)
-        
-        header = self.create_header(feed_request_code=feed_request_code,
-                                    message_length=83 + 4 + num_instruments * 21, 
+
+        header = self.create_header(feed_request_code = feed_request_code, 
+                                    message_length=83 + 4 + num_instruments * 21,
                                     client_id=self.client_id)
         num_instruments_bytes = struct.pack('<I', num_instruments)
         instrument_info = b""
-        for exchange_segment, security_id in instruments:
+        for exchange_segment, security_id in instruments: 
             instrument_info += struct.pack('<B20s', exchange_segment, security_id.encode('utf-8'))
-        
+
         instruments = [(0, "")]
         for i in range(100 - num_instruments):
             instrument_info += struct.pack('<B20s', instruments[0][0], instruments[0][1].encode('utf-8'))
 
         subscription_packet = header + num_instruments_bytes + instrument_info
         return subscription_packet
-
-    def subscribe_symbols(self, symbols):
-        """Function to subscribe to additional symbols."""
-
-        feed_request_code=  self.subscription_code # removed_feed_request_code from parameters
-
+    
+    def subscribe_symbols(self, symbols): 
+        """Function to subscribe to additional symbols when connection is already established."""
+        # Update the instruments list
         unique_symbols_set = set(self.instruments)
         unique_symbols_set.update(symbols)
         self.instruments = list(unique_symbols_set)
-        if self.ws and self.ws.open:
-            asyncio.ensure_future(self.ws.send(self.create_subscription_packet(symbols, feed_request_code )))
 
-    def unsubscribe_symbols(self, symbols):
-        """Function to unsubscribe symbols from connection."""
+        # If the WebSocket is open, send the subscription packet for the new symbols
+        if self.ws and not self.ws.closed:
+            # Prepare the instruments list for subscription
+            group_size = 100
+            new_instrument_list = validate_and_process_tuples(symbols, group_size)
 
-        feed_request_code=  self.unsubscription_code # removed_feed_request_code from parameters
+            # Send subscription packets for the new symbols
+            for instrument_type in new_instrument_list:
+                if new_instrument_list[instrument_type]:
+                    for instrument_group in new_instrument_list[instrument_type]:
+                        subscription_packet = self.create_subscription_packet(instrument_group, int(instrument_type))
+                        asyncio.ensure_future(self.ws.send(subscription_packet))
 
+    def unsubscribe_symbols(self, symbols): 
+        """Function to unsubscribe symbols from connection when connection is already active."""
+        # Update the instruments list by removing the specified symbols
         unique_symbols_set = set(self.instruments)
-        unique_symbols_set.update(symbols)
+        unique_symbols_set.difference_update(symbols)
         self.instruments = list(unique_symbols_set)
-        if self.ws and self.ws.open:
-            print("check it", self.instruments)
-            asyncio.ensure_future(self.ws.send(self.create_subscription_packet(symbols, feed_request_code)))
+
+        # If the WebSocket is open, send the unsubscription packet for the symbols
+        if self.ws and not self.ws.closed:
+            # Prepare the instruments list for unsubscription
+            group_size = 100
+            instrument_list_to_unsubscribe = validate_and_process_tuples(symbols, group_size)
+
+            # Send unsubscription packets for the removed symbols
+            for instrument_type in instrument_list_to_unsubscribe:
+                if instrument_list_to_unsubscribe[instrument_type]:
+                    for instrument_group in instrument_list_to_unsubscribe[instrument_type]:
+                        unsubscription_packet = self.create_subscription_packet(instrument_group, int(instrument_type))
+                        asyncio.ensure_future(self.ws.send(unsubscription_packet))
