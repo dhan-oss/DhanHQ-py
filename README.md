@@ -1,4 +1,4 @@
-# DhanHQ-py : v1.3
+# DhanHQ-py : v1.3.2
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -17,12 +17,20 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
 
+### v1.3.2 - Optimising `marketfeed` module
+
+- Adding upto 5000 instruments in a single list
+- Subscribing to multiple modes simultaneously
+- Websocket disconnect function
+- Removed Warning message
+
+
 ### v1.3 - What's New
 
 Live Market Feed data is now available across exchanges and segments via DhanHQ
     
 - Low latency websockets
-- Unlimited instruments per socket
+- 5000 instruments per socket
 - Establish upto 5 sockets per user
 
 With Market Feed, you can subscribe data in below formats:
@@ -200,36 +208,46 @@ from dhanhq import marketfeed
 client_id = "Dhan Client ID"
 access_token = "Access Token"
 
-# Structure for subscribing is ("exchange_segment","security_id")
+# Structure for subscribing is (exchange_segment, "security_id", subscription_type)
 
-# Maximum 100 instruments can be subscribed, then use 'subscribe_symbols' function 
+instruments = 
+    [(marketfeed.NSE, "1333", marketfeed.Ticker),
+    (marketfeed.NSE, "1333", marketfeed.Quote),
+    (marketfeed.NSE, "1333", marketfeed.Depth),
+    (marketfeed.NSE, "11915", marketfeed.Ticker),
+    (marketfeed.NSE, "11915", marketfeed.Ticker)]
 
-instruments = [(1, "1333"),(0,"13")]
-
-# Type of data subscription
-subscription_code = marketfeed.Ticker
 
 # Ticker - Ticker Data
 # Quote - Quote Data
 # Depth - Market Depth
 
+# In case subscription_type is left as blank, by default Ticker mode will be subscribed.
 
-async def on_connect(instance):
-    print("Connected to websocket")
+try:
+    data = marketfeed.DhanFeed(client_id, access_token, instruments)
+    while True:
+        data.run_forever()
+        response = data.get_data()
+        print(response)
 
-async def on_message(instance, message):
-    print("Received:", message)
+except Exception as e:
+    print(e)
 
-print("Subscription code :", subscription_code)
+# Close Connection
+data.disconnect()
 
-feed = marketfeed.DhanFeed(client_id,
-    access_token,
-    instruments,
-    subscription_code,
-    on_connect=on_connect,
-    on_message=on_message)
+# Subscribe instruments while connection is open
+sub_instruments = 
+    [(marketfeed.NSE, "14436", marketfeed.Ticker)]
 
-feed.run_forever()
+data.subscribe_symbols(sub_instruments)
+
+# Unsubscribe instruments which are already active on connection
+unsub_instruments = 
+    [(marketfeed.NSE, "1333", 16)]
+
+data.unsubscribe_symbols(unsub_instruments)
 ```
 
 

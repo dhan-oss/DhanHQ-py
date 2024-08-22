@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '1.3'
+VERSION = '1.3.1'
 PACKAGE_NAME = 'dhanhq'
 AUTHOR = 'Dhan'
 AUTHOR_EMAIL = 'dhan-oss@dhan.co'
@@ -15,7 +15,8 @@ LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
 INSTALL_REQUIRES = ["pandas>=1.4.3",
-                    "requests>=2.28.1"]
+                    "requests>=2.28.1"
+                    "websockets>=11.0.1"]
                     
 setup(name=PACKAGE_NAME,
       version=VERSION,
