@@ -1,4 +1,4 @@
-# DhanHQ-py : v1.3.2
+# DhanHQ-py : v1.3.3
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -16,6 +16,9 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 - [DhanHQ Developer Kit](https://api.dhan.co)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v1/)
+
+### v1.3.3 - Handling SSL
+- Handling of SSL verification along with requirement addition of pyOpenSSL.
 
 ### v1.3.2 - Optimising `marketfeed` module
 
