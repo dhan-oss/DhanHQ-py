@@ -36,7 +36,11 @@ class dhanhq:
     GTC= 'GTC'
     GTD= 'GTD'
     EQ= 'EQ'
-    def __init__(self,client_id,access_token):
+    def __init__(self,
+                 client_id,
+                 access_token,
+                 disable_ssl=False,
+                 pool=None):
         try:
             self.client_id= str(client_id)
             self.access_token= access_token
@@ -46,8 +50,12 @@ class dhanhq:
                 'access-token': access_token,
                 'content-type': 'application/json',
             }
+            self.disable_ssl = disable_ssl
             requests.packages.urllib3.util.connection.HAS_IPV6 = False
             self.session= requests.Session()
+            if pool:
+                reqadapter = requests.adapters.HTTPAdapter(**pool)
+                self.session.mount("https://", reqadapter)
         except Exception as e:
             logging.error('Exception in dhanhq>>init : %s',e)
 
