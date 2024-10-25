@@ -3,14 +3,14 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '1.3.3'
+VERSION = '2.0.0'
 PACKAGE_NAME = 'dhanhq'
 AUTHOR = 'Dhan'
 AUTHOR_EMAIL = 'dhan-oss@dhan.co'
-URL = ''
+URL = 'https://dhanhq.co/'
 
 LICENSE = 'MIT LICENSE'
-DESCRIPTION = 'The official Python client for communicating with the Dhan API'
+DESCRIPTION = 'The official Python client for communicating with the DhanHQ API'
 LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
