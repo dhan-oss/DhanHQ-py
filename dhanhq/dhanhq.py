@@ -24,6 +24,8 @@ class dhanhq:
     CUR = 'NSE_CURRENCY'
     MCX = 'MCX_COMM'
     FNO = 'NSE_FNO'
+    NSE_FNO = 'NSE_FNO'
+    BSE_FNO = 'BSE_FNO'
     INDEX = 'IDX_I'
 
     """Constants for Transaction Type"""
