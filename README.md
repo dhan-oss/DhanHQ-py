@@ -209,8 +209,7 @@ access_token = "Access Token"
 
 # Structure for subscribing is (exchange_segment, "security_id", subscription_type)
 
-instruments = 
-    [(marketfeed.NSE, "1333", marketfeed.Ticker),   # Ticker - Ticker Data
+instruments = [(marketfeed.NSE, "1333", marketfeed.Ticker),   # Ticker - Ticker Data
     (marketfeed.NSE, "1333", marketfeed.Quote),     # Quote - Quote Data
     (marketfeed.NSE, "1333", marketfeed.Full),      # Full - Full Packet
     (marketfeed.NSE, "11915", marketfeed.Ticker),
@@ -234,14 +233,12 @@ except Exception as e:
 data.disconnect()
 
 # Subscribe instruments while connection is open
-sub_instruments = 
-    [(marketfeed.NSE, "14436", marketfeed.Ticker)]
+sub_instruments = [(marketfeed.NSE, "14436", marketfeed.Ticker)]
 
 data.subscribe_symbols(sub_instruments)
 
 # Unsubscribe instruments which are already active on connection
-unsub_instruments = 
-    [(marketfeed.NSE, "1333", 16)]
+unsub_instruments = [(marketfeed.NSE, "1333", 16)]
 
 data.unsubscribe_symbols(unsub_instruments)
 ```
