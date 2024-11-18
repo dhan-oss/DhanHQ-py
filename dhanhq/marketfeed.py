@@ -62,7 +62,7 @@ class DhanFeed:
 
     async def connect(self):
         """Initiates the connection to the Websockets."""
-        if not self.ws or self.ws.closed:
+        if not self.ws:
             if self.version == 'v1':
                 self.ws = await websockets.connect(market_feed_wss)
                 await self.authorize()
@@ -72,6 +72,12 @@ class DhanFeed:
             else:
                 raise ValueError(f"Unsupported version: {self.version}")
             await self.subscribe_instruments()
+        else:
+            try:
+                await self.ws.ping()
+            except websockets.ConnectionClosed:
+                self.ws = None
+                await self.connect()
 
     async def get_instrument_data(self):
         """Fetches data and initiates process for conversion."""
