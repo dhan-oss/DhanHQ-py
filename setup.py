@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '2.0.1'
+VERSION = '2.0.2'
 PACKAGE_NAME = 'dhanhq'
 AUTHOR = 'Dhan'
 AUTHOR_EMAIL = 'dhan-oss@dhan.co'
@@ -17,7 +17,7 @@ LONG_DESC_TYPE = "text/markdown"
 INSTALL_REQUIRES = [
     "pandas>=1.4.3",
     "requests>=2.28.1",
-    "websockets>=11.0.1",
+    "websockets>=12.0.1",
     "pyOpenSSL>=20.0.1"
     ]
                     

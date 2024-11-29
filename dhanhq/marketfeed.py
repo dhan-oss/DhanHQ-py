@@ -62,7 +62,7 @@ class DhanFeed:
 
     async def connect(self):
         """Initiates the connection to the Websockets."""
-        if not self.ws:
+        if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
             if self.version == 'v1':
                 self.ws = await websockets.connect(market_feed_wss)
                 await self.authorize()
