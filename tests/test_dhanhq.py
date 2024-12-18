@@ -1,11 +1,13 @@
 # import sys
+from json import dumps as json_dumps
+from unittest.mock import patch  # for mocking requests
+
 import pytest
 import requests
-from json import loads as json_loads, dumps as json_dumps
-from unittest.mock import patch  # for mocking requests
 
 # print(sys.path)
 from dhanhq.dhanhq import dhanhq
+
 
 @pytest.fixture
 def dhanhq_obj():
@@ -98,14 +100,14 @@ class TestDhanhq_Orders:
     @patch("dhanhq.dhanhq._get_request") #patching the helper here
     def test_get_order_by_id(self, mock_get_request, dhanhq_obj):
         order_id = "12345"
-        response = dhanhq_obj.get_order_by_id(order_id)
+        dhanhq_obj.get_order_by_id(order_id)
         mock_get_request.assert_called_once_with(f'/orders/{order_id}')
 
-    @patch("dhanhq.dhanhq._get_request") #patching the helper here
-    def test_get_order_by_correlationID(self, mock_get_request, dhanhq_obj):
-        correlationID = "12345"
-        response = dhanhq_obj.get_order_by_correlationID(correlationID)
-        mock_get_request.assert_called_once_with(f'/orders/external/{correlationID}')
+    @patch("dhanhq.dhanhq._get_request")
+    def test_get_order_by_correlation_id(self, mock_get_request, dhanhq_obj):
+        correlation_id = "12345"
+        dhanhq_obj.get_order_by_correlationID(correlation_id)
+        mock_get_request.assert_called_once_with(f'/orders/external/{correlation_id}')
 
     @patch("dhanhq.dhanhq._delete_request")
     def test_cancel_order_success(self, mock_delete_request, dhanhq_obj):
@@ -115,7 +117,7 @@ class TestDhanhq_Orders:
 
     @patch("dhanhq.dhanhq._post_request")
     def test_place_order_success(self,mock_post_request,dhanhq_obj):
-        endpoint = '/orders';
+        endpoint = '/orders'
         security_id = 1
         exchange_segment = "exchange_segment"
         transaction_type = "transaction_type"
@@ -132,7 +134,7 @@ class TestDhanhq_Orders:
 
     @patch("dhanhq.dhanhq._post_request")
     def test_place_slice_order_success(self,mock_post_request,dhanhq_obj):
-        endpoint = '/orders/slicing';
+        endpoint = '/orders/slicing'
         security_id = 1
         exchange_segment = "exchange_segment"
         transaction_type = "transaction_type"

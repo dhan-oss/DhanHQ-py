@@ -167,17 +167,17 @@ class dhanhq:
         """
         return self._get_request(f'/orders/{order_id}')
 
-    def get_order_by_correlationID(self, correlationID):
+    def get_order_by_correlationID(self, correlation_id):
         """
-        Retrieve the order status using a field called correlation ID.
+        Retrieve the order status using a field called correlation_id.
 
         Args:
-            corelationID (str): The correlation ID provided during order placement.
+            correlation_id (str): The correlation_id provided during order placement.
 
         Returns:
             dict: The response containing order status.
         """
-        return self._get_request(f'/orders/external/{correlationID}')
+        return self._get_request(f'/orders/external/{correlation_id}')
 
     def modify_order(self, order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity):
         """
@@ -260,7 +260,7 @@ class dhanhq:
         Sends a POST request to the Dhan HQ API and parses the response.
 
         Args:
-            url (str): The URL to send the request to.
+            endpoint (str): The endpoint of the URL to send the request to.
             payload (dict): The data to send in the request body.
 
         Returns:
@@ -334,8 +334,6 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-
-        payload = json_dumps(payload)
         return self._post_request('/orders', data=payload, headers=self.header, timeout=self.timeout)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
@@ -391,8 +389,6 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-
-        payload = json_dumps(payload)
         return self._post_request('/orders/slicing', data=payload, headers=self.header, timeout=self.timeout)
 
     def get_positions(self):
