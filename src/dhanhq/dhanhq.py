@@ -1,7 +1,7 @@
 """
     A class to interact with the DhanHQ APIs.
 
-    This library provides methods to manage orders, retrieve market data, 
+    This library provides methods to manage orders, retrieve market data,
     and perform various trading operations through the DhanHQ API.
 
     :copyright: (c) 2024 by Dhan.
@@ -54,7 +54,7 @@ class dhanhq:
     COMPACT_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master.csv'
     DETAILED_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master-detailed.csv'
 
-    
+
     def __init__(self, client_id, access_token, disable_ssl=False, pool=None):
         """
         Initialize the dhanhq class with client ID and access token.
@@ -122,6 +122,29 @@ class dhanhq:
             'data': data,
         }
 
+    def _get_request(self, endpoint):
+        """
+        This helper function handles the common get-request logic.
+        It takes the endpoint as an argument, making it reusable.
+
+        Args:
+            endpoint (String): Endpoint URL to request
+
+        Returns:
+            dict: The response containing order list status and data.
+        """
+        try:
+            url = self.base_url + endpoint
+            response = self.session.get(url, headers=self.header, timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>_make_get_request : %s', e)
+            return {
+                'status': 'failure',
+                'remarks': f'Exception in dhanhq>>_make_get_request : {e}',
+                'data': '',
+            }
+
     def get_order_list(self):
         """
         Retrieve a list of all orders requested in a day with their last updated status.
@@ -129,17 +152,8 @@ class dhanhq:
         Returns:
             dict: The response containing order list status and data.
         """
-        try:
-            url = self.base_url + '/orders'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_order_list : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': f'Exception in dhanhq>>get_order_list : {e}',
-                'data': '',
-            }
+        return self._get_request('/orders')
+
 
     def get_order_by_id(self, order_id):
         """
@@ -151,18 +165,8 @@ class dhanhq:
         Returns:
             dict: The response containing order details and status.
         """
-        try:
-            url = self.base_url + f'/orders/{order_id}'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_order_by_id : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': f'Exception in dhanhq>>get_order_by_id : {e}',
-                'data': '',
-            }
-        
+        return self._get_request(f'/orders/{order_id}')
+
     def get_order_by_correlationID(self, correlationID):
         """
         Retrieve the order status using a field called correlation ID.
@@ -173,17 +177,7 @@ class dhanhq:
         Returns:
             dict: The response containing order status.
         """
-        try:
-            url = self.base_url + f'/orders/external/{correlationID}'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_order_by_correlationID: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': ''
-            }
+        return self._get_request(f'/orders/external/{correlationID}')
 
     def modify_order(self, order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity):
         """
@@ -226,6 +220,29 @@ class dhanhq:
                 'data': '',
             }
 
+    def _delete_request(self, endpoint):
+        """
+        This helper function handles the common delete-request logic.
+        It takes the endpoint as an argument, making it reusable.
+
+        Args:
+            endpoint (String): Endpoint URL to request
+
+        Returns:
+            dict: The response containing delete action status and data, if any.
+        """
+        try:
+            url = self.base_url + endpoint
+            response = self.session.delete(url, headers=self.header, timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>cancel_order: %s', e)
+            return {
+                'status': 'failure',
+                'remarks': str(e),
+                'data': '',
+            }
+
     def cancel_order(self, order_id):
         """
         Cancel a pending order in the orderbook using the order ID.
@@ -236,17 +253,7 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the cancellation.
         """
-        try:
-            url = self.base_url + f'/orders/{order_id}'
-            response = self.session.delete(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>cancel_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        return self._delete_request(f'/orders/{order_id}')
 
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -314,7 +321,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-    
+
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                            order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
                            after_market_order=False, validity='DAY', amo_time='OPEN',
@@ -419,7 +426,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def convert_position(self, from_product_type, exchange_segment, position_type, security_id, convert_qty, to_product_type):
         """
         Convert Position from Intraday to Delivery or vice versa.
@@ -436,7 +443,7 @@ class dhanhq:
             dict: The response containing the status of the conversion.
         """
         try:
-            url = self.base_url + '/positions/convert' 
+            url = self.base_url + '/positions/convert'
             payload = {
                 "dhanClientId": self.client_id,
                 "fromProductType": from_product_type,
@@ -456,7 +463,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def place_forever(self, security_id, exchange_segment, transaction_type, product_type, order_type,
                       quantity, price, trigger_Price, order_flag="SINGLE", disclosed_quantity=0, validity='DAY',
                       price1=0, trigger_Price1=0, quantity1=0, tag=None, symbol=""):
@@ -518,7 +525,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def modify_forever(self, order_id, order_flag, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity,
                        validity):
         """
@@ -562,7 +569,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def cancel_forever(self, order_id):
         """Delete Forever orders using the order id of an order."""
         try:
@@ -576,7 +583,7 @@ class dhanhq:
                 'remarks': f'Exception in dhanhq>>forever_all : {e}',
                 'data': ''
             }
-        
+
     def get_forever(self):
         """Retrieve a list of all existing Forever Orders."""
         try:
@@ -590,7 +597,7 @@ class dhanhq:
                 'remarks': f'Exception in dhanhq>>forever_all : {e}',
                 'data': '',
             }
-        
+
     def generate_tpin(self):
         """
         Generate T-Pin on registered mobile number.
@@ -683,7 +690,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def kill_switch(self, action):
         """
         Control kill switch for user, which will disable trading for current trading day.
@@ -706,7 +713,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def get_fund_limits(self):
         """
         Get all information of your trading account like balance, margin utilized, collateral, etc.
@@ -725,7 +732,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def margin_calculator(self, security_id, exchange_segment, transaction_type, quantity, product_type, price, trigger_price=0):
         """
         Calculate the margin required for a trade based on the provided parameters.
@@ -768,7 +775,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def get_trade_book(self, order_id=None):
         """
         Retrieve a list of all trades executed in a day.
@@ -817,7 +824,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def ledger_report(self, from_date, to_date):
         """
         Retrieve the ledger details for a specific date range.
@@ -867,7 +874,7 @@ class dhanhq:
                 payload['interval'] = interval
             else:
                 raise Exception("interval value must be ['1','5','15','25','60']")
-            
+
             payload = json_dumps(payload)
             response = self.session.post(url, headers=self.header, timeout=self.timeout, data=payload)
             return self._parse_response(response)
@@ -919,7 +926,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def ticker_data(self, securities):
         """
         Retrieve the latest market price for specified instruments.
@@ -954,7 +961,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def ohlc_data(self, securities):
         """
         Retrieve the Open, High, Low and Close price along with LTP for specified instruments.
@@ -989,7 +996,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def quote_data(self, securities):
         """
         Retrieve full details including market depth, OHLC data, OI and volume along with LTP for specified instruments.
@@ -1024,7 +1031,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def fetch_security_list(self, mode='compact', filename='security_id_list.csv'):
         """
         Fetch CSV file from dhan based on the specified mode and save it to the current directory.
@@ -1055,7 +1062,7 @@ class dhanhq:
         except Exception as e:
             logging.error('Exception in dhanhq>>fetch_security_list: %s', e)
             return None
-        
+
     def option_chain(self, under_security_id, under_exchange_segment, expiry):
         """
         Retrieve the real-time Option Chain for a specified underlying instrument.
@@ -1092,7 +1099,7 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
-        
+
     def expiry_list(self, under_security_id, under_exchange_segment):
         """
         Retrieve the dates of all expiries for a specified underlying instrument.
@@ -1140,7 +1147,7 @@ class dhanhq:
         """
         IST = timezone(timedelta(hours=5, minutes=30))
         dt = datetime.fromtimestamp(epoch, IST)
-        
+
         if dt.time() == datetime.min.time():
             return dt.date()
         return dt
