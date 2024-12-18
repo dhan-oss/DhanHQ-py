@@ -165,13 +165,69 @@ class TestDhanhq_Orders:
     def test_modify_order_success(self,mock_update_request,dhanhq_obj):
         order_id = 123
         endpoint = f'/orders/{order_id}'
-        leg_name = "leg_name"
         quantity = 100
-        order_type = "order_type"
-        price = 123
-        trigger_price = 123
-        validity = "validity"
-        dhanhq_obj.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, trigger_price, validity)
+        price = 99
+        trigger_price = 100
+        dhanhq_obj.modify_order(order_id, "order_type", "leg_name", quantity, price,
+                                trigger_price, trigger_price, "validity")
         mock_update_request.assert_called_once()
         assert mock_update_request.call_args[0][0] == endpoint
+
+class TestDhanhq_Portfolio:
+    @patch("dhanhq.dhanhq._get_request")
+    def test_get_positions(self, mock_get_request, dhanhq_obj):
+        dhanhq_obj.get_positions()
+        mock_get_request.assert_called_once_with('/positions')
+
+    @patch("dhanhq.dhanhq._get_request")
+    def test_get_holdings(self, mock_get_request, dhanhq_obj):
+        dhanhq_obj.get_holdings()
+        mock_get_request.assert_called_once_with('/holdings')
+
+    @patch("dhanhq.dhanhq._post_request")
+    def test_convert_position(self, mock_post_request, dhanhq_obj):
+        dhanhq_obj.convert_position("from_product_type", "exchange_segment", "position_type", "security_id", "convert_qty", "to_product_type")
+        mock_post_request.assert_called_once()
+        assert mock_post_request.call_args[0][0] == '/positions/convert'
+
+    @pytest.mark.skip(reason="todo: implement this test")
+    def test_fund_limits(self):
+        pass
+
+class TestDhanhq_ForeverOrder:
+    @patch("dhanhq.dhanhq._get_request")
+    def test_get_forever(self,mock_get_request,dhanhq_obj):
+        dhanhq_obj.get_forever()
+        mock_get_request.assert_called_once_with('/forever/orders')
+
+    @patch("dhanhq.dhanhq._post_request")
+    def test_place_forever(self,mock_post_request, dhanhq_obj):
+        endpoint = '/forever/orders'
+        quantity = 100
+        price = 108
+        trigger_Price = 110
+        dhanhq_obj.place_forever("security_id", "exchange_segment", "transaction_type",
+                                 "product_type", "order_type", quantity, price, trigger_Price)
+        mock_post_request.assert_called_once()
+        assert mock_post_request.call_args[0][0] == endpoint
+
+    @patch("dhanhq.dhanhq._update_request")
+    def test_modify_forever(self, mock_update_request, dhanhq_obj):
+        order_id = 123
+        endpoint = f'/forever/orders/{order_id}'
+        quantity = 100
+        price = 108
+        trigger_price = 110
+        disclosed_quantity = 555
+        dhanhq_obj.modify_forever(order_id, "order_flag", "order_type", "leg_name",
+                                  quantity, price, trigger_price, disclosed_quantity,"validity")
+        mock_update_request.assert_called_once()
+        assert mock_update_request.call_args[0][0] == endpoint
+
+    @patch("dhanhq.dhanhq._delete_request")
+    def test_cancel_forever(self, mock_delete_request, dhanhq_obj):
+        order_id = "123"
+        endpoint = f'/forever/orders/{order_id}'
+        dhanhq_obj.cancel_forever(order_id)
+        mock_delete_request.assert_called_once_with(endpoint)
 

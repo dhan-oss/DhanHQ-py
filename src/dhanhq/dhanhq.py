@@ -259,7 +259,7 @@ class dhanhq:
         """
         return self._delete_request(f'/orders/{order_id}')
 
-    def _post_request(self, endpoint, payload, headers=None, timeout=None):
+    def _post_request(self, endpoint, payload):
         """
         Sends a POST request to the Dhan HQ API and parses the response.
 
@@ -274,7 +274,7 @@ class dhanhq:
         try:
             url = self.base_url + endpoint
             payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=headers, timeout=timeout)
+            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
             return self._parse_response(response)
         except Exception as e:
             logging.error('Exception in dhanhq: %s', e)
@@ -402,17 +402,7 @@ class dhanhq:
         Returns:
             dict: The response containing open positions.
         """
-        try:
-            url = self.base_url + f'/positions'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_positions: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        return self._get_request(f'/positions')
 
     def get_holdings(self):
         """
@@ -421,17 +411,7 @@ class dhanhq:
         Returns:
             dict: The response containing holdings data.
         """
-        try:
-            url = self.base_url + f'/holdings'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_holdings: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        return self._get_request(f'/holdings')
 
     def convert_position(self, from_product_type, exchange_segment, position_type, security_id, convert_qty, to_product_type):
         """
@@ -448,27 +428,17 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the conversion.
         """
-        try:
-            url = self.base_url + '/positions/convert'
-            payload = {
-                "dhanClientId": self.client_id,
-                "fromProductType": from_product_type,
-                "exchangeSegment": exchange_segment,
-                "positionType": position_type,
-                "securityId": security_id,
-                "convertQty": convert_qty,
-                "toProductType": to_product_type
-            }
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=self.header, timeout=self.timeout, data=payload)  # Changed to POST
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>convert_position: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = '/positions/convert'
+        payload = {
+            "dhanClientId": self.client_id,
+            "fromProductType": from_product_type,
+            "exchangeSegment": exchange_segment,
+            "positionType": position_type,
+            "securityId": security_id,
+            "convertQty": convert_qty,
+            "toProductType": to_product_type
+        }
+        return self._post_request(endpoint, payload)
 
     def place_forever(self, security_id, exchange_segment, transaction_type, product_type, order_type,
                       quantity, price, trigger_Price, order_flag="SINGLE", disclosed_quantity=0, validity='DAY',
@@ -497,43 +467,33 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the order placement.
         """
-        try:
-            url = self.base_url + '/forever/orders'
-            payload = {
-                "dhanClientId": self.client_id,
-                "orderFlag": order_flag,
-                "transactionType": transaction_type.upper(),
-                "exchangeSegment": exchange_segment.upper(),
-                "productType": product_type.upper(),
-                "orderType": order_type.upper(),
-                "validity": validity.upper(),
-                "tradingSymbol": symbol,
-                "securityId": security_id,
-                "quantity": int(quantity),
-                "disclosedQuantity": int(disclosed_quantity),
-                "price": float(price),
-                "triggerPrice": float(trigger_Price),
-                "price1": float(price1),
-                "triggerPrice1": float(trigger_Price1),
-                "quantity1": int(quantity1),
-            }
+        endpoint = '/forever/orders'
+        payload = {
+            "dhanClientId": self.client_id,
+            "orderFlag": order_flag,
+            "transactionType": transaction_type.upper(),
+            "exchangeSegment": exchange_segment.upper(),
+            "productType": product_type.upper(),
+            "orderType": order_type.upper(),
+            "validity": validity.upper(),
+            "tradingSymbol": symbol,
+            "securityId": security_id,
+            "quantity": int(quantity),
+            "disclosedQuantity": int(disclosed_quantity),
+            "price": float(price),
+            "triggerPrice": float(trigger_Price),
+            "price1": float(price1),
+            "triggerPrice1": float(trigger_Price1),
+            "quantity1": int(quantity1),
+        }
 
-            if tag != None and tag != '':
-                payload["correlationId"] = tag
+        if tag != None and tag != '':
+            payload["correlationId"] = tag
 
-            payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>forever_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        return self._post_request(endpoint, data=payload)
 
-    def modify_forever(self, order_id, order_flag, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity,
-                       validity):
+    def modify_forever(self, order_id, order_flag, order_type, leg_name,
+                       quantity, price, trigger_price, disclosed_quantity, validity):
         """
         Modify a forever order based on the specified leg name. The variables that can be modified include price, quantity, order type, and validity.
 
@@ -551,58 +511,30 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the modification.
         """
-        try:
-            url = self.base_url + f'/forever/orders/{order_id}'
-            payload = {
-                "dhanClientId": self.client_id,
-                "orderId": str(order_id),
-                "orderFlag": order_flag,
-                "orderType": order_type,
-                "legName": leg_name,
-                "quantity": quantity,
-                "price": price,
-                "disclosedQuantity": disclosed_quantity,
-                "triggerPrice": trigger_price,
-                "validity": validity
-            }
-            payload = json_dumps(payload)
-            response = self.session.put(url, headers=self.header, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>forever_modify: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/forever/orders/{order_id}'
+        payload = {
+            "dhanClientId": self.client_id,
+            "orderId": str(order_id),
+            "orderFlag": order_flag,
+            "orderType": order_type,
+            "legName": leg_name,
+            "quantity": quantity,
+            "price": price,
+            "disclosedQuantity": disclosed_quantity,
+            "triggerPrice": trigger_price,
+            "validity": validity
+        }
+        return self._update_request(endpoint,payload)
 
     def cancel_forever(self, order_id):
         """Delete Forever orders using the order id of an order."""
-        try:
-            url = self.base_url + f'/forever/orders/{order_id}'
-            response = self.session.delete(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>forever_delete: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': f'Exception in dhanhq>>forever_all : {e}',
-                'data': ''
-            }
+        endpoint = f'/forever/orders/{order_id}'
+        return self._delete_request(endpoint)
 
     def get_forever(self):
         """Retrieve a list of all existing Forever Orders."""
-        try:
-            url = self.base_url + '/forever/orders'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>forever_all : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': f'Exception in dhanhq>>forever_all : {e}',
-                'data': '',
-            }
+        endpoint = '/forever/orders'
+        return self._get_request(endpoint)
 
     def generate_tpin(self):
         """
