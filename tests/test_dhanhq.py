@@ -91,6 +91,18 @@ class TestDhanhq_Private_PostRequest:
         assert mock_session_post.call_args[1]['data'] == json_dumps(payload)
         assert response["status"] == "success"
 
+class TestDhanhq_Private_UpdateRequest:
+    @patch("requests.Session.put")
+    def test_get_request_success(self, mock_session_put, dhanhq_obj, mock_success_response):
+        endpoint = "/resource"
+        payload = {"one": "1","two":"2"}
+        mock_session_put.return_value = mock_success_response
+        response = dhanhq_obj._update_request(endpoint,payload)
+        mock_session_put.assert_called_once()
+        assert mock_session_put.call_args[0][0] == dhanhq_obj.base_url+endpoint
+        assert mock_session_put.call_args[1]['data'] == json_dumps(payload)
+        assert response["status"] == "success"
+
 class TestDhanhq_Orders:
     @patch("dhanhq.dhanhq._get_request") #patching the helper here
     def test_get_order_list_success(self, mock_get_request, dhanhq_obj):
@@ -148,3 +160,18 @@ class TestDhanhq_Orders:
                     bo_profit_value=None, bo_stop_loss_Value=None, tag=None)
         mock_post_request.assert_called_once()
         assert mock_post_request.call_args[0][0] == endpoint
+
+    @patch("dhanhq.dhanhq._update_request")
+    def test_modify_order_success(self,mock_update_request,dhanhq_obj):
+        order_id = 123
+        endpoint = f'/orders/{order_id}'
+        leg_name = "leg_name"
+        quantity = 100
+        order_type = "order_type"
+        price = 123
+        trigger_price = 123
+        validity = "validity"
+        dhanhq_obj.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, trigger_price, validity)
+        mock_update_request.assert_called_once()
+        assert mock_update_request.call_args[0][0] == endpoint
+

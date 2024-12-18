@@ -179,6 +179,20 @@ class dhanhq:
         """
         return self._get_request(f'/orders/external/{correlation_id}')
 
+    def _update_request(self, endpoint, payload, headers=None, timeout=None):
+        url = self.base_url + endpoint
+        try:
+            payload = json_dumps(payload)
+            response = self.session.put(url, data=payload, headers=self.header, timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>modify_order: %s', e)
+            return {
+                'status': 'failure',
+                'remarks': str(e),
+                'data': '',
+            }
+
     def modify_order(self, order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity):
         """
         Modify a pending order in the orderbook.
@@ -196,29 +210,19 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the modification.
         """
-        try:
-            url = self.base_url + f'/orders/{order_id}'
-            payload = {
-                "dhanClientId": self.client_id,
-                "orderId": str(order_id),
-                "orderType": order_type,
-                "legName": leg_name,
-                "quantity": quantity,
-                "price": price,
-                "disclosedQuantity": disclosed_quantity,
-                "triggerPrice": trigger_price,
-                "validity": validity
-            }
-            payload = json_dumps(payload)
-            response = self.session.put(url, headers=self.header, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>modify_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        payload = {
+            "dhanClientId": self.client_id,
+            "orderId": str(order_id),
+            "orderType": order_type,
+            "legName": leg_name,
+            "quantity": quantity,
+            "price": price,
+            "disclosedQuantity": disclosed_quantity,
+            "triggerPrice": trigger_price,
+            "validity": validity
+        }
+        return self._update_request(f'/orders/{order_id}', data=payload, headers=self.header, timeout=self.timeout)
+
 
     def _delete_request(self, endpoint):
         """

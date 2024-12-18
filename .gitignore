@@ -1,6 +1,8 @@
 # Local Environment Context
 __pycache__/
 dhanhq.egg-info/
+.idea/
 .vscode/
 .env/
+.venv/
 .python-version
