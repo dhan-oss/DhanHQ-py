@@ -255,6 +255,32 @@ class dhanhq:
         """
         return self._delete_request(f'/orders/{order_id}')
 
+    def _post_request(self, endpoint, payload, headers=None, timeout=None):
+        """
+        Sends a POST request to the Dhan HQ API and parses the response.
+
+        Args:
+            url (str): The URL to send the request to.
+            payload (dict): The data to send in the request body.
+
+        Returns:
+            dict: The parsed response from the API.
+        """
+
+        try:
+            url = self.base_url + endpoint
+            payload = json_dumps(payload)
+            response = self.session.post(url, data=payload, headers=headers, timeout=timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq: %s', e)
+            return {
+                'status': 'failure',
+                'remarks': str(e),
+                'data': '',
+            }
+
+
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
                     after_market_order=False, validity='DAY', amo_time='OPEN',
@@ -282,45 +308,35 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the order placement.
         """
-        try:
-            url = self.base_url + '/orders'
-            payload = {
-                "dhanClientId": self.client_id,
-                "transactionType": transaction_type.upper(),
-                "exchangeSegment": exchange_segment.upper(),
-                "productType": product_type.upper(),
-                "orderType": order_type.upper(),
-                "validity": validity.upper(),
-                "securityId": security_id,
-                "quantity": int(quantity),
-                "disclosedQuantity": int(disclosed_quantity),
-                "price": float(price),
-                "afterMarketOrder": after_market_order,
-                "boProfitValue": bo_profit_value,
-                "boStopLossValue": bo_stop_loss_Value
-            }
-            if tag is not None and tag != '':
-                payload["correlationId"] = tag
-            if after_market_order:
-                if amo_time in ['PRE_OPEN', 'OPEN', 'OPEN_30', 'OPEN_60']:
-                    payload['amoTime'] = amo_time
-                else:
-                    raise Exception("amo_time value must be ['PRE_OPEN','OPEN','OPEN_30','OPEN_60']")
-            if trigger_price > 0:
-                payload["triggerPrice"] = float(trigger_price)
-            elif trigger_price == 0:
-                payload["triggerPrice"] = 0.0
+        payload = {
+            "dhanClientId": self.client_id,
+            "transactionType": transaction_type.upper(),
+            "exchangeSegment": exchange_segment.upper(),
+            "productType": product_type.upper(),
+            "orderType": order_type.upper(),
+            "validity": validity.upper(),
+            "securityId": security_id,
+            "quantity": int(quantity),
+            "disclosedQuantity": int(disclosed_quantity),
+            "price": float(price),
+            "afterMarketOrder": after_market_order,
+            "boProfitValue": bo_profit_value,
+            "boStopLossValue": bo_stop_loss_Value
+        }
+        if tag is not None and tag != '':
+            payload["correlationId"] = tag
+        if after_market_order:
+            if amo_time in ['PRE_OPEN', 'OPEN', 'OPEN_30', 'OPEN_60']:
+                payload['amoTime'] = amo_time
+            else:
+                raise Exception("amo_time value must be ['PRE_OPEN','OPEN','OPEN_30','OPEN_60']")
+        if trigger_price > 0:
+            payload["triggerPrice"] = float(trigger_price)
+        elif trigger_price == 0:
+            payload["triggerPrice"] = 0.0
 
-            payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>place_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        payload = json_dumps(payload)
+        return self._post_request('/orders', data=payload, headers=self.header, timeout=self.timeout)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                            order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -349,45 +365,35 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the slice order placement.
         """
-        try:
-            url = self.base_url + '/orders/slicing'
-            payload = {
-                "dhanClientId": self.client_id,
-                "transactionType": transaction_type.upper(),
-                "exchangeSegment": exchange_segment.upper(),
-                "productType": product_type.upper(),
-                "orderType": order_type.upper(),
-                "validity": validity.upper(),
-                "securityId": security_id,
-                "quantity": int(quantity),
-                "disclosedQuantity": int(disclosed_quantity),
-                "price": float(price),
-                "afterMarketOrder": after_market_order,
-                "boProfitValue": bo_profit_value,
-                "boStopLossValue": bo_stop_loss_Value
-            }
-            if tag is not None and tag != '':
-                payload["correlationId"] = tag
-            if after_market_order:
-                if amo_time in ['OPEN', 'OPEN_30', 'OPEN_60']:
-                    payload['amoTime'] = amo_time
-                else:
-                    raise Exception("amo_time value must be ['OPEN','OPEN_30','OPEN_60']")
-            if trigger_price > 0:
-                payload["triggerPrice"] = float(trigger_price)
-            elif trigger_price == 0:
-                payload["triggerPrice"] = 0.0
+        payload = {
+            "dhanClientId": self.client_id,
+            "transactionType": transaction_type.upper(),
+            "exchangeSegment": exchange_segment.upper(),
+            "productType": product_type.upper(),
+            "orderType": order_type.upper(),
+            "validity": validity.upper(),
+            "securityId": security_id,
+            "quantity": int(quantity),
+            "disclosedQuantity": int(disclosed_quantity),
+            "price": float(price),
+            "afterMarketOrder": after_market_order,
+            "boProfitValue": bo_profit_value,
+            "boStopLossValue": bo_stop_loss_Value
+        }
+        if tag is not None and tag != '':
+            payload["correlationId"] = tag
+        if after_market_order:
+            if amo_time in ['OPEN', 'OPEN_30', 'OPEN_60']:
+                payload['amoTime'] = amo_time
+            else:
+                raise Exception("amo_time value must be ['OPEN','OPEN_30','OPEN_60']")
+        if trigger_price > 0:
+            payload["triggerPrice"] = float(trigger_price)
+        elif trigger_price == 0:
+            payload["triggerPrice"] = 0.0
 
-            payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>place_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        payload = json_dumps(payload)
+        return self._post_request('/orders/slicing', data=payload, headers=self.header, timeout=self.timeout)
 
     def get_positions(self):
         """
