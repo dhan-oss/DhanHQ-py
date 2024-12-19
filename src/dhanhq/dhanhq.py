@@ -122,7 +122,32 @@ class dhanhq:
             'data': data,
         }
 
-    def _get_request(self, endpoint):
+    def _create_request(self, endpoint, payload):
+        """
+        Sends a POST request to the Dhan HQ API and parses the response.
+
+        Args:
+            endpoint (str): The endpoint of the URL to send the request to.
+            payload (dict): The data to send in the request body.
+
+        Returns:
+            dict: The parsed response from the API.
+        """
+
+        try:
+            url = self.base_url + endpoint
+            payload = json_dumps(payload)
+            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq: %s', e)
+            return {
+                'status': 'failure',
+                'remarks': str(e),
+                'data': '',
+            }
+
+    def _read_request(self, endpoint):
         """
         This helper function handles the common get-request logic.
         It takes the endpoint as an argument, making it reusable.
@@ -145,40 +170,6 @@ class dhanhq:
                 'data': '',
             }
 
-    def get_order_list(self):
-        """
-        Retrieve a list of all orders requested in a day with their last updated status.
-
-        Returns:
-            dict: The response containing order list status and data.
-        """
-        return self._get_request('/orders')
-
-
-    def get_order_by_id(self, order_id):
-        """
-        Retrieve the details and status of an order from the orderbook placed during the day.
-
-        Args:
-            order_id (str): The ID of the order to retrieve.
-
-        Returns:
-            dict: The response containing order details and status.
-        """
-        return self._get_request(f'/orders/{order_id}')
-
-    def get_order_by_correlationID(self, correlation_id):
-        """
-        Retrieve the order status using a field called correlation_id.
-
-        Args:
-            correlation_id (str): The correlation_id provided during order placement.
-
-        Returns:
-            dict: The response containing order status.
-        """
-        return self._get_request(f'/orders/external/{correlation_id}')
-
     def _update_request(self, endpoint, payload, headers=None, timeout=None):
         url = self.base_url + endpoint
         try:
@@ -192,6 +183,63 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
+
+    def _delete_request(self, endpoint):
+        """
+        This helper function handles the common delete-request logic.
+        It takes the endpoint as an argument, making it reusable.
+
+        Args:
+            endpoint (String): Endpoint URL to request
+
+        Returns:
+            dict: The response containing delete action status and data, if any.
+        """
+        try:
+            url = self.base_url + endpoint
+            response = self.session.delete(url, headers=self.header, timeout=self.timeout)
+            return self._parse_response(response)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>cancel_order: %s', e)
+            return {
+                'status': 'failure',
+                'remarks': str(e),
+                'data': '',
+            }
+
+    def get_order_list(self):
+        """
+        Retrieve a list of all orders requested in a day with their last updated status.
+
+        Returns:
+            dict: The response containing order list status and data.
+        """
+        return self._read_request('/orders')
+
+
+    def get_order_by_id(self, order_id):
+        """
+        Retrieve the details and status of an order from the orderbook placed during the day.
+
+        Args:
+            order_id (str): The ID of the order to retrieve.
+
+        Returns:
+            dict: The response containing order details and status.
+        """
+        return self._read_request(f'/orders/{order_id}')
+
+    def get_order_by_correlationID(self, correlation_id):
+        """
+        Retrieve the order status using a field called correlation_id.
+
+        Args:
+            correlation_id (str): The correlation_id provided during order placement.
+
+        Returns:
+            dict: The response containing order status.
+        """
+        return self._read_request(f'/orders/external/{correlation_id}')
 
     def modify_order(self, order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity):
         """
@@ -224,29 +272,6 @@ class dhanhq:
         return self._update_request(f'/orders/{order_id}', data=payload, headers=self.header, timeout=self.timeout)
 
 
-    def _delete_request(self, endpoint):
-        """
-        This helper function handles the common delete-request logic.
-        It takes the endpoint as an argument, making it reusable.
-
-        Args:
-            endpoint (String): Endpoint URL to request
-
-        Returns:
-            dict: The response containing delete action status and data, if any.
-        """
-        try:
-            url = self.base_url + endpoint
-            response = self.session.delete(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>cancel_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
-
     def cancel_order(self, order_id):
         """
         Cancel a pending order in the orderbook using the order ID.
@@ -258,31 +283,6 @@ class dhanhq:
             dict: The response containing the status of the cancellation.
         """
         return self._delete_request(f'/orders/{order_id}')
-
-    def _post_request(self, endpoint, payload):
-        """
-        Sends a POST request to the Dhan HQ API and parses the response.
-
-        Args:
-            endpoint (str): The endpoint of the URL to send the request to.
-            payload (dict): The data to send in the request body.
-
-        Returns:
-            dict: The parsed response from the API.
-        """
-
-        try:
-            url = self.base_url + endpoint
-            payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
 
 
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
@@ -338,7 +338,7 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-        return self._post_request('/orders', data=payload, headers=self.header, timeout=self.timeout)
+        return self._create_request('/orders', data=payload, headers=self.header, timeout=self.timeout)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                            order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -393,7 +393,7 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-        return self._post_request('/orders/slicing', data=payload, headers=self.header, timeout=self.timeout)
+        return self._create_request('/orders/slicing', data=payload, headers=self.header, timeout=self.timeout)
 
     def get_positions(self):
         """
@@ -402,7 +402,7 @@ class dhanhq:
         Returns:
             dict: The response containing open positions.
         """
-        return self._get_request(f'/positions')
+        return self._read_request(f'/positions')
 
     def get_holdings(self):
         """
@@ -411,7 +411,7 @@ class dhanhq:
         Returns:
             dict: The response containing holdings data.
         """
-        return self._get_request(f'/holdings')
+        return self._read_request(f'/holdings')
 
     def convert_position(self, from_product_type, exchange_segment, position_type, security_id, convert_qty, to_product_type):
         """
@@ -438,7 +438,7 @@ class dhanhq:
             "convertQty": convert_qty,
             "toProductType": to_product_type
         }
-        return self._post_request(endpoint, payload)
+        return self._create_request(endpoint, payload)
 
     def place_forever(self, security_id, exchange_segment, transaction_type, product_type, order_type,
                       quantity, price, trigger_Price, order_flag="SINGLE", disclosed_quantity=0, validity='DAY',
@@ -490,7 +490,7 @@ class dhanhq:
         if tag != None and tag != '':
             payload["correlationId"] = tag
 
-        return self._post_request(endpoint, data=payload)
+        return self._create_request(endpoint, data=payload)
 
     def modify_forever(self, order_id, order_flag, order_type, leg_name,
                        quantity, price, trigger_price, disclosed_quantity, validity):
@@ -534,7 +534,7 @@ class dhanhq:
     def get_forever(self):
         """Retrieve a list of all existing Forever Orders."""
         endpoint = '/forever/orders'
-        return self._get_request(endpoint)
+        return self._read_request(endpoint)
 
     def generate_tpin(self):
         """

@@ -48,22 +48,22 @@ class TestDhanhq_Private_ParseResponse:
         assert parsed_response["remarks"]["error_type"] == "test_error"
         assert parsed_response["remarks"]["error_message"] == "test message"
 
-class TestDhanhq_Private_GetRequest:
+class TestDhanhq_Private_ReadRequest:
     @patch("requests.Session.get")
-    def test_get_request_success(self, mock_session_get, dhanhq_obj, mock_success_response):
+    def test_read_request_success(self, mock_session_get, dhanhq_obj, mock_success_response):
         endpoint = '/resource/123'
         mock_session_get.return_value = mock_success_response
-        response = dhanhq_obj._get_request(endpoint)
+        response = dhanhq_obj._read_request(endpoint)
         mock_session_get.assert_called_once()
         # args, _ = mock_session_get.call_args
         assert mock_session_get.call_args[0][0] == dhanhq_obj.base_url+endpoint # Check 1st arg to call having endpoint
         assert response["status"] == "success"
 
     @patch("requests.Session.get")
-    def test_get_request_exception(self, mock_session_get, dhanhq_obj):
+    def test_read_request_exception(self, mock_session_get, dhanhq_obj):
         endpoint = '/resource/123'
         mock_session_get.side_effect = Exception("Test exception")
-        response = dhanhq_obj._get_request(endpoint)
+        response = dhanhq_obj._read_request(endpoint)
         mock_session_get.assert_called_once()
         assert mock_session_get.call_args[0][0] == dhanhq_obj.base_url+endpoint
         assert response["status"] == "failure"
@@ -71,7 +71,7 @@ class TestDhanhq_Private_GetRequest:
 
 class TestDhanhq_Private_DeleteRequest:
     @patch("requests.Session.delete")
-    def test_get_request_success(self, mock_session_delete, dhanhq_obj, mock_success_response):
+    def test_read_request_success(self, mock_session_delete, dhanhq_obj, mock_success_response):
         endpoint = "/resource/123"
         mock_session_delete.return_value = mock_success_response
         response = dhanhq_obj._delete_request(endpoint)
@@ -79,13 +79,13 @@ class TestDhanhq_Private_DeleteRequest:
         assert mock_session_delete.call_args[0][0] == dhanhq_obj.base_url+endpoint
         assert response["status"] == "success"
 
-class TestDhanhq_Private_PostRequest:
+class TestDhanhq_Private_CreateRequest:
     @patch("requests.Session.post")
-    def test_get_request_success(self, mock_session_post, dhanhq_obj, mock_success_response):
+    def test_read_request_success(self, mock_session_post, dhanhq_obj, mock_success_response):
         endpoint = "/resource"
         payload = {"one": "1","two":"2"}
         mock_session_post.return_value = mock_success_response
-        response = dhanhq_obj._post_request(endpoint,payload)
+        response = dhanhq_obj._create_request(endpoint, payload)
         mock_session_post.assert_called_once() #_with(endpoint, json_dumps(payload))
         assert mock_session_post.call_args[0][0] == dhanhq_obj.base_url+endpoint
         assert mock_session_post.call_args[1]['data'] == json_dumps(payload)
@@ -93,7 +93,7 @@ class TestDhanhq_Private_PostRequest:
 
 class TestDhanhq_Private_UpdateRequest:
     @patch("requests.Session.put")
-    def test_get_request_success(self, mock_session_put, dhanhq_obj, mock_success_response):
+    def test_read_request_success(self, mock_session_put, dhanhq_obj, mock_success_response):
         endpoint = "/resource"
         payload = {"one": "1","two":"2"}
         mock_session_put.return_value = mock_success_response
@@ -104,22 +104,22 @@ class TestDhanhq_Private_UpdateRequest:
         assert response["status"] == "success"
 
 class TestDhanhq_Orders:
-    @patch("dhanhq.dhanhq._get_request") #patching the helper here
-    def test_get_order_list_success(self, mock_get_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._read_request") #patching the helper here
+    def test_get_order_list_success(self, mock_read_request, dhanhq_obj):
         dhanhq_obj.get_order_list()
-        mock_get_request.assert_called_once_with('/orders')
+        mock_read_request.assert_called_once_with('/orders')
 
-    @patch("dhanhq.dhanhq._get_request") #patching the helper here
-    def test_get_order_by_id(self, mock_get_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._read_request") #patching the helper here
+    def test_get_order_by_id(self, mock_read_request, dhanhq_obj):
         order_id = "12345"
         dhanhq_obj.get_order_by_id(order_id)
-        mock_get_request.assert_called_once_with(f'/orders/{order_id}')
+        mock_read_request.assert_called_once_with(f'/orders/{order_id}')
 
-    @patch("dhanhq.dhanhq._get_request")
-    def test_get_order_by_correlation_id(self, mock_get_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_order_by_correlation_id(self, mock_read_request, dhanhq_obj):
         correlation_id = "12345"
         dhanhq_obj.get_order_by_correlationID(correlation_id)
-        mock_get_request.assert_called_once_with(f'/orders/external/{correlation_id}')
+        mock_read_request.assert_called_once_with(f'/orders/external/{correlation_id}')
 
     @patch("dhanhq.dhanhq._delete_request")
     def test_cancel_order_success(self, mock_delete_request, dhanhq_obj):
@@ -127,8 +127,8 @@ class TestDhanhq_Orders:
         dhanhq_obj.cancel_order(order_id)
         mock_delete_request.assert_called_once_with(f'/orders/{order_id}')
 
-    @patch("dhanhq.dhanhq._post_request")
-    def test_place_order_success(self,mock_post_request,dhanhq_obj):
+    @patch("dhanhq.dhanhq._create_request")
+    def test_place_order_success(self,mock_create_request,dhanhq_obj):
         endpoint = '/orders'
         security_id = 1
         exchange_segment = "exchange_segment"
@@ -141,11 +141,11 @@ class TestDhanhq_Orders:
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
                     after_market_order=False, validity='DAY', amo_time='OPEN',
                     bo_profit_value=None, bo_stop_loss_Value=None, tag=None)
-        mock_post_request.assert_called_once()
-        assert mock_post_request.call_args[0][0] == endpoint
+        mock_create_request.assert_called_once()
+        assert mock_create_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhanhq._post_request")
-    def test_place_slice_order_success(self,mock_post_request,dhanhq_obj):
+    @patch("dhanhq.dhanhq._create_request")
+    def test_place_slice_order_success(self,mock_create_request,dhanhq_obj):
         endpoint = '/orders/slicing'
         security_id = 1
         exchange_segment = "exchange_segment"
@@ -158,8 +158,8 @@ class TestDhanhq_Orders:
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
                     after_market_order=False, validity='DAY', amo_time='OPEN',
                     bo_profit_value=None, bo_stop_loss_Value=None, tag=None)
-        mock_post_request.assert_called_once()
-        assert mock_post_request.call_args[0][0] == endpoint
+        mock_create_request.assert_called_once()
+        assert mock_create_request.call_args[0][0] == endpoint
 
     @patch("dhanhq.dhanhq._update_request")
     def test_modify_order_success(self,mock_update_request,dhanhq_obj):
@@ -174,42 +174,42 @@ class TestDhanhq_Orders:
         assert mock_update_request.call_args[0][0] == endpoint
 
 class TestDhanhq_Portfolio:
-    @patch("dhanhq.dhanhq._get_request")
-    def test_get_positions(self, mock_get_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_positions(self, mock_read_request, dhanhq_obj):
         dhanhq_obj.get_positions()
-        mock_get_request.assert_called_once_with('/positions')
+        mock_read_request.assert_called_once_with('/positions')
 
-    @patch("dhanhq.dhanhq._get_request")
-    def test_get_holdings(self, mock_get_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_holdings(self, mock_read_request, dhanhq_obj):
         dhanhq_obj.get_holdings()
-        mock_get_request.assert_called_once_with('/holdings')
+        mock_read_request.assert_called_once_with('/holdings')
 
-    @patch("dhanhq.dhanhq._post_request")
-    def test_convert_position(self, mock_post_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._create_request")
+    def test_convert_position(self, mock_create_request, dhanhq_obj):
         dhanhq_obj.convert_position("from_product_type", "exchange_segment", "position_type", "security_id", "convert_qty", "to_product_type")
-        mock_post_request.assert_called_once()
-        assert mock_post_request.call_args[0][0] == '/positions/convert'
+        mock_create_request.assert_called_once()
+        assert mock_create_request.call_args[0][0] == '/positions/convert'
 
     @pytest.mark.skip(reason="todo: implement this test")
     def test_fund_limits(self):
         pass
 
 class TestDhanhq_ForeverOrder:
-    @patch("dhanhq.dhanhq._get_request")
-    def test_get_forever(self,mock_get_request,dhanhq_obj):
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_forever(self,mock_read_request,dhanhq_obj):
         dhanhq_obj.get_forever()
-        mock_get_request.assert_called_once_with('/forever/orders')
+        mock_read_request.assert_called_once_with('/forever/orders')
 
-    @patch("dhanhq.dhanhq._post_request")
-    def test_place_forever(self,mock_post_request, dhanhq_obj):
+    @patch("dhanhq.dhanhq._create_request")
+    def test_place_forever(self,mock_create_request, dhanhq_obj):
         endpoint = '/forever/orders'
         quantity = 100
         price = 108
         trigger_Price = 110
         dhanhq_obj.place_forever("security_id", "exchange_segment", "transaction_type",
                                  "product_type", "order_type", quantity, price, trigger_Price)
-        mock_post_request.assert_called_once()
-        assert mock_post_request.call_args[0][0] == endpoint
+        mock_create_request.assert_called_once()
+        assert mock_create_request.call_args[0][0] == endpoint
 
     @patch("dhanhq.dhanhq._update_request")
     def test_modify_forever(self, mock_update_request, dhanhq_obj):
