@@ -1,5 +1,19 @@
 # Readme For Developers
 
+## Project structure 
+
+```text
+DhanHQ-py/
+├── src/
+│   └── dhanhq/
+│       └── __init__.py  # Important: Make your_package a proper package
+│       └── ...  # Your package code
+└── tests/
+    └── ...  # Your test files
+├── setup.py
+└── ... (other files)
+```
+
 ## Development Environment Setup
 
 Run through the following commands as shown below to set your local environment context:
@@ -10,8 +24,9 @@ pip --version
 pip list # To list installed packages
 pyenv version # check to see current python version is 3.9.2
 pyenv local 3.9.2 # automatically select whenever you are in the current directory (or its subdirectories)
-python3 -m venv .env
-source .env/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate # activate virtual environmant
+deactivate # to deactivate virtual environment
 pip list
 ```
 Your mileage may vary depending on your toolset choice. The example above shows `pyenv` and `venv` as choice of tools for this and `.gitignore` files is set to reflect this.
@@ -26,6 +41,21 @@ pytest --cache-clear -v # To clear caches in case of test issues because of cach
 pytest ./tests/test_dhanhq.py --cache-clear -v # To run all tests in specific test file
 pytest ./tests/test_dhanhq.py::TestDhanhq_GetOrderList --cache-clear -v To run specific group of tests in specific test file
 ```
+
+To deactivate virtual environment
+```python
+deactivate
+```
+
+## Do You Know?
+
+1. If you modify the `setup.py` file, 
+   you would do good to reinstall the package for development using command:
+    ```bash
+   pip install -e '.[dev]'
+    ```
+2. ..
+
 ## Steps to contribute to project
 
 - Fork repository to your Github account
