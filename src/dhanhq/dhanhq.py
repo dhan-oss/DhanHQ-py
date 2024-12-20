@@ -632,17 +632,8 @@ class dhanhq:
         Returns:
             dict: The response containing fund limits data.
         """
-        try:
-            url = self.base_url + f'/fundlimit'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_fund_limits: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/fundlimit'
+        return self._read_request(endpoint)
 
     def margin_calculator(self, security_id, exchange_segment, transaction_type, quantity, product_type, price, trigger_price=0):
         """
@@ -660,32 +651,23 @@ class dhanhq:
         Returns:
             dict: The response containing the margin calculation result.
         """
-        try:
-            url = self.base_url + f'/margincalculator'
-            payload = {
-                "dhanClientId": self.client_id,
-                "securityId": security_id,
-                "exchangeSegment": exchange_segment.upper(),
-                "transactionType": transaction_type.upper(),
-                "quantity": int(quantity),
-                "productType": product_type.upper(),
-                "price": float(price)
-            }
-            if trigger_price > 0:
-                payload["triggerPrice"] = float(trigger_price)
-            elif trigger_price == 0:
-                payload["triggerPrice"] = 0.0
+        endpoint = f'/margincalculator'
+        payload = {
+            "dhanClientId": self.client_id,
+            "securityId": security_id,
+            "exchangeSegment": exchange_segment.upper(),
+            "transactionType": transaction_type.upper(),
+            "quantity": int(quantity),
+            "productType": product_type.upper(),
+            "price": float(price)
+        }
+        #ToDo: Shouldn't price and trigger_price being float vlaues be rounded to 2 or 3 decimal places as precision??
+        if trigger_price > 0:
+            payload["triggerPrice"] = float(trigger_price)
+        elif trigger_price == 0:
+            payload["triggerPrice"] = 0.0
 
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=self.header, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>margin_calculator: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        return self._create_request(endpoint, payload)
 
     def get_trade_book(self, order_id=None):
         """

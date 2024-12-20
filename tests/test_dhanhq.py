@@ -268,8 +268,8 @@ class TestDhanhq_ElectronicDelivery:
     @patch("dhanhq.dhanhq._create_request")
     @patch("dhanhq.dhanhq._save_as_temp_html_file_and_open_in_browser")
     def test_open_browser_for_tpin_success(self, mock_save_and_open, mock_create_request, dhanhq_obj):
-        print(mock_create_request)
-        print(mock_save_and_open)
+        # print(mock_create_request)
+        # print(mock_save_and_open)
         mock_create_request.return_value = {
             'status': dhanhq.HTTP_RESPONSE_SUCCESS,
             'data': '{"edisFormHtml": "<html></html>"}'
@@ -303,3 +303,20 @@ class TestDhanhq_TraderControls:
         endpoint = f'/killswitch?killSwitchStatus={action.upper()}'
         dhanhq_obj.kill_switch(action)
         mock_post_request.assert_called_once_with(endpoint)
+
+class TestDhanhq_Funds:
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_fund_limits(self, mock_read_request, dhanhq_obj):
+        endpoint = f'/fundlimit'
+        dhanhq_obj.get_fund_limits()
+        mock_read_request.assert_called_once_with(endpoint)
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_margin_calculator(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/margincalculator'
+        quantity=100
+        price = 99.99
+        dhanhq_obj.margin_calculator("security_id", "exchange_segment", "transaction_type",
+                                     100, "product_type", price)
+        mock_create_request.assert_called_once()
+        assert mock_create_request.call_args[0][0] == endpoint
