@@ -320,3 +320,32 @@ class TestDhanhq_Funds:
                                      100, "product_type", price)
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint
+
+class TestDhanhq_Statement:
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_trade_book_without_orderid(self, mock_read_request, dhanhq_obj):
+        endpoint = f'/trades/'
+        dhanhq_obj.get_trade_book()
+        mock_read_request.assert_called_once_with(endpoint)
+
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_trade_book_with_orderid(self, mock_read_request, dhanhq_obj):
+        order_id = "order_id"
+        endpoint = f'/trades/{order_id}'
+        dhanhq_obj.get_trade_book(order_id)
+        mock_read_request.assert_called_once_with(endpoint)
+
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_trade_history(self, mock_read_request, dhanhq_obj):
+        from_date = "from_date"
+        to_date = "to_date"
+        page_number = "page_number"
+        endpoint = f'/trades/{from_date}/{to_date}/{page_number}'
+        dhanhq_obj.get_trade_history(from_date,to_date,page_number)
+        mock_read_request.assert_called_once_with(endpoint)
+
+
+    @patch("dhanhq.dhanhq._read_request")
+    def test_ledger_report(self, mock_read_request, dhanhq_obj):
+        pass
+

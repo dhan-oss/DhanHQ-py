@@ -679,20 +679,9 @@ class dhanhq:
         Returns:
             dict: The response containing trade book data.
         """
-        try:
-            if order_id is None:
-                url = self.base_url + f'/trades'
-            else:
-                url = self.base_url + f'/trades/{order_id}'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_trade_book: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        #ToDo: This is bad practice abusing REST principles. This should be broken into two different methods with appropriate REST convention-based URL.
+        endpoint = f'/trades/{order_id if order_id is not None else ""}'
+        return self._read_request(endpoint)
 
     def get_trade_history(self, from_date, to_date, page_number=0):
         """
@@ -706,17 +695,8 @@ class dhanhq:
         Returns:
             dict: The response containing trade history data.
         """
-        try:
-            url = self.base_url + f'/trades/{from_date}/{to_date}/{page_number}'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>get_trade_history: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/trades/{from_date}/{to_date}/{page_number}'
+        return self._read_request(endpoint)
 
     def ledger_report(self, from_date, to_date):
         """
