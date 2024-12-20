@@ -15,8 +15,17 @@ from pathlib import Path
 from webbrowser import open as web_open
 from datetime import datetime, timedelta, timezone
 
+
+
 class dhanhq:
     """DhanHQ Class to interact with REST APIs"""
+
+    """"Constants for HTTP Responses"""
+    OTP_SENT = 'OTP sent'
+
+    """Constants for HTTP Status Codes"""
+    HTTP_RESPONSE_SUCCESS = 'success'
+    HTTP_RESPONSE_FAILURE = 'failure'
 
     """Constants for Exchange Segment"""
     NSE = 'NSE_EQ'
@@ -86,7 +95,7 @@ class dhanhq:
 
     def _parse_response(self, response):
         """
-        Parse the API response.
+        Parse the API's string response to return a JSON as dict.
 
         Args:
             response (requests.Response): The response object from the API.
@@ -95,26 +104,22 @@ class dhanhq:
             dict: Parsed response containing status, remarks, and data.
         """
         try:
-            status = 'failure'
+            status = dhanhq.HTTP_RESPONSE_FAILURE
             remarks = ''
             data = ''
-            python_response = json_loads(response.content)
-            if response.status_code == 200:
-                status = 'success'
-                data = python_response
+            json_response = json_loads(response.content)
+            if (response.status_code >= 200) and (response.status_code <= 299):
+                status = dhanhq.HTTP_RESPONSE_SUCCESS
+                data = json_response
             else:
-                error_type = python_response.get('errorType')
-                error_code = python_response.get('errorCode')
-                error_message = python_response.get('errorMessage')
                 remarks = {
-                    'error_code': error_code,
-                    'error_type' : error_type,
-                    'error_message': error_message
+                    'error_code': (json_response.get('errorCode')),
+                    'error_type': (json_response.get('errorType')),
+                    'error_message': (json_response.get('errorMessage'))
                 }
-                data = python_response
         except Exception as e:
             logging.warning('Exception found in dhanhq>>find_error_code: %s', e)
-            status = 'failure'
+            status = dhanhq.HTTP_RESPONSE_FAILURE
             remarks = str(e)
         return {
             'status': status,
@@ -133,7 +138,6 @@ class dhanhq:
         Returns:
             dict: The parsed response from the API.
         """
-
         try:
             url = self.base_url + endpoint
             payload = json_dumps(payload)
@@ -206,6 +210,12 @@ class dhanhq:
                 'remarks': str(e),
                 'data': '',
             }
+
+    def _save_as_temp_html_file_and_open_in_browser(self, form_html):
+        temp_web_form_html = "temp_form.html"
+        with open(temp_web_form_html, "w") as f:
+            f.write(form_html)
+        web_open(Path.cwd().joinpath(temp_web_form_html).as_uri())
 
     def get_order_list(self):
         """
@@ -341,9 +351,9 @@ class dhanhq:
         return self._create_request('/orders', data=payload, headers=self.header, timeout=self.timeout)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
-                           order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
-                           after_market_order=False, validity='DAY', amo_time='OPEN',
-                           bo_profit_value=None, bo_stop_loss_Value=None, tag=None):
+                          order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
+                          after_market_order=False, validity='DAY', amo_time='OPEN',
+                          bo_profit_value=None, bo_stop_loss_Value=None, tag=None):
         """
         Place a new slice order in the Dhan account.
 
@@ -543,28 +553,16 @@ class dhanhq:
         Returns:
             dict: The response containing the status of T-Pin generation.
         """
-        try:
-            url = self.base_url + '/edis/tpin'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            if response.status_code == 202:
-                return {
-                    'status': 'success',
-                    'remarks': 'OTP sent',
-                    'data': ''
-                }
-            else:
-                return {
-                    'status': 'failure',
-                    'remarks': 'status code :' + str(response.status_code),
-                    'data': '',
-                }
-        except Exception as e:
-            logging.error('Exception in dhanhq>>generate_tpin : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = '/edis/tpin'
+        response = self._read_request(endpoint)
+        response['data'] = ''
+        #ToDo: This is inconsistent. If success then data should be set and not remarks field
+        if response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS:
+            response['remarks'] = dhanhq.OTP_SENT
+        else:
+            #ToDo: Why this redundant code here?
+            response['remarks'] = 'status code : ' + response['remarks']['error_code']
+        return response
 
     def open_browser_for_tpin(self, isin, qty, exchange, segment='EQ', bulk=False):
         """
@@ -580,32 +578,24 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the operation.
         """
-        try:
-            url = self.base_url + '/edis/form'
-            data = {
-                "isin": isin,
-                "qty": qty,
-                "exchange": exchange,
-                "segment": segment,
-                "bulk": bulk
-            }
-            data = json_dumps(data)
-            response = self.session.post(url, headers=self.header, data=data, timeout=self.timeout)
-            data = json_loads(response.content)
-            form_html = data['edisFormHtml']
-            form_html = form_html.replace('\\', '')
-            with open("temp_form.html", "w") as f:
-                f.write(form_html)
-            filename = f'file:\\\{Path.cwd()}\\temp_form.html'
-            web_open(filename)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>open_browser_for_tpin : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = '/edis/form'
+        payload = {
+            "isin": isin,
+            "qty": qty,
+            "exchange": exchange,
+            "segment": segment,
+            "bulk": bulk
+        }
+        response = self._create_request(endpoint, payload)
+        if response['status'] == dhanhq.HTTP_RESPONSE_FAILURE:
+            return response
+
+        data = json_loads(response['data'])
+        form_html = data['edisFormHtml'] #data['edisFormHtml']
+        form_html = form_html.replace('\\', '')
+        # print(form_html)
+        self._save_as_temp_html_file_and_open_in_browser(form_html)
+        return response
 
     def edis_inquiry(self, isin):
         """
@@ -617,17 +607,8 @@ class dhanhq:
         Returns:
             dict: The response containing inquiry results.
         """
-        try:
-            url = f'{self.base_url}/edis/inquire/{isin}'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>edis_inquiry : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/edis/inquire/{isin}'
+        return self._read_request(endpoint)
 
     def kill_switch(self, action):
         """
@@ -639,18 +620,10 @@ class dhanhq:
         Returns:
             dict: Status of Kill Switch for account.
         """
-        try:
-            action = action.upper()
-            url = f'{self.base_url}/killswitch?killSwitchStatus={action}'
-            response = self.session.post(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>kill_switch : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        action = action.upper()
+        endpoint = f'/killswitch?killSwitchStatus={action}'
+        #ToDo: This should have been an Update request aka HTTP-PUT and not HTTP-POST
+        return self._create_request(endpoint)
 
     def get_fund_limits(self):
         """

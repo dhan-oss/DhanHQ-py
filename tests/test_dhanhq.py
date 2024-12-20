@@ -1,11 +1,13 @@
 # import sys
+# print(sys.path)
+# If the output doesn't show .venv dir then the virtual env is not activated properly
+
 from json import dumps as json_dumps
 from unittest.mock import patch  # for mocking requests
 
 import pytest
 import requests
 
-# print(sys.path)
 from dhanhq.dhanhq import dhanhq
 
 
@@ -37,16 +39,36 @@ class TestDhanhq_Private_Constructor:
 
 class TestDhanhq_Private_ParseResponse:
     def test_parse_response_success_with_status_code_200(self, dhanhq_obj, mock_success_response):
-        parsed_response = dhanhq_obj._parse_response(mock_success_response)
-        assert parsed_response["status"] == "success"
-        assert parsed_response["remarks"] == ""
-        assert parsed_response["data"] == {"data": "some data"}
+        json_response = dhanhq_obj._parse_response(mock_success_response)
+        assert json_response["status"] == "success"
+        assert json_response["remarks"] == ""
+        assert json_response["data"] == {"data": "some data"}
+
+    def test_parse_response_success_with_status_code_299(self, dhanhq_obj, mock_success_response):
+        mock_success_response.status_code = 299
+        json_response = dhanhq_obj._parse_response(mock_success_response)
+        assert json_response["status"] == "success"
+        assert json_response["remarks"] == ""
+        assert json_response["data"] == {"data": "some data"}
 
     def test_parse_response_error_with_status_code_400(self, dhanhq_obj, mock_failure_response):
-        parsed_response = dhanhq_obj._parse_response(mock_failure_response)
-        assert parsed_response["status"] == "failure"
-        assert parsed_response["remarks"]["error_type"] == "test_error"
-        assert parsed_response["remarks"]["error_message"] == "test message"
+        json_response = dhanhq_obj._parse_response(mock_failure_response)
+        assert json_response["status"] == "failure"
+        assert json_response["remarks"]["error_type"] == "test_error"
+        assert json_response["remarks"]["error_message"] == "test message"
+        assert json_response["data"] == ""
+
+class TestDhanhq_Private_CreateRequest:
+    @patch("requests.Session.post")
+    def test_read_request_success(self, mock_session_post, dhanhq_obj, mock_success_response):
+        endpoint = "/resource"
+        payload = {"one": "1","two":"2"}
+        mock_session_post.return_value = mock_success_response
+        response = dhanhq_obj._create_request(endpoint, payload)
+        mock_session_post.assert_called_once() #_with(endpoint, json_dumps(payload))
+        assert mock_session_post.call_args[0][0] == dhanhq_obj.base_url+endpoint
+        assert mock_session_post.call_args[1]['data'] == json_dumps(payload)
+        assert response["status"] == "success"
 
 class TestDhanhq_Private_ReadRequest:
     @patch("requests.Session.get")
@@ -69,28 +91,6 @@ class TestDhanhq_Private_ReadRequest:
         assert response["status"] == "failure"
         assert "Test exception" in response["remarks"]
 
-class TestDhanhq_Private_DeleteRequest:
-    @patch("requests.Session.delete")
-    def test_read_request_success(self, mock_session_delete, dhanhq_obj, mock_success_response):
-        endpoint = "/resource/123"
-        mock_session_delete.return_value = mock_success_response
-        response = dhanhq_obj._delete_request(endpoint)
-        mock_session_delete.assert_called_once()
-        assert mock_session_delete.call_args[0][0] == dhanhq_obj.base_url+endpoint
-        assert response["status"] == "success"
-
-class TestDhanhq_Private_CreateRequest:
-    @patch("requests.Session.post")
-    def test_read_request_success(self, mock_session_post, dhanhq_obj, mock_success_response):
-        endpoint = "/resource"
-        payload = {"one": "1","two":"2"}
-        mock_session_post.return_value = mock_success_response
-        response = dhanhq_obj._create_request(endpoint, payload)
-        mock_session_post.assert_called_once() #_with(endpoint, json_dumps(payload))
-        assert mock_session_post.call_args[0][0] == dhanhq_obj.base_url+endpoint
-        assert mock_session_post.call_args[1]['data'] == json_dumps(payload)
-        assert response["status"] == "success"
-
 class TestDhanhq_Private_UpdateRequest:
     @patch("requests.Session.put")
     def test_read_request_success(self, mock_session_put, dhanhq_obj, mock_success_response):
@@ -101,6 +101,16 @@ class TestDhanhq_Private_UpdateRequest:
         mock_session_put.assert_called_once()
         assert mock_session_put.call_args[0][0] == dhanhq_obj.base_url+endpoint
         assert mock_session_put.call_args[1]['data'] == json_dumps(payload)
+        assert response["status"] == "success"
+
+class TestDhanhq_Private_DeleteRequest:
+    @patch("requests.Session.delete")
+    def test_read_request_success(self, mock_session_delete, dhanhq_obj, mock_success_response):
+        endpoint = "/resource/123"
+        mock_session_delete.return_value = mock_success_response
+        response = dhanhq_obj._delete_request(endpoint)
+        mock_session_delete.assert_called_once()
+        assert mock_session_delete.call_args[0][0] == dhanhq_obj.base_url+endpoint
         assert response["status"] == "success"
 
 class TestDhanhq_Orders:
@@ -231,3 +241,65 @@ class TestDhanhq_ForeverOrder:
         dhanhq_obj.cancel_forever(order_id)
         mock_delete_request.assert_called_once_with(endpoint)
 
+class TestDhanhq_ElectronicDelivery:
+    @patch("dhanhq.dhanhq._read_request")
+    def test_generate_tpin_for_success(self, mock_read_request, dhanhq_obj):
+        mock_read_request.return_value = { 'status': dhanhq.HTTP_RESPONSE_SUCCESS, 'remarks': '', 'data': '', }
+        json_response = dhanhq_obj.generate_tpin()
+        mock_read_request.assert_called_once_with('/edis/tpin')
+        assert json_response['remarks'] == dhanhq.OTP_SENT # ToDo: Ideally, response.data should be set so
+        assert json_response['data'] == ''
+
+    @patch("dhanhq.dhanhq._read_request")
+    def test_generate_tpin_for_failure(self, mock_read_request, dhanhq_obj):
+        mock_read_request.return_value = {
+            'status': dhanhq.HTTP_RESPONSE_FAILURE,
+            'remarks': {
+                    'error_code': 'HTPP500',
+                    'error_type': 'Internal Server Error',
+                    'error_message': 'HTPP500:Internal Server Error'
+                },
+            'data': '', }
+        json_response = dhanhq_obj.generate_tpin()
+        mock_read_request.assert_called_once_with('/edis/tpin')
+        assert json_response['remarks'].startswith('status code :')
+        assert json_response['data'] == ''
+
+    @patch("dhanhq.dhanhq._create_request")
+    @patch("dhanhq.dhanhq._save_as_temp_html_file_and_open_in_browser")
+    def test_open_browser_for_tpin_success(self, mock_save_and_open, mock_create_request, dhanhq_obj):
+        print(mock_create_request)
+        print(mock_save_and_open)
+        mock_create_request.return_value = {
+            'status': dhanhq.HTTP_RESPONSE_SUCCESS,
+            'data': '{"edisFormHtml": "<html></html>"}'
+        }
+        response = dhanhq_obj.open_browser_for_tpin('isin', 1, 'exchange')
+        assert response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        mock_save_and_open.assert_called_once()
+
+    @patch('dhanhq.dhanhq._create_request')
+    @patch("dhanhq.dhanhq._save_as_temp_html_file_and_open_in_browser")
+    def test_open_browser_for_tpin_failure(self, mock_save_and_open, mock_create_request, dhanhq_obj):
+        mock_create_request.return_value = {
+            'status': dhanhq.HTTP_RESPONSE_FAILURE,
+            'data': ''
+        }
+        response = dhanhq_obj.open_browser_for_tpin('isin', 1, 'exchange')
+        assert response['status'] == dhanhq.HTTP_RESPONSE_FAILURE
+        mock_save_and_open.assert_not_called()
+
+    @patch("dhanhq.dhanhq._read_request")
+    def test_edis_inquiry(self, mock_read_request, dhanhq_obj):
+        isin = "123"
+        endpoint = f'/edis/inquire/{isin}'
+        dhanhq_obj.edis_inquiry(isin)
+        mock_read_request.assert_called_once_with(endpoint)
+
+class TestDhanhq_TraderControls:
+    @patch("dhanhq.dhanhq._create_request")
+    def test_kill_switch(self, mock_post_request, dhanhq_obj):
+        action = "action"
+        endpoint = f'/killswitch?killSwitchStatus={action.upper()}'
+        dhanhq_obj.kill_switch(action)
+        mock_post_request.assert_called_once_with(endpoint)
