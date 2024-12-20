@@ -7,6 +7,7 @@ from unittest.mock import patch  # for mocking requests
 
 import pytest
 import requests
+from pandas.io.formats.format import return_docstring
 
 from dhanhq.dhanhq import dhanhq
 
@@ -14,6 +15,15 @@ from dhanhq.dhanhq import dhanhq
 @pytest.fixture
 def dhanhq_obj():
     return dhanhq("test_client_id", "test_access_token")
+
+@pytest.fixture
+def stub_http_request_header():
+    return {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'access-token': 'myaccesstoken',
+            'client-id': 'myclientid'
+        }
 
 @pytest.fixture
 def mock_success_response():
@@ -64,11 +74,25 @@ class TestDhanhq_Private_CreateRequest:
         endpoint = "/resource"
         payload = {"one": "1","two":"2"}
         mock_session_post.return_value = mock_success_response
-        response = dhanhq_obj._create_request(endpoint, payload)
+        json_response = dhanhq_obj._create_request(endpoint, payload)
         mock_session_post.assert_called_once() #_with(endpoint, json_dumps(payload))
         assert mock_session_post.call_args[0][0] == dhanhq_obj.base_url+endpoint
         assert mock_session_post.call_args[1]['data'] == json_dumps(payload)
-        assert response["status"] == "success"
+        assert json_response["status"] == "success"
+
+    @patch("requests.Session.post")
+    def test_read_request_success_with_set_headers(self, mock_session_post, dhanhq_obj, stub_http_request_header, mock_success_response):
+        endpoint = "/resource"
+        payload = {"one": "1","two":"2"}
+        mock_session_post.return_value = mock_success_response
+        json_response = dhanhq_obj._create_request(endpoint, payload, stub_http_request_header)
+        mock_session_post.assert_called_once() #_with(endpoint, json_dumps(payload))
+        assert mock_session_post.call_args[0][0] == dhanhq_obj.base_url+endpoint
+        assert mock_session_post.call_args[1]['headers'] == stub_http_request_header
+        assert mock_session_post.call_args[1]['data'] == json_dumps(payload)
+        assert json_response["status"] == "success"
+
+
 
 class TestDhanhq_Private_ReadRequest:
     @patch("requests.Session.get")
@@ -200,9 +224,11 @@ class TestDhanhq_Portfolio:
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == '/positions/convert'
 
-    @pytest.mark.skip(reason="todo: implement this test")
-    def test_fund_limits(self):
-        pass
+    # @pytest.mark.skip(reason="todo: implement this test")
+    @patch("dhanhq.dhanhq._read_request")
+    def test_get_fund_limits(self, mock_read_request, dhanhq_obj):
+        dhanhq_obj.get_fund_limits()
+        mock_read_request.assert_called_once_with('/fundlimit')
 
 class TestDhanhq_ForeverOrder:
     @patch("dhanhq.dhanhq._read_request")
@@ -347,5 +373,122 @@ class TestDhanhq_Statement:
 
     @patch("dhanhq.dhanhq._read_request")
     def test_ledger_report(self, mock_read_request, dhanhq_obj):
-        pass
+        from_date = "from_date"
+        to_date = "to_date"
+        endpoint = f'/ledger?from-date={from_date}&to-date={to_date}'
+        dhanhq_obj.ledger_report(from_date,to_date)
+        mock_read_request.assert_called_once_with(endpoint)
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_intraday_minute_data(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/charts/intraday'
+        security_id="security_id"
+        exchange_segment="exchange_segment"
+        instrument_type="instrument_type"
+        from_date="from_date"
+        to_date="to_date"
+        mock_create_request.return_value = { 'status': dhanhq.HTTP_RESPONSE_SUCCESS }
+        json_response = dhanhq_obj.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date)
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        mock_create_request.assert_called_once()
+        assert mock_create_request.call_args[0][0] == endpoint
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_intraday_minute_data_fails_for_bad_interval_input(self, mock_create_request, dhanhq_obj):
+        security_id="security_id"
+        exchange_segment="exchange_segment"
+        instrument_type="instrument_type"
+        from_date="from_date"
+        to_date="to_date"
+        interval=100
+        json_response = dhanhq_obj.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date, interval)
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_FAILURE
+        mock_create_request.assert_not_called()
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_historical_daily_data(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/charts/historical'
+        security_id='security_id'
+        exchange_segment='exchange_segment'
+        instrument_type='instrument_type'
+        from_date="from_date"
+        to_date="to_date"
+        mock_create_request.return_value = {'status': dhanhq.HTTP_RESPONSE_SUCCESS}
+        json_response = dhanhq_obj.historical_daily_data(security_id, exchange_segment, instrument_type, from_date, to_date)
+        mock_create_request.assert_called_once()
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        assert mock_create_request.call_args[0][0] == endpoint
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_historical_daily_data_fails_for_bad_expiry_code(self, mock_create_request, dhanhq_obj):
+        security_id='security_id'
+        exchange_segment='exchange_segment'
+        instrument_type='instrument_type'
+        from_date="from_date"
+        to_date="to_date"
+        bad_expiry_code=99
+        json_response = dhanhq_obj.historical_daily_data(security_id, exchange_segment, instrument_type, from_date, to_date,bad_expiry_code)
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_FAILURE
+        mock_create_request.assert_not_called()
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_ticker_data(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/marketfeed/ltp'
+        securities = {
+            'exchange_segment1': 'security_id1',
+            'exchange_segment2': 'security_id2'
+        }
+        mock_create_request.return_value = {'status': dhanhq.HTTP_RESPONSE_SUCCESS}
+        json_response = dhanhq_obj.ticker_data(securities)
+        mock_create_request.assert_called_once()
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        assert mock_create_request.call_args[0][0] == endpoint
+        assert mock_create_request.call_args[0][1] == securities
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_ohlc_data(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/marketfeed/ohlc'
+        securities = {
+            'exchange_segment1': 'security_id1',
+            'exchange_segment2': 'security_id2'
+        }
+        mock_create_request.return_value = {'status': dhanhq.HTTP_RESPONSE_SUCCESS}
+        json_response = dhanhq_obj.ohlc_data(securities)
+        mock_create_request.assert_called_once()
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        assert mock_create_request.call_args[0][0] == endpoint
+        assert mock_create_request.call_args[0][1] == securities
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_quote_data(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/marketfeed/quote'
+        securities = {
+            'exchange_segment1': 'security_id1',
+            'exchange_segment2': 'security_id2'
+        }
+        mock_create_request.return_value = {'status': dhanhq.HTTP_RESPONSE_SUCCESS}
+        json_response = dhanhq_obj.quote_data(securities)
+        mock_create_request.assert_called_once()
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        assert mock_create_request.call_args[0][0] == endpoint
+        assert mock_create_request.call_args[0][1] == securities
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_option_chain(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/optionchain'
+        mock_create_request.return_value = {'status': dhanhq.HTTP_RESPONSE_SUCCESS}
+        json_response = dhanhq_obj.option_chain("under_security_id", "under_exchange_segment", "expiry")
+        mock_create_request.assert_called_once()
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        assert mock_create_request.call_args[0][0] == endpoint
+
+
+    @patch("dhanhq.dhanhq._create_request")
+    def test_expiry_list(self, mock_create_request, dhanhq_obj):
+        endpoint = f'/optionchain/expirylist'
+        mock_create_request.return_value = {'status': dhanhq.HTTP_RESPONSE_SUCCESS}
+        json_response = dhanhq_obj.expiry_list("under_security_id", "under_exchange_segment")
+        mock_create_request.assert_called_once()
+        assert json_response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS
+        assert mock_create_request.call_args[0][0] == endpoint
 

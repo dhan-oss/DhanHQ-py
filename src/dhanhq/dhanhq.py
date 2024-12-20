@@ -127,7 +127,7 @@ class dhanhq:
             'data': data,
         }
 
-    def _create_request(self, endpoint, payload):
+    def _create_request(self, endpoint, payload, headers=None, timeout=None):
         """
         Sends a POST request to the Dhan HQ API and parses the response.
 
@@ -138,10 +138,14 @@ class dhanhq:
         Returns:
             dict: The parsed response from the API.
         """
+        if headers is None:
+            headers = self.header
+        if timeout is None:
+            timeout = self.timeout
         try:
             url = self.base_url + endpoint
             payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=self.header, timeout=self.timeout)
+            response = self.session.post(url, data=payload, headers=headers, timeout=timeout)
             return self._parse_response(response)
         except Exception as e:
             logging.error('Exception in dhanhq: %s', e)
@@ -709,17 +713,8 @@ class dhanhq:
         Returns:
             dict: The response containing ledger details data.
         """
-        try:
-            url = self.base_url + f'/ledger?from-date={from_date}&to-date={to_date}'
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>ledger_report: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/ledger?from-date={from_date}&to-date={to_date}'
+        return self._read_request(endpoint)
 
     def intraday_minute_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, interval=1):
         """
@@ -733,31 +728,25 @@ class dhanhq:
         Returns:
             dict: The response containing intraday minute data.
         """
-        try:
-            url = self.base_url + f'/charts/intraday'
-            payload = {
-                'securityId': security_id,
-                'exchangeSegment': exchange_segment,
-                'instrument': instrument_type,
-                'interval': interval,
-                'fromDate': from_date,
-                'toDate': to_date
-            }
-            if interval in [1, 5, 15, 25, 60]:
-                payload['interval'] = interval
-            else:
-                raise Exception("interval value must be ['1','5','15','25','60']")
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=self.header, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>intraday_minute_data: %s', e)
+        if interval not in [1, 5, 15, 25, 60]:
+            # Raising and catching an exception in same method is bad practice. Replaced it with this clean code
+            err = "interval value must be ['1','5','15','25','60']"
+            logging.error('Exception in dhanhq>>intraday_minute_data: %s', err)
             return {
                 'status': 'failure',
-                'remarks': str(e),
+                'remarks': err,
                 'data': '',
             }
+        endpoint = f'/charts/intraday'
+        payload = {
+            'securityId': security_id,
+            'exchangeSegment': exchange_segment,
+            'instrument': instrument_type,
+            'interval': interval,
+            'fromDate': from_date,
+            'toDate': to_date
+        }
+        return self._create_request(endpoint,payload)
 
     def historical_daily_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, expiry_code=0):
         """
@@ -774,31 +763,25 @@ class dhanhq:
         Returns:
             dict: The response containing historical daily data.
         """
-        try:
-            url = self.base_url + f'/charts/historical'
-            payload = {
-                "securityId": security_id,
-                "exchangeSegment": exchange_segment,
-                "instrument": instrument_type,
-                "expiryCode": expiry_code,
-                "fromDate": from_date,
-                "toDate": to_date
-            }
-            if expiry_code in [0, 1, 2, 3]:
-                payload['expiryCode'] = expiry_code
-            else:
-                raise Exception("expiry_code value must be ['0','1','2','3']")
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=self.header, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>intraday_history_minute_charts: %s', e)
+        if expiry_code not in [0, 1, 2, 3]:
+            # Raising and catching an exception in same method is bad practice. Replaced it with this clean code
+            err = "expiry_code value must be ['0','1','2','3']"
+            logging.error('Exception in dhanhq>>intraday_history_minute_charts: %s', err)
             return {
                 'status': 'failure',
-                'remarks': str(e),
+                'remarks': err,
                 'data': '',
             }
+        endpoint = f'/charts/historical'
+        payload = {
+            "securityId": security_id,
+            "exchangeSegment": exchange_segment,
+            "instrument": instrument_type,
+            "expiryCode": expiry_code,
+            "fromDate": from_date,
+            "toDate": to_date
+        }
+        return self._create_request(endpoint,payload)
 
     def ticker_data(self, securities):
         """
@@ -814,26 +797,15 @@ class dhanhq:
         Returns:
             dict: The response containing last traded price (LTP) data.
         """
-        try:
-            url = self.base_url + f'/marketfeed/ltp'
-            payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'access-token': self.access_token,
-                'client-id': self.client_id
-            }
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=headers, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>ticker_data: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/marketfeed/ltp'
+        payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'access-token': self.access_token,
+            'client-id': self.client_id
+        }
+        return self._create_request(endpoint,payload,headers)
 
     def ohlc_data(self, securities):
         """
@@ -849,26 +821,15 @@ class dhanhq:
         Returns:
             dict: The response containing Open, High, Low and Close along with LTP data.
         """
-        try:
-            url = self.base_url + f'/marketfeed/ohlc'
-            payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'access-token': self.access_token,
-                'client-id': self.client_id
-            }
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=headers, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>ohlc_data: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/marketfeed/ohlc'
+        payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'access-token': self.access_token,
+            'client-id': self.client_id
+        }
+        return self._create_request(endpoint,payload,headers)
 
     def quote_data(self, securities):
         """
@@ -884,26 +845,15 @@ class dhanhq:
         Returns:
             dict: The response containing full packet including market depth, last trade, circuit limit, OHLC, OI and volume data.
         """
-        try:
-            url = self.base_url + f'/marketfeed/quote'
-            payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'access-token': self.access_token,
-                'client-id': self.client_id
-            }
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=headers, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>quote_data: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/marketfeed/quote'
+        payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'access-token': self.access_token,
+            'client-id': self.client_id
+        }
+        return self._create_request(endpoint, payload, headers)
 
     def fetch_security_list(self, mode='compact', filename='security_id_list.csv'):
         """
@@ -948,30 +898,19 @@ class dhanhq:
         Returns:
             dict: The response containing Open Interest (OI), Greeks, Volume, Last Traded Price, Best Bid/Ask, and Implied Volatility (IV) across all strikes for the specified underlying.
         """
-        try:
-            url = self.base_url + f'/optionchain'
-            payload = {
-                "UnderlyingScrip": under_security_id,
-                "UnderlyingSeg": under_exchange_segment,
-                "Expiry": expiry
-            }
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'access-token': self.access_token,
-                'client-id': self.client_id
-            }
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=headers, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>option_chain: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/optionchain'
+        payload = {
+            "UnderlyingScrip": under_security_id,
+            "UnderlyingSeg": under_exchange_segment,
+            "Expiry": expiry
+        }
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'access-token': self.access_token,
+            'client-id': self.client_id
+        }
+        return self._create_request(endpoint, payload, headers)
 
     def expiry_list(self, under_security_id, under_exchange_segment):
         """
@@ -984,29 +923,18 @@ class dhanhq:
         Returns:
             dict: The response containing list of dates for which option expiries are present for the specified underlying instrument.
         """
-        try:
-            url = self.base_url + f'/optionchain/expirylist'
-            payload = {
-                "UnderlyingScrip": under_security_id,
-                "UnderlyingSeg": under_exchange_segment
-            }
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'access-token': self.access_token,
-                'client-id': self.client_id
-            }
-
-            payload = json_dumps(payload)
-            response = self.session.post(url, headers=headers, timeout=self.timeout, data=payload)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>expiry_list: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+        endpoint = f'/optionchain/expirylist'
+        payload = {
+            "UnderlyingScrip": under_security_id,
+            "UnderlyingSeg": under_exchange_segment
+        }
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'access-token': self.access_token,
+            'client-id': self.client_id
+        }
+        return self._create_request(endpoint, payload, headers)
 
     def convert_to_date_time(self, epoch):
         """
