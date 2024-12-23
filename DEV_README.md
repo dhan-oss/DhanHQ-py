@@ -37,6 +37,16 @@ pip install -e '.[dev]'
 pip list
 flake8 ./dhanhq/ # To run linting manually on the python code
 pytest -v --flake8 # Run unit tests
+```
+
+The nextime when you enter this directory to gear-up your dev-env, all you got to do is just run the script below: 
+```bash
+source ./init-dev-env.sh
+```
+
+To run your unit tests, you can try any of the following:
+```bash
+pyt # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this file.
 pytest --cache-clear -v # To clear caches in case of test issues because of cacheing
 pytest ./tests/test_dhanhq.py --cache-clear -v # To run all tests in specific test file
 pytest ./tests/test_dhanhq.py::TestDhanhq_GetOrderList --cache-clear -v To run specific group of tests in specific test file
