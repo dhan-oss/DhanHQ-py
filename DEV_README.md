@@ -49,7 +49,7 @@ To run your unit tests, you can try any of the following:
 pyt # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this file.
 pytest --cache-clear -v # To clear caches in case of test issues because of cacheing
 pytest ./tests/test_dhanhq.py --cache-clear -v # To run all tests in specific test file
-pytest ./tests/test_dhanhq.py::TestDhanhq_GetOrderList --cache-clear -v To run specific group of tests in specific test file
+pytest ./tests/test_dhanhq.py::TestDhanhq_GetOrderList --cache-clear -v # To run specific group of tests in specific test file
 ```
 
 To deactivate virtual environment

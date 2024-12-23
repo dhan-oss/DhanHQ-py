@@ -15,6 +15,7 @@ from pathlib import Path
 from webbrowser import open as web_open
 from datetime import datetime, timedelta, timezone
 
+from dhanhq import DhanHTTP
 
 
 class dhanhq:
@@ -22,10 +23,6 @@ class dhanhq:
 
     """"Constants for HTTP Responses"""
     OTP_SENT = 'OTP sent'
-
-    """Constants for HTTP Status Codes"""
-    HTTP_RESPONSE_SUCCESS = 'success'
-    HTTP_RESPONSE_FAILURE = 'failure'
 
     """Constants for Exchange Segment"""
     NSE = 'NSE_EQ'
@@ -64,156 +61,8 @@ class dhanhq:
     DETAILED_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master-detailed.csv'
 
 
-    def __init__(self, client_id, access_token, disable_ssl=False, pool=None):
-        """
-        Initialize the dhanhq class with client ID and access token.
-
-        Args:
-            client_id (str): The client ID for the trading account.
-            access_token (str): The access token for API authentication.
-            disable_ssl (bool): Flag to disable SSL verification.
-            pool (dict): Optional connection pool settings.
-        """
-        try:
-            self.client_id = str(client_id)
-            self.access_token = access_token
-            self.base_url = 'https://api.dhan.co/v2'
-            self.timeout = 60
-            self.header = {
-                'access-token': access_token,
-                'Content-type': 'application/json',
-                'Accept': 'application/json'
-            }
-            self.disable_ssl = disable_ssl
-            requests.packages.urllib3.util.connection.HAS_IPV6 = False
-            self.session = requests.Session()
-            if pool:
-                reqadapter = requests.adapters.HTTPAdapter(**pool)
-                self.session.mount("https://", reqadapter)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>init : %s', e)
-
-    def _parse_response(self, response):
-        """
-        Parse the API's string response to return a JSON as dict.
-
-        Args:
-            response (requests.Response): The response object from the API.
-
-        Returns:
-            dict: Parsed response containing status, remarks, and data.
-        """
-        try:
-            status = dhanhq.HTTP_RESPONSE_FAILURE
-            remarks = ''
-            data = ''
-            json_response = json_loads(response.content)
-            if (response.status_code >= 200) and (response.status_code <= 299):
-                status = dhanhq.HTTP_RESPONSE_SUCCESS
-                data = json_response
-            else:
-                remarks = {
-                    'error_code': (json_response.get('errorCode')),
-                    'error_type': (json_response.get('errorType')),
-                    'error_message': (json_response.get('errorMessage'))
-                }
-        except Exception as e:
-            logging.warning('Exception found in dhanhq>>find_error_code: %s', e)
-            status = dhanhq.HTTP_RESPONSE_FAILURE
-            remarks = str(e)
-        return {
-            'status': status,
-            'remarks': remarks,
-            'data': data,
-        }
-
-    def _create_request(self, endpoint, payload, headers=None, timeout=None):
-        """
-        Sends a POST request to the Dhan HQ API and parses the response.
-
-        Args:
-            endpoint (str): The endpoint of the URL to send the request to.
-            payload (dict): The data to send in the request body.
-
-        Returns:
-            dict: The parsed response from the API.
-        """
-        if headers is None:
-            headers = self.header
-        if timeout is None:
-            timeout = self.timeout
-        try:
-            url = self.base_url + endpoint
-            payload = json_dumps(payload)
-            response = self.session.post(url, data=payload, headers=headers, timeout=timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
-
-    def _read_request(self, endpoint):
-        """
-        This helper function handles the common get-request logic.
-        It takes the endpoint as an argument, making it reusable.
-
-        Args:
-            endpoint (String): Endpoint URL to request
-
-        Returns:
-            dict: The response containing order list status and data.
-        """
-        try:
-            url = self.base_url + endpoint
-            response = self.session.get(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>_make_get_request : %s', e)
-            return {
-                'status': 'failure',
-                'remarks': f'Exception in dhanhq>>_make_get_request : {e}',
-                'data': '',
-            }
-
-    def _update_request(self, endpoint, payload, headers=None, timeout=None):
-        url = self.base_url + endpoint
-        try:
-            payload = json_dumps(payload)
-            response = self.session.put(url, data=payload, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>modify_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
-
-    def _delete_request(self, endpoint):
-        """
-        This helper function handles the common delete-request logic.
-        It takes the endpoint as an argument, making it reusable.
-
-        Args:
-            endpoint (String): Endpoint URL to request
-
-        Returns:
-            dict: The response containing delete action status and data, if any.
-        """
-        try:
-            url = self.base_url + endpoint
-            response = self.session.delete(url, headers=self.header, timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in dhanhq>>cancel_order: %s', e)
-            return {
-                'status': 'failure',
-                'remarks': str(e),
-                'data': '',
-            }
+    def __init__(self, dhan_context):
+        self.dhan_http = dhan_context.get_dhan_http()
 
     def _save_as_temp_html_file_and_open_in_browser(self, form_html):
         temp_web_form_html = "temp_form.html"
@@ -228,7 +77,7 @@ class dhanhq:
         Returns:
             dict: The response containing order list status and data.
         """
-        return self._read_request('/orders')
+        return self.dhan_http.get('/orders')
 
 
     def get_order_by_id(self, order_id):
@@ -241,7 +90,7 @@ class dhanhq:
         Returns:
             dict: The response containing order details and status.
         """
-        return self._read_request(f'/orders/{order_id}')
+        return self.dhan_http.get(f'/orders/{order_id}')
 
     def get_order_by_correlationID(self, correlation_id):
         """
@@ -253,7 +102,7 @@ class dhanhq:
         Returns:
             dict: The response containing order status.
         """
-        return self._read_request(f'/orders/external/{correlation_id}')
+        return self.dhan_http.get(f'/orders/external/{correlation_id}')
 
     def modify_order(self, order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity):
         """
@@ -273,7 +122,6 @@ class dhanhq:
             dict: The response containing the status of the modification.
         """
         payload = {
-            "dhanClientId": self.client_id,
             "orderId": str(order_id),
             "orderType": order_type,
             "legName": leg_name,
@@ -283,7 +131,7 @@ class dhanhq:
             "triggerPrice": trigger_price,
             "validity": validity
         }
-        return self._update_request(f'/orders/{order_id}', data=payload, headers=self.header, timeout=self.timeout)
+        return self.dhan_http.put(f'/orders/{order_id}', data=payload)
 
 
     def cancel_order(self, order_id):
@@ -296,7 +144,7 @@ class dhanhq:
         Returns:
             dict: The response containing the status of the cancellation.
         """
-        return self._delete_request(f'/orders/{order_id}')
+        return self.dhan_http.delete(f'/orders/{order_id}')
 
 
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
@@ -327,7 +175,6 @@ class dhanhq:
             dict: The response containing the status of the order placement.
         """
         payload = {
-            "dhanClientId": self.client_id,
             "transactionType": transaction_type.upper(),
             "exchangeSegment": exchange_segment.upper(),
             "productType": product_type.upper(),
@@ -352,7 +199,7 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-        return self._create_request('/orders', data=payload, headers=self.header, timeout=self.timeout)
+        return self.dhan_http.post('/orders', data=payload)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                           order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -382,7 +229,6 @@ class dhanhq:
             dict: The response containing the status of the slice order placement.
         """
         payload = {
-            "dhanClientId": self.client_id,
             "transactionType": transaction_type.upper(),
             "exchangeSegment": exchange_segment.upper(),
             "productType": product_type.upper(),
@@ -407,7 +253,7 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-        return self._create_request('/orders/slicing', data=payload, headers=self.header, timeout=self.timeout)
+        return self.dhan_http.post('/orders/slicing', data=payload)
 
     def get_positions(self):
         """
@@ -416,7 +262,7 @@ class dhanhq:
         Returns:
             dict: The response containing open positions.
         """
-        return self._read_request(f'/positions')
+        return self.dhan_http.get(f'/positions')
 
     def get_holdings(self):
         """
@@ -425,7 +271,7 @@ class dhanhq:
         Returns:
             dict: The response containing holdings data.
         """
-        return self._read_request(f'/holdings')
+        return self.dhan_http.get(f'/holdings')
 
     def convert_position(self, from_product_type, exchange_segment, position_type, security_id, convert_qty, to_product_type):
         """
@@ -444,7 +290,6 @@ class dhanhq:
         """
         endpoint = '/positions/convert'
         payload = {
-            "dhanClientId": self.client_id,
             "fromProductType": from_product_type,
             "exchangeSegment": exchange_segment,
             "positionType": position_type,
@@ -452,7 +297,7 @@ class dhanhq:
             "convertQty": convert_qty,
             "toProductType": to_product_type
         }
-        return self._create_request(endpoint, payload)
+        return self.dhan_http.post(endpoint, payload)
 
     def place_forever(self, security_id, exchange_segment, transaction_type, product_type, order_type,
                       quantity, price, trigger_Price, order_flag="SINGLE", disclosed_quantity=0, validity='DAY',
@@ -483,7 +328,6 @@ class dhanhq:
         """
         endpoint = '/forever/orders'
         payload = {
-            "dhanClientId": self.client_id,
             "orderFlag": order_flag,
             "transactionType": transaction_type.upper(),
             "exchangeSegment": exchange_segment.upper(),
@@ -504,7 +348,7 @@ class dhanhq:
         if tag != None and tag != '':
             payload["correlationId"] = tag
 
-        return self._create_request(endpoint, data=payload)
+        return self.dhan_http.post(endpoint, data=payload)
 
     def modify_forever(self, order_id, order_flag, order_type, leg_name,
                        quantity, price, trigger_price, disclosed_quantity, validity):
@@ -527,7 +371,6 @@ class dhanhq:
         """
         endpoint = f'/forever/orders/{order_id}'
         payload = {
-            "dhanClientId": self.client_id,
             "orderId": str(order_id),
             "orderFlag": order_flag,
             "orderType": order_type,
@@ -538,17 +381,17 @@ class dhanhq:
             "triggerPrice": trigger_price,
             "validity": validity
         }
-        return self._update_request(endpoint,payload)
+        return self.dhan_http.put(endpoint, payload)
 
     def cancel_forever(self, order_id):
         """Delete Forever orders using the order id of an order."""
         endpoint = f'/forever/orders/{order_id}'
-        return self._delete_request(endpoint)
+        return self.dhan_http.delete(endpoint)
 
     def get_forever(self):
         """Retrieve a list of all existing Forever Orders."""
         endpoint = '/forever/orders'
-        return self._read_request(endpoint)
+        return self.dhan_http.get(endpoint)
 
     def generate_tpin(self):
         """
@@ -558,10 +401,10 @@ class dhanhq:
             dict: The response containing the status of T-Pin generation.
         """
         endpoint = '/edis/tpin'
-        response = self._read_request(endpoint)
+        response = self.dhan_http.get(endpoint)
         response['data'] = ''
         #ToDo: This is inconsistent. If success then data should be set and not remarks field
-        if response['status'] == dhanhq.HTTP_RESPONSE_SUCCESS:
+        if response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value:
             response['remarks'] = dhanhq.OTP_SENT
         else:
             #ToDo: Why this redundant code here?
@@ -590,8 +433,8 @@ class dhanhq:
             "segment": segment,
             "bulk": bulk
         }
-        response = self._create_request(endpoint, payload)
-        if response['status'] == dhanhq.HTTP_RESPONSE_FAILURE:
+        response = self.dhan_http.post(endpoint, payload)
+        if response['status'] == DhanHTTP.HttpResponseStatus.FAILURE.value:
             return response
 
         data = json_loads(response['data'])
@@ -612,7 +455,7 @@ class dhanhq:
             dict: The response containing inquiry results.
         """
         endpoint = f'/edis/inquire/{isin}'
-        return self._read_request(endpoint)
+        return self.dhan_http.get(endpoint)
 
     def kill_switch(self, action):
         """
@@ -627,7 +470,7 @@ class dhanhq:
         action = action.upper()
         endpoint = f'/killswitch?killSwitchStatus={action}'
         #ToDo: This should have been an Update request aka HTTP-PUT and not HTTP-POST
-        return self._create_request(endpoint)
+        return self.dhan_http.post(endpoint)
 
     def get_fund_limits(self):
         """
@@ -637,7 +480,7 @@ class dhanhq:
             dict: The response containing fund limits data.
         """
         endpoint = f'/fundlimit'
-        return self._read_request(endpoint)
+        return self.dhan_http.get(endpoint)
 
     def margin_calculator(self, security_id, exchange_segment, transaction_type, quantity, product_type, price, trigger_price=0):
         """
@@ -657,7 +500,6 @@ class dhanhq:
         """
         endpoint = f'/margincalculator'
         payload = {
-            "dhanClientId": self.client_id,
             "securityId": security_id,
             "exchangeSegment": exchange_segment.upper(),
             "transactionType": transaction_type.upper(),
@@ -671,7 +513,7 @@ class dhanhq:
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
 
-        return self._create_request(endpoint, payload)
+        return self.dhan_http.post(endpoint, payload)
 
     def get_trade_book(self, order_id=None):
         """
@@ -685,7 +527,7 @@ class dhanhq:
         """
         #ToDo: This is bad practice abusing REST principles. This should be broken into two different methods with appropriate REST convention-based URL.
         endpoint = f'/trades/{order_id if order_id is not None else ""}'
-        return self._read_request(endpoint)
+        return self.dhan_http.get(endpoint)
 
     def get_trade_history(self, from_date, to_date, page_number=0):
         """
@@ -700,7 +542,7 @@ class dhanhq:
             dict: The response containing trade history data.
         """
         endpoint = f'/trades/{from_date}/{to_date}/{page_number}'
-        return self._read_request(endpoint)
+        return self.dhan_http.get(endpoint)
 
     def ledger_report(self, from_date, to_date):
         """
@@ -714,7 +556,7 @@ class dhanhq:
             dict: The response containing ledger details data.
         """
         endpoint = f'/ledger?from-date={from_date}&to-date={to_date}'
-        return self._read_request(endpoint)
+        return self.dhan_http.get(endpoint)
 
     def intraday_minute_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, interval=1):
         """
@@ -746,7 +588,7 @@ class dhanhq:
             'fromDate': from_date,
             'toDate': to_date
         }
-        return self._create_request(endpoint,payload)
+        return self.dhan_http.post(endpoint, payload)
 
     def historical_daily_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, expiry_code=0):
         """
@@ -781,7 +623,7 @@ class dhanhq:
             "fromDate": from_date,
             "toDate": to_date
         }
-        return self._create_request(endpoint,payload)
+        return self.dhan_http.post(endpoint, payload)
 
     def ticker_data(self, securities):
         """
@@ -799,13 +641,7 @@ class dhanhq:
         """
         endpoint = f'/marketfeed/ltp'
         payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'access-token': self.access_token,
-            'client-id': self.client_id
-        }
-        return self._create_request(endpoint,payload,headers)
+        return self.dhan_http.post(endpoint, payload)
 
     def ohlc_data(self, securities):
         """
@@ -823,13 +659,7 @@ class dhanhq:
         """
         endpoint = f'/marketfeed/ohlc'
         payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'access-token': self.access_token,
-            'client-id': self.client_id
-        }
-        return self._create_request(endpoint,payload,headers)
+        return self.dhan_http.post(endpoint, payload)
 
     def quote_data(self, securities):
         """
@@ -847,13 +677,7 @@ class dhanhq:
         """
         endpoint = f'/marketfeed/quote'
         payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'access-token': self.access_token,
-            'client-id': self.client_id
-        }
-        return self._create_request(endpoint, payload, headers)
+        return self.dhan_http.post(endpoint, payload)
 
     def fetch_security_list(self, mode='compact', filename='security_id_list.csv'):
         """
@@ -904,13 +728,7 @@ class dhanhq:
             "UnderlyingSeg": under_exchange_segment,
             "Expiry": expiry
         }
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'access-token': self.access_token,
-            'client-id': self.client_id
-        }
-        return self._create_request(endpoint, payload, headers)
+        return self.dhan_http.post(endpoint, payload)
 
     def expiry_list(self, under_security_id, under_exchange_segment):
         """
@@ -928,13 +746,7 @@ class dhanhq:
             "UnderlyingScrip": under_security_id,
             "UnderlyingSeg": under_exchange_segment
         }
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'access-token': self.access_token,
-            'client-id': self.client_id
-        }
-        return self._create_request(endpoint, payload, headers)
+        return self.dhan_http.post(endpoint, payload)
 
     def convert_to_date_time(self, epoch):
         """
