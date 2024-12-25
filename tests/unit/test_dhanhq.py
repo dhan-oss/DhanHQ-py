@@ -223,13 +223,13 @@ class TestDhanhq_TraderControls:
 class TestDhanhq_Funds:
     @patch("dhanhq.dhan_http.DhanHTTP.get")
     def test_get_fund_limits(self, mock_read_request, dhanhq_obj):
-        endpoint = f'/fundlimit'
+        endpoint = '/fundlimit'
         dhanhq_obj.get_fund_limits()
         mock_read_request.assert_called_once_with(endpoint)
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_margin_calculator(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/margincalculator'
+        endpoint = '/margincalculator'
         quantity=100
         price = 99.99
         dhanhq_obj.margin_calculator("security_id", "exchange_segment", "transaction_type",
@@ -240,7 +240,7 @@ class TestDhanhq_Funds:
 class TestDhanhq_Statement:
     @patch("dhanhq.dhan_http.DhanHTTP.get")
     def test_get_trade_book_without_orderid(self, mock_read_request, dhanhq_obj):
-        endpoint = f'/trades/'
+        endpoint = '/trades/'
         dhanhq_obj.get_trade_book()
         mock_read_request.assert_called_once_with(endpoint)
 
@@ -323,7 +323,7 @@ class TestDhanhq_Statement:
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_ticker_data(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/marketfeed/ltp'
+        endpoint = '/marketfeed/ltp'
         securities = {
             'exchange_segment1': 'security_id1',
             'exchange_segment2': 'security_id2'
@@ -337,7 +337,7 @@ class TestDhanhq_Statement:
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_ohlc_data(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/marketfeed/ohlc'
+        endpoint = '/marketfeed/ohlc'
         securities = {
             'exchange_segment1': 'security_id1',
             'exchange_segment2': 'security_id2'
@@ -351,7 +351,7 @@ class TestDhanhq_Statement:
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_quote_data(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/marketfeed/quote'
+        endpoint = '/marketfeed/quote'
         securities = {
             'exchange_segment1': 'security_id1',
             'exchange_segment2': 'security_id2'
@@ -365,7 +365,7 @@ class TestDhanhq_Statement:
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_option_chain(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/optionchain'
+        endpoint = '/optionchain'
         mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
         json_response = dhanhq_obj.option_chain("under_security_id", "under_exchange_segment", "expiry")
         mock_create_request.assert_called_once()
@@ -375,7 +375,7 @@ class TestDhanhq_Statement:
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_expiry_list(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/optionchain/expirylist'
+        endpoint = '/optionchain/expirylist'
         mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
         json_response = dhanhq_obj.expiry_list("under_security_id", "under_exchange_segment")
         mock_create_request.assert_called_once()
