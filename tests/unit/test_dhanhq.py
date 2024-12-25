@@ -13,20 +13,6 @@ def dhanhq_obj():
     dhan_context = DhanContext("test_client_id", "test_access_token")
     return dhanhq(dhan_context)
 
-# @pytest.fixture
-# def mock_success_response():
-#     mock_response = requests.Response()
-#     mock_response.status_code = 200
-#     mock_response._content = b'{"data": "some data"}'
-#     return mock_response
-#
-# @pytest.fixture
-# def mock_failure_response():
-#     mock_response = requests.Response()
-#     mock_response.status_code = 400
-#     mock_response._content = b'{"errorType": "test_error", "errorMessage": "test message"}'
-#     return mock_response
-
 class TestDhanhq_Orders:
     @patch("dhanhq.dhan_http.DhanHTTP.get")
     def test_get_order_list_success(self, mock_read_request, dhanhq_obj):

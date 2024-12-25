@@ -23,6 +23,7 @@ INSTALL_REQUIRES = [
 
 TEST_SUITE="tests"
 TEST_REQUIRES = [
+    "python-dotenv>=1.0.1",
     "flake8>=7.1.1",
     "pylint>=3.3.3",
     "pytest>=8.3.4",

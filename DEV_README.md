@@ -39,17 +39,31 @@ flake8 ./dhanhq/ # To run linting manually on the python code
 pytest -v --flake8 # Run unit tests
 ```
 
-The nextime when you enter this directory to gear-up your dev-env, all you got to do is just run the script below: 
+**Important:** Also, rename the file `test.env.sample` to `test.env` and add your credentials - `client-id` and `access-token` to it, for your integration tests to run.
+
+The next time when you enter this directory to gear-up your dev-env, all you got to do is just run the script below: 
 ```bash
 source ./init-dev-env.sh
 ```
 
-To run your unit tests, you can try any of the following:
+To run your unit tests only, you can try any of the following:
 ```bash
-pyt # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this file.
-pytest --cache-clear -v # To clear caches in case of test issues because of cacheing
+pytu # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this file.
+pytest tests/unit --cache-clear -s # To clear caches in case of test issues because of cacheing
 pytest ./tests/test_dhanhq.py --cache-clear -v # To run all tests in specific test file
 pytest ./tests/test_dhanhq.py::TestDhanhq_GetOrderList --cache-clear -v # To run specific group of tests in specific test file
+```
+
+To run your integration tests only, you can try any of the following:
+```bash
+pyti # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this file.
+pytest tests/integration --cache-clear -s # To clear caches in case of test issues because of cacheing
+```
+
+To run both unit and integration tests, you can try any of the following:
+```bash
+pyt # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this file.
+pytest --cache-clear -s
 ```
 
 To deactivate virtual environment

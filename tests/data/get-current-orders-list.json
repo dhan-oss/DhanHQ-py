@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": [
+    {
+      "dhanClientId": "string",
+      "orderId": "string",
+      "exchangeOrderId": "string",
+      "correlationId": "string",
+      "orderStatus": "TRANSIT",
+      "transactionType": "BUY",
+      "exchangeSegment": "NSE_EQ",
+      "productType": "CNC",
+      "orderType": "LIMIT",
+      "validity": "DAY",
+      "tradingSymbol": "string",
+      "securityId": "string",
+      "quantity": 0,
+      "disclosedQuantity": 0,
+      "price": 0,
+      "triggerPrice": 0,
+      "afterMarketOrder": true,
+      "boProfitValue": 0,
+      "boStopLossValue": 0,
+      "legName": "ENTRY_LEG",
+      "createTime": "string",
+      "updateTime": "string",
+      "exchangeTime": "string",
+      "drvExpiryDate": "string",
+      "drvOptionType": "CALL",
+      "drvStrikePrice": 0,
+      "omsErrorCode": "string",
+      "omsErrorDescription": "string",
+      "algoId": "string",
+      "remainingQuantity": 0,
+      "averageTradedPrice": 0,
+      "filledQty": 0
+    }
+  ]
+}
