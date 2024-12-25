@@ -381,4 +381,3 @@ class TestDhanhq_Statement:
         mock_create_request.assert_called_once()
         assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
         assert mock_create_request.call_args[0][0] == endpoint
-
