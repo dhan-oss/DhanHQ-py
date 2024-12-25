@@ -23,6 +23,7 @@ INSTALL_REQUIRES = [
 
 TEST_SUITE="tests"
 TEST_REQUIRES = [
+    "pylint>=3.3.3",
     "pytest>=8.3.4",
     "responses>=0.25.3",
     ]
