@@ -7,3 +7,4 @@ __pycache__/
 .venv/
 .python-version
 .test.env
+.coverage

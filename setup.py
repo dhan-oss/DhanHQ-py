@@ -27,6 +27,7 @@ TEST_REQUIRES = [
     "flake8>=7.1.1",
     "pylint>=3.3.3",
     "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
     "responses>=0.25.3",
     ]
 
