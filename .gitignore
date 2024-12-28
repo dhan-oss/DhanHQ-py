@@ -9,3 +9,6 @@ __pycache__/
 .test.env
 .coverage
 .todo
+
+# Temp ignore
+*.toml

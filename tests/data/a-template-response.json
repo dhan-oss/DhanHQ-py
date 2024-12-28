@@ -1,5 +1,5 @@
 {
-  "status": "status",
-  "remarks": "remarks",
-  "data": "data"
+  "status": "success",
+  "remarks": "",
+  "data": {}
 }

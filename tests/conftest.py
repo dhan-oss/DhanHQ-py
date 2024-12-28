@@ -2,6 +2,9 @@ import os
 import pytest
 from dotenv import load_dotenv
 
+from dhanhq import DhanContext, dhanhq
+
+
 # Load environment variables from .test.env file
 load_dotenv('.test.env')
 
@@ -16,3 +19,8 @@ def api_client_id_fixture():
 @pytest.fixture
 def api_access_token_fixture():
     return API_ACCESS_TOKEN
+
+@pytest.fixture
+def dhanhq_fixture(api_client_id_fixture, api_access_token_fixture):
+    dhan_context = DhanContext(api_client_id_fixture, api_access_token_fixture)
+    return dhanhq(dhan_context)

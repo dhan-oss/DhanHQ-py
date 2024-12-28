@@ -131,7 +131,7 @@ class dhanhq:
             "triggerPrice": trigger_price,
             "validity": validity
         }
-        return self.dhan_http.put(f'/orders/{order_id}', data=payload)
+        return self.dhan_http.put(f'/orders/{order_id}', payload)
 
 
     def cancel_order(self, order_id):
@@ -199,7 +199,7 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-        return self.dhan_http.post('/orders', data=payload)
+        return self.dhan_http.post('/orders', payload)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                           order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -253,7 +253,7 @@ class dhanhq:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
             payload["triggerPrice"] = 0.0
-        return self.dhan_http.post('/orders/slicing', data=payload)
+        return self.dhan_http.post('/orders/slicing', payload)
 
     def get_positions(self):
         """
@@ -348,7 +348,7 @@ class dhanhq:
         if tag != None and tag != '':
             payload["correlationId"] = tag
 
-        return self.dhan_http.post(endpoint, data=payload)
+        return self.dhan_http.post(endpoint, payload)
 
     def modify_forever(self, order_id, order_flag, order_type, leg_name,
                        quantity, price, trigger_price, disclosed_quantity, validity):

@@ -1,0 +1,8 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": {
+    "orderId": "string",
+    "orderStatus": "TRANSIT"
+  }
+}
