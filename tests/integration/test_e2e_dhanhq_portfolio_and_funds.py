@@ -46,4 +46,3 @@ class TestE2E_Dhanhq_Funds:
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
-
