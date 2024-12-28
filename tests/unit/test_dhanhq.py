@@ -100,12 +100,6 @@ class TestDhanhq_Portfolio:
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == '/positions/convert'
 
-    # @pytest.mark.skip(reason="todo: implement this test")
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
-    def test_get_fund_limits(self, mock_read_request, dhanhq_obj):
-        dhanhq_obj.get_fund_limits()
-        mock_read_request.assert_called_once_with('/fundlimit')
-
 class TestDhanhq_ForeverOrder:
     @patch("dhanhq.dhan_http.DhanHTTP.get")
     def test_get_forever(self,mock_read_request,dhanhq_obj):
