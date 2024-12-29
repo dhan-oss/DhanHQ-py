@@ -8,6 +8,7 @@ exclude =
     __pycache__,
     dhanhq.egg-info,
     examples,
+    tests,
     setup.py,
 ignore = E201,E231
 select = E,W,F,N,C
