@@ -1,5 +1,5 @@
 """
-    A class to interact with the DhanHQ APIs.
+    A class that has core DhanHQ APIs.
 
     This library provides methods to manage orders, retrieve market data,
     and perform various trading operations through the DhanHQ API.
@@ -9,17 +9,18 @@
 """
 
 import logging
-import requests
-from json import loads as json_loads, dumps as json_dumps
+from datetime import datetime, timedelta, timezone
+from json import loads as json_loads
 from pathlib import Path
 from webbrowser import open as web_open
-from datetime import datetime, timedelta, timezone
+
+import requests
 
 from dhanhq import DhanHTTP
 
 
 class dhanhq:
-    """DhanHQ Class to interact with REST APIs"""
+    """DhanHQ Class having Core APIs"""
 
     """"Constants for HTTP Responses"""
     OTP_SENT = 'OTP sent'
@@ -60,7 +61,6 @@ class dhanhq:
     COMPACT_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master.csv'
     DETAILED_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master-detailed.csv'
 
-
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
@@ -78,7 +78,6 @@ class dhanhq:
             dict: The response containing order list status and data.
         """
         return self.dhan_http.get('/orders')
-
 
     def get_order_by_id(self, order_id):
         """
@@ -104,7 +103,8 @@ class dhanhq:
         """
         return self.dhan_http.get(f'/orders/external/{correlation_id}')
 
-    def modify_order(self, order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity):
+    def modify_order(self, order_id, order_type, leg_name, quantity,
+                     price, trigger_price, disclosed_quantity, validity):
         """
         Modify a pending order in the orderbook.
 
@@ -133,7 +133,6 @@ class dhanhq:
         }
         return self.dhan_http.put(f'/orders/{order_id}', payload)
 
-
     def cancel_order(self, order_id):
         """
         Cancel a pending order in the orderbook using the order ID.
@@ -145,7 +144,6 @@ class dhanhq:
             dict: The response containing the status of the cancellation.
         """
         return self.dhan_http.delete(f'/orders/{order_id}')
-
 
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -262,7 +260,7 @@ class dhanhq:
         Returns:
             dict: The response containing open positions.
         """
-        return self.dhan_http.get(f'/positions')
+        return self.dhan_http.get('/positions')
 
     def get_holdings(self):
         """
@@ -271,9 +269,10 @@ class dhanhq:
         Returns:
             dict: The response containing holdings data.
         """
-        return self.dhan_http.get(f'/holdings')
+        return self.dhan_http.get('/holdings')
 
-    def convert_position(self, from_product_type, exchange_segment, position_type, security_id, convert_qty, to_product_type):
+    def convert_position(self, from_product_type, exchange_segment, position_type,
+                         security_id, convert_qty, to_product_type):
         """
         Convert Position from Intraday to Delivery or vice versa.
 
@@ -345,7 +344,7 @@ class dhanhq:
             "quantity1": int(quantity1),
         }
 
-        if tag != None and tag != '':
+        if tag not in (None, ''):
             payload["correlationId"] = tag
 
         return self.dhan_http.post(endpoint, payload)
@@ -353,7 +352,8 @@ class dhanhq:
     def modify_forever(self, order_id, order_flag, order_type, leg_name,
                        quantity, price, trigger_price, disclosed_quantity, validity):
         """
-        Modify a forever order based on the specified leg name. The variables that can be modified include price, quantity, order type, and validity.
+        Modify a forever order based on the specified leg name.
+        The variables that can be modified include price, quantity, order type, and validity.
 
         Args:
             order_id (str): The ID of the order to modify.
@@ -403,11 +403,11 @@ class dhanhq:
         endpoint = '/edis/tpin'
         response = self.dhan_http.get(endpoint)
         response['data'] = ''
-        #ToDo: This is inconsistent. If success then data should be set and not remarks field
+        # ToDo: This is inconsistent. If success then data should be set and not remarks field
         if response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value:
             response['remarks'] = dhanhq.OTP_SENT
         else:
-            #ToDo: Why this redundant code here?
+            # ToDo: Why this redundant code here?
             response['remarks'] = 'status code : ' + response['remarks']['error_code']
         return response
 
@@ -438,7 +438,7 @@ class dhanhq:
             return response
 
         data = json_loads(response['data'])
-        form_html = data['edisFormHtml'] #data['edisFormHtml']
+        form_html = data['edisFormHtml']  # data['edisFormHtml']
         form_html = form_html.replace('\\', '')
         # print(form_html)
         self._save_as_temp_html_file_and_open_in_browser(form_html)
@@ -469,7 +469,7 @@ class dhanhq:
         """
         action = action.upper()
         endpoint = f'/killswitch?killSwitchStatus={action}'
-        #ToDo: This should have been an Update request aka HTTP-PUT and not HTTP-POST
+        # ToDo: This should have been an Update request aka HTTP-PUT and not HTTP-POST
         return self.dhan_http.post(endpoint)
 
     def get_fund_limits(self):
@@ -479,10 +479,11 @@ class dhanhq:
         Returns:
             dict: The response containing fund limits data.
         """
-        endpoint = f'/fundlimit'
+        endpoint = '/fundlimit'
         return self.dhan_http.get(endpoint)
 
-    def margin_calculator(self, security_id, exchange_segment, transaction_type, quantity, product_type, price, trigger_price=0):
+    def margin_calculator(self, security_id, exchange_segment, transaction_type, quantity, product_type, price,
+                          trigger_price=0):
         """
         Calculate the margin required for a trade based on the provided parameters.
 
@@ -498,7 +499,7 @@ class dhanhq:
         Returns:
             dict: The response containing the margin calculation result.
         """
-        endpoint = f'/margincalculator'
+        endpoint = '/margincalculator'
         payload = {
             "securityId": security_id,
             "exchangeSegment": exchange_segment.upper(),
@@ -507,7 +508,7 @@ class dhanhq:
             "productType": product_type.upper(),
             "price": float(price)
         }
-        #ToDo: Shouldn't price and trigger_price being float vlaues be rounded to 2 or 3 decimal places as precision??
+        # ToDo: Shouldn't price and trigger_price being float vlaues be rounded to 2 or 3 decimal places as precision??
         if trigger_price > 0:
             payload["triggerPrice"] = float(trigger_price)
         elif trigger_price == 0:
@@ -525,7 +526,8 @@ class dhanhq:
         Returns:
             dict: The response containing trade book data.
         """
-        #ToDo: This is bad practice abusing REST principles. This should be broken into two different methods with appropriate REST convention-based URL.
+        # ToDo: This is bad practice abusing REST principles.
+        #  This should be broken into two different methods with appropriate REST convention-based URL.
         endpoint = f'/trades/{order_id if order_id is not None else ""}'
         return self.dhan_http.get(endpoint)
 
@@ -579,7 +581,7 @@ class dhanhq:
                 'remarks': err,
                 'data': '',
             }
-        endpoint = f'/charts/intraday'
+        endpoint = '/charts/intraday'
         payload = {
             'securityId': security_id,
             'exchangeSegment': exchange_segment,
@@ -614,7 +616,7 @@ class dhanhq:
                 'remarks': err,
                 'data': '',
             }
-        endpoint = f'/charts/historical'
+        endpoint = '/charts/historical'
         payload = {
             "securityId": security_id,
             "exchangeSegment": exchange_segment,
@@ -639,7 +641,7 @@ class dhanhq:
         Returns:
             dict: The response containing last traded price (LTP) data.
         """
-        endpoint = f'/marketfeed/ltp'
+        endpoint = '/marketfeed/ltp'
         payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
         return self.dhan_http.post(endpoint, payload)
 
@@ -657,7 +659,7 @@ class dhanhq:
         Returns:
             dict: The response containing Open, High, Low and Close along with LTP data.
         """
-        endpoint = f'/marketfeed/ohlc'
+        endpoint = '/marketfeed/ohlc'
         payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
         return self.dhan_http.post(endpoint, payload)
 
@@ -673,9 +675,10 @@ class dhanhq:
                 }
 
         Returns:
-            dict: The response containing full packet including market depth, last trade, circuit limit, OHLC, OI and volume data.
+            dict: The response containing full packet including market depth, last trade,
+                    circuit limit, OHLC, OI and volume data.
         """
-        endpoint = f'/marketfeed/quote'
+        endpoint = '/marketfeed/quote'
         payload = {exchange_segment: security_id for exchange_segment, security_id in securities.items()}
         return self.dhan_http.post(endpoint, payload)
 
@@ -720,9 +723,10 @@ class dhanhq:
             expiry (str): The expiry date of the options.
 
         Returns:
-            dict: The response containing Open Interest (OI), Greeks, Volume, Last Traded Price, Best Bid/Ask, and Implied Volatility (IV) across all strikes for the specified underlying.
+            dict: The response containing Open Interest (OI), Greeks, Volume, Last Traded Price,
+                    Best Bid/Ask, and Implied Volatility (IV) across all strikes for the specified underlying.
         """
-        endpoint = f'/optionchain'
+        endpoint = '/optionchain'
         payload = {
             "UnderlyingScrip": under_security_id,
             "UnderlyingSeg": under_exchange_segment,
@@ -739,9 +743,10 @@ class dhanhq:
             under_exchange_segment (str): The exchange segment of the underlying instrument (e.g., NSE, BSE).
 
         Returns:
-            dict: The response containing list of dates for which option expiries are present for the specified underlying instrument.
+            dict: The response containing list of dates for which option expiries
+                    are present for the specified underlying instrument.
         """
-        endpoint = f'/optionchain/expirylist'
+        endpoint = '/optionchain/expirylist'
         payload = {
             "UnderlyingScrip": under_security_id,
             "UnderlyingSeg": under_exchange_segment

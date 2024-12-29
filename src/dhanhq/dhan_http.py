@@ -1,8 +1,18 @@
+"""
+    A class to interact with the DhanHQ APIs using HTTP protocol.
+
+    This library provides methods to manage orders, retrieve market data,
+    and perform various trading operations through the DhanHQ API.
+
+    :copyright: (c) 2024 by Dhan.
+    :license: see LICENSE for details.
+"""
+
 import logging
+from enum import Enum
 from json import dumps as json_dumps, loads as json_loads
 
 import requests
-from enum import Enum
 
 
 class DhanHTTP:
@@ -15,10 +25,10 @@ class DhanHTTP:
 
     class HttpMethods(Enum):
         """Constants for HTTP Requests"""
-        GET ='GET'
-        POST ='POST'
-        PUT ='PUT'
-        DELETE ='DELETE'
+        GET = 'GET'
+        POST = 'POST'
+        PUT = 'PUT'
+        DELETE = 'DELETE'
 
     HTTP_DEFAULT_TIME_OUT = 60
     API_BASE_URL = 'https://api.dhan.co/v2'
@@ -46,10 +56,13 @@ class DhanHTTP:
             payload["dhanClientId"] = self.client_id
             payload = json_dumps(payload)
         try:
-            response = getattr(self.session, method.value.lower())(url, data=payload, headers=self.header, timeout=self.timeout)
+            response = getattr(self.session, method.value.lower())(url,
+                                                                   data=payload,
+                                                                   headers=self.header,
+                                                                   timeout=self.timeout)
             return self._parse_response(response)
         except Exception as e:
-            logging.error(f'Exception in DhanHQConnection.{method.value.upper()}: {e}')
+            logging.error('Exception in DhanHQConnection.%s: %s', method.value.upper(), e)
             return {
                 'status': DhanHTTP.HttpResponseStatus.FAILURE.value,
                 'remarks': str(e),
@@ -91,13 +104,51 @@ class DhanHTTP:
         }
 
     def get(self, endpoint):
+        """
+        Do HTTP-GET request to Dhan Endpoint.
+
+        Args:
+            endpoint (str): The endpoint ignoring the base URL.
+
+        Returns:
+        dict: The response in dict format.
+        """
         return self._send_request(DhanHTTP.HttpMethods.GET, endpoint)
 
     def post(self, endpoint, payload):
+        """
+        Do HTTP-POST request to Dhan Endpoint.
+
+        Args:
+            endpoint (str): The endpoint ignoring the base URL.
+            payload (dict): The payload dict contains the data that needs to be sent to the server.
+
+        Returns:
+        dict: The response in dict format.
+        """
         return self._send_request(DhanHTTP.HttpMethods.POST, endpoint, payload)
 
     def put(self, endpoint, payload):
+        """
+        Do HTTP-PUT request to Dhan Endpoint.
+
+        Args:
+            endpoint (str): The endpoint ignoring the base URL.
+            payload (dict): The payload dict contains the data that needs to be sent to the server.
+
+        Returns:
+        dict: The response in dict format.
+        """
         return self._send_request(DhanHTTP.HttpMethods.PUT, endpoint, payload)
 
     def delete(self, endpoint):
+        """
+        Do HTTP-DELETE request to Dhan Endpoint.
+
+        Args:
+            endpoint (str): The endpoint ignoring the base URL.
+
+        Returns:
+        dict: The response in dict format.
+        """
         return self._send_request(DhanHTTP.HttpMethods.DELETE, endpoint)
