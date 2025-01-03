@@ -13,33 +13,33 @@ from datetime import datetime
 from collections import defaultdict
 import json
 
-# Constants
-"""WebSocket URL for DhanHQ Live Market Feed"""
-market_feed_wss = 'wss://api-feed.dhan.co'
-
-"""Constants for Exchange Segment"""
-IDX = 0
-NSE = 1
-NSE_FNO = 2
-NSE_CURR = 3
-BSE = 4
-MCX = 5
-BSE_CURR = 7
-BSE_FNO = 8
-
-"""Constants for Request Code"""
-Ticker = 15
-Quote = 17
-Depth = 19
-Full = 21
-
 
 class DhanFeed:
-    def __init__(self, client_id, access_token, instruments, version='v1'):
+    # Constants
+    """WebSocket URL for DhanHQ Live Market Feed"""
+    market_feed_wss = 'wss://api-feed.dhan.co'
+
+    """Constants for Exchange Segment"""
+    IDX = 0
+    NSE = 1
+    NSE_FNO = 2
+    NSE_CURR = 3
+    BSE = 4
+    MCX = 5
+    BSE_CURR = 7
+    BSE_FNO = 8
+
+    """Constants for Request Code"""
+    Ticker = 15
+    Quote = 17
+    Depth = 19
+    Full = 21
+
+    def __init__(self, dhan_context, instruments, version='v1'):
         """Initializes the DhanFeed instance with user credentials, instruments to subscribe, and callback functions."""
 
-        self.client_id = client_id
-        self.access_token = access_token
+        self.client_id = dhan_context.get_client_id()
+        self.access_token = dhan_context.get_access_token()
         self.instruments = instruments
         self.data = ""
         self._is_first_connect = True
@@ -52,13 +52,13 @@ class DhanFeed:
         """Starts the WebSocket connection and runs the event loop."""
         self.loop.run_until_complete(self.connect())
 
-    def get_data(self): 
+    def get_data(self):
         """Fetch instruments data while the event loop is open."""
-        return self.loop.run_until_complete(self.get_instrument_data()) 
+        return self.loop.run_until_complete(self.get_instrument_data())
 
-    def close_connection(self): 
+    def close_connection(self):
         """Close WebSocket connection with this."""
-        return self.loop.run_until_complete(self.disconnect()) 
+        return self.loop.run_until_complete(self.disconnect())
 
     async def connect(self):
         """Initiates the connection to the Websockets."""
@@ -284,7 +284,7 @@ class DhanFeed:
             start_idx = i * packet_size
             end_idx = start_idx + packet_size
             current_packet = struct.unpack(packet_format, market_depth_binary[start_idx:end_idx])
-            
+
             depth.append({
                 "bid_quantity": current_packet[0],
                 "ask_quantity": current_packet[1],
@@ -340,7 +340,7 @@ class DhanFeed:
         unpack_status = [struct.unpack('<BHBI', data[0:8])]
         market_status = "Markets Open"
         return market_status
-    
+
     def process_full(self, data):
         """Parse and process Full Packet Data"""
         unpack_full = [struct.unpack('<BHBIfHIfIIIIIIffff100s', data[0:162])]
@@ -355,7 +355,7 @@ class DhanFeed:
             start_idx = i * packet_size
             end_idx = start_idx + packet_size
             current_packet = struct.unpack(packet_format, market_depth_binary[start_idx:end_idx])
-            
+
             depth.append({
                 "bid_quantity": current_packet[0],
                 "ask_quantity": current_packet[1],
@@ -430,17 +430,17 @@ class DhanFeed:
     def utc_time(self, epoch_time):
         """Converts EPOCH time to UTC time."""
         return datetime.utcfromtimestamp(epoch_time).strftime('%H:%M:%S')
-    
+
     def create_subscription_packet(self, instruments, feed_request_code):
         """Creates the subscription packet with specified instruments and subscription code"""
         num_instruments = len(instruments)
 
-        header = self.create_header(feed_request_code = feed_request_code, 
+        header = self.create_header(feed_request_code = feed_request_code,
                                     message_length=83 + 4 + num_instruments * 21,
                                     client_id=self.client_id)
         num_instruments_bytes = struct.pack('<I', num_instruments)
         instrument_info = b""
-        for exchange_segment, security_id in instruments: 
+        for exchange_segment, security_id in instruments:
             instrument_info += struct.pack('<B20s', exchange_segment, security_id.encode('utf-8'))
 
         instruments = [(0, "")]
@@ -449,8 +449,8 @@ class DhanFeed:
 
         subscription_packet = header + num_instruments_bytes + instrument_info
         return subscription_packet
-    
-    def subscribe_symbols(self, symbols): 
+
+    def subscribe_symbols(self, symbols):
         """Function to subscribe to additional symbols when connection is already established."""
         # Update the instruments list
         unique_symbols_set = set(self.instruments)
@@ -487,7 +487,7 @@ class DhanFeed:
                             }
                             asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
 
-    def unsubscribe_symbols(self, symbols): 
+    def unsubscribe_symbols(self, symbols):
         """Function to unsubscribe symbols from connection when connection is already active."""
         # Update the instruments list by removing the specified symbols
         unique_symbols_set = set(self.instruments)
@@ -508,7 +508,7 @@ class DhanFeed:
                             # Use the original instrument_type for grouping, but increment for the actual request
                             unsubscription_packet = self.create_subscription_packet(instrument_group, int(instrument_type) + 1)
                             asyncio.ensure_future(self.ws.send(unsubscription_packet))
-            
+
             elif self.version == 'v2':
                 for instrument_type, instrument_groups in instrument_list_to_unsubscribe.items():
                     for instrument_group in instrument_groups:

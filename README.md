@@ -17,6 +17,40 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
 
+## v2.1 - What's new
+
+DhanHQ v2.1 is more modular and secure.
+
+- The project is restructured to contemporary "best practices" in the python world. How does this affect you? Your imports would change like below:
+
+
+  | Before This Version                                                    | After This Release                               |
+  |------------------------------------------------------------------------|--------------------------------------------------|
+  | from dhanhq import dhanhq | from dhanhq import dhanhq |
+  | from dhanhq import marketfeed.DhanFeed | from dhanhq import DhanFeed |
+  | from dhanhq import orderupdate.OrderSocket | from dhanhq import OrderSocket |
+
+- The constants that were earlier part of modules `marketfeed` and `orderupdate` are now moved to its respective classes contained in the modules for better developer experience. 
+
+  | Before This Version | After This Release |
+  |---------------------|--------------------|
+  | marketfeed.NSE      | DhanFeed.NSE       |
+  | marketfeed.Ticker | DhanFeed.Ticker |
+
+  Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
+
+
+- Its SDK users, no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanContext` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanContext just once and use that context for other API classes. Quick glance of how affected code initialization is below:
+
+  | Before This Version                                | After This Release                   |
+  |----------------------------------------------------|--------------------------------------|
+  | `dhanhq('client_id','access_token')`               | `dhanhq('dhan_context')`              |
+  | `DhanFeed('client_id','access_token',instruments)` | `DhanFeed('dhan_context',instruments)` |
+  | `OrderSocket('client_id','access_token')`          | `OrderSocket('dhan_context')`         |
+
+  **Note:** The **_Hands-on API_** section is updated to reflect this change, for your convenience.
+
+- Code coverage improvements with robust unit & integration tests for safe and speed delivery of features. Will strengthen even more in upcoming releases.
 
 ## v2.0 - What's New
 
@@ -93,9 +127,10 @@ pip install dhanhq
 ### Hands-on API
 
 ```python
-from dhanhq import dhanhq
+from dhanhq import DhanContext, dhanhq
 
-dhan = dhanhq("client_id","access_token")
+dhan_context = DhanContext("client_id","access_token")
+dhan = dhanhq(dhan_context)
 
 # Place an order for Equity Cash
 dhan.place_order(security_id='1333',            # HDFC Bank
@@ -192,7 +227,6 @@ dhan.place_forever(
     exchange_segment= dhan.NSE,
     transaction_type= dhan.BUY,
     product_type=dhan.CNC,
-    product_type= dhan.LIMIT,
     quantity= 10,
     price= 1900,
     trigger_Price= 1950
@@ -201,26 +235,25 @@ dhan.place_forever(
 
 ### Market Feed Usage
 ```python
-from dhanhq import marketfeed
+from dhanhq import DhanContext, DhanFeed
 
-# Add your Dhan Client ID and Access Token
-client_id = "Dhan Client ID"
-access_token = "Access Token"
+# Define and use your dhan_context if you haven't already done so like below:
+dhan_context = DhanContext("client_id","access_token")
 
 # Structure for subscribing is (exchange_segment, "security_id", subscription_type)
 
-instruments = [(marketfeed.NSE, "1333", marketfeed.Ticker),   # Ticker - Ticker Data
-    (marketfeed.NSE, "1333", marketfeed.Quote),     # Quote - Quote Data
-    (marketfeed.NSE, "1333", marketfeed.Full),      # Full - Full Packet
-    (marketfeed.NSE, "11915", marketfeed.Ticker),
-    (marketfeed.NSE, "11915", marketfeed.Full)]
+instruments = [(DhanFeed.NSE, "1333", DhanFeed.Ticker),   # Ticker - Ticker Data
+    (DhanFeed.NSE, "1333", DhanFeed.Quote),     # Quote - Quote Data
+    (DhanFeed.NSE, "1333", DhanFeed.Full),      # Full - Full Packet
+    (DhanFeed.NSE, "11915", DhanFeed.Ticker),
+    (DhanFeed.NSE, "11915", DhanFeed.Full)]
 
 version = "v2"          # Mention Version and set to latest version 'v2'
 
 # In case subscription_type is left as blank, by default Ticker mode will be subscribed.
 
 try:
-    data = marketfeed.DhanFeed(client_id, access_token, instruments, version)
+    data = DhanFeed(dhan_context, instruments, version)
     while True:
         data.run_forever()
         response = data.get_data()
@@ -233,27 +266,26 @@ except Exception as e:
 data.disconnect()
 
 # Subscribe instruments while connection is open
-sub_instruments = [(marketfeed.NSE, "14436", marketfeed.Ticker)]
+sub_instruments = [(DhanFeed.NSE, "14436", DhanFeed.Ticker)]
 
 data.subscribe_symbols(sub_instruments)
 
 # Unsubscribe instruments which are already active on connection
-unsub_instruments = [(marketfeed.NSE, "1333", 16)]
+unsub_instruments = [(DhanFeed.NSE, "1333", 16)]
 
 data.unsubscribe_symbols(unsub_instruments)
 ```
 
 ### Live Order Update Usage
 ```python
-from dhanhq import orderupdate
+from dhanhq import DhanContext, OrderSocket
 import time
 
-# Add your Dhan Client ID and Access Token
-client_id = "Dhan Client ID"
-access_token = "Access Token"
+# Define and use your dhan_context if you haven't already done so like below:
+dhan_context = DhanContext("client_id","access_token")
 
 def run_order_update():
-    order_client = orderupdate.OrderSocket(client_id, access_token)
+    order_client = OrderSocket(dhan_context)
     while True:
         try:
             order_client.connect_to_dhan_websocket_sync()

@@ -28,9 +28,23 @@ class DhanContext:
         except Exception as e:
             logging.error('Exception in dhanhq>>init : %s', e)
 
+    def get_client_id(self):
+        """
+        Return client's id that is used to identify the client interacting with Dhan API
+        Returns client_id that is used to identify the client interacting with Dhan API
+        """
+        return self.client_id
+
+    def get_access_token(self):
+        """
+        Return authorization token that is used for connecting to Dhan API
+        Returns access_token that is used for authorization in accessing Dhan API
+        """
+        return self.access_token
+
     def get_dhan_http(self):
         """
-        Get HTTP Connection Request object that has all necessary context to connect to Dhan API
+        Return HTTP Connection Request object that has all necessary context to connect to Dhan API
 
         Returns
         http_connection_request (DhanHTTP): DhanContext enabled HTTP Connection Request object
