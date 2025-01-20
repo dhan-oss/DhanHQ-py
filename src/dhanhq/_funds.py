@@ -41,10 +41,8 @@ class Funds:
             "price": float(price)
         }
         # ToDo: Shouldn't price and trigger_price being float vlaues be rounded to 2 or 3 decimal places as precision??
-        if trigger_price > 0:
+        if trigger_price >= 0:
             payload["triggerPrice"] = float(trigger_price)
-        elif trigger_price == 0:
-            payload["triggerPrice"] = 0.0
 
         return self.dhan_http.post(endpoint, payload)
 

@@ -83,19 +83,19 @@ class ForeverOrder:
             "orderType": order_type,
             "legName": leg_name,
             "quantity": quantity,
-            "price": price,
             "disclosedQuantity": disclosed_quantity,
+            "price": price,
             "triggerPrice": trigger_price,
             "validity": validity
         }
         return self.dhan_http.put(endpoint, payload)
 
-    def cancel_forever(self, order_id):
-        """Delete Forever orders using the order id of an order."""
-        endpoint = f'/forever/orders/{order_id}'
-        return self.dhan_http.delete(endpoint)
-
     def get_forever(self):
         """Retrieve a list of all existing Forever Orders."""
         endpoint = '/forever/orders'
         return self.dhan_http.get(endpoint)
+
+    def cancel_forever(self, order_id):
+        """Delete Forever orders using the order id of an order."""
+        endpoint = f'/forever/orders/{order_id}'
+        return self.dhan_http.delete(endpoint)

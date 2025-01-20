@@ -82,7 +82,7 @@ class Order:
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
                     after_market_order=False, validity='DAY', amo_time='OPEN',
-                    bo_profit_value=None, bo_stop_loss_Value=None, tag=None):
+                    bo_profit_value=None, bo_stop_loss_Value=None, tag=None, should_slice=False):
         """
         Place a new order in the Dhan account.
 
@@ -106,6 +106,10 @@ class Order:
         Returns:
             dict: The response containing the status of the order placement.
         """
+
+        if after_market_order and (amo_time not in ['OPEN', 'OPEN_30', 'OPEN_60']):
+            raise Exception("amo_time value must be one of ['OPEN','OPEN_30','OPEN_60']")
+
         payload = {
             "transactionType": transaction_type.upper(),
             "exchangeSegment": exchange_segment.upper(),
@@ -118,20 +122,17 @@ class Order:
             "price": float(price),
             "afterMarketOrder": after_market_order,
             "boProfitValue": bo_profit_value,
-            "boStopLossValue": bo_stop_loss_Value
+            "boStopLossValue": bo_stop_loss_Value,
+            "triggerPrice": float(trigger_price)
         }
+
         if tag is not None and tag != '':
             payload["correlationId"] = tag
-        if after_market_order:
-            if amo_time in ['PRE_OPEN', 'OPEN', 'OPEN_30', 'OPEN_60']:
-                payload['amoTime'] = amo_time
-            else:
-                raise Exception("amo_time value must be ['PRE_OPEN','OPEN','OPEN_30','OPEN_60']")
-        if trigger_price > 0:
-            payload["triggerPrice"] = float(trigger_price)
-        elif trigger_price == 0:
-            payload["triggerPrice"] = 0.0
-        return self.dhan_http.post('/orders', payload)
+
+        endpoint = '/orders'
+        if should_slice:
+            endpoint += '/slicing'
+        return self.dhan_http.post(endpoint, payload)
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                           order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
@@ -160,29 +161,8 @@ class Order:
         Returns:
             dict: The response containing the status of the slice order placement.
         """
-        payload = {
-            "transactionType": transaction_type.upper(),
-            "exchangeSegment": exchange_segment.upper(),
-            "productType": product_type.upper(),
-            "orderType": order_type.upper(),
-            "validity": validity.upper(),
-            "securityId": security_id,
-            "quantity": int(quantity),
-            "disclosedQuantity": int(disclosed_quantity),
-            "price": float(price),
-            "afterMarketOrder": after_market_order,
-            "boProfitValue": bo_profit_value,
-            "boStopLossValue": bo_stop_loss_Value
-        }
-        if tag is not None and tag != '':
-            payload["correlationId"] = tag
-        if after_market_order:
-            if amo_time in ['OPEN', 'OPEN_30', 'OPEN_60']:
-                payload['amoTime'] = amo_time
-            else:
-                raise Exception("amo_time value must be ['OPEN','OPEN_30','OPEN_60']")
-        if trigger_price > 0:
-            payload["triggerPrice"] = float(trigger_price)
-        elif trigger_price == 0:
-            payload["triggerPrice"] = 0.0
-        return self.dhan_http.post('/orders/slicing', payload)
+
+        return self.place_order(security_id, exchange_segment, transaction_type, quantity,
+                                order_type, product_type, price, trigger_price, disclosed_quantity,
+                                after_market_order, validity, amo_time,
+                                bo_profit_value, bo_stop_loss_Value, tag, True)
