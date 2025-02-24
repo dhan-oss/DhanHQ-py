@@ -17,7 +17,7 @@ import json
 class DhanFeed:
     # Constants
     """WebSocket URL for DhanHQ Live Market Feed"""
-    market_feed_wss = 'wss://api-feed.dhan.co'
+    market_feed_wss = 'wss://api-feed.dhan.co?version=2&authType=2'
 
     """Constants for Exchange Segment"""
     IDX = 0
@@ -48,13 +48,16 @@ class DhanFeed:
         self.loop = asyncio.get_event_loop()
         self.version = version
 
+    # Public
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
         self.loop.run_until_complete(self.connect())
 
+    # Public
     def get_data(self):
         """Fetch instruments data while the event loop is open."""
         return self.loop.run_until_complete(self.get_instrument_data())
+
 
     def close_connection(self):
         """Close WebSocket connection with this."""
@@ -67,7 +70,7 @@ class DhanFeed:
                 self.ws = await websockets.connect(market_feed_wss)
                 await self.authorize()
             elif self.version == 'v2':
-                url = f"{market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
+                url = f"{market_feed_wss}&token={self.access_token}&clientId={self.client_id}"
                 self.ws = await websockets.connect(url)
             else:
                 raise ValueError(f"Unsupported version: {self.version}")
@@ -85,6 +88,7 @@ class DhanFeed:
         self.data = self.process_data(response)
         return self.data
 
+    # Public
     async def disconnect(self):
         """Closes the WebSocket connection and sends a disconnect message."""
         if self.ws:
@@ -450,6 +454,7 @@ class DhanFeed:
         subscription_packet = header + num_instruments_bytes + instrument_info
         return subscription_packet
 
+    # Public
     def subscribe_symbols(self, symbols):
         """Function to subscribe to additional symbols when connection is already established."""
         # Update the instruments list
@@ -487,6 +492,7 @@ class DhanFeed:
                             }
                             asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
 
+    # Public
     def unsubscribe_symbols(self, symbols):
         """Function to unsubscribe symbols from connection when connection is already active."""
         # Update the instruments list by removing the specified symbols
