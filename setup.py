@@ -42,6 +42,7 @@ setup(name=PACKAGE_NAME,
       url=URL,
       package_dir={'': 'src'}, # Tells setuptools where your code is
       packages=find_packages(where='src'), # Automatically find packages
+      python_requires='>=3.7',
       install_requires=INSTALL_REQUIRES,
       extras_require={
           'dev': TEST_REQUIRES
