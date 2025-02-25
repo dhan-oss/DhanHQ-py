@@ -15,6 +15,7 @@ LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
 INSTALL_REQUIRES = [
+    "pydantic>=2.10.6",
     "pandas>=1.4.3",
     "requests>=2.28.1",
     "websockets>=12.0.1",
@@ -29,6 +30,7 @@ TEST_REQUIRES = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "responses>=0.25.3",
+    "pyright>=1.1.394",
     ]
 
 setup(name=PACKAGE_NAME,
@@ -42,7 +44,7 @@ setup(name=PACKAGE_NAME,
       url=URL,
       package_dir={'': 'src'}, # Tells setuptools where your code is
       packages=find_packages(where='src'), # Automatically find packages
-      python_requires='>=3.7',
+      python_requires='>=3.9',
       install_requires=INSTALL_REQUIRES,
       extras_require={
           'dev': TEST_REQUIRES

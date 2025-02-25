@@ -59,7 +59,7 @@ class dhanhq(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Se
         self.dhan_http = dhan_context.get_dhan_http()
 
     @staticmethod
-    def convert_to_date_time(self, epoch):
+    def convert_to_date_time(epoch):
         """
         Convert EPOCH time to Python datetime object in IST.
 
