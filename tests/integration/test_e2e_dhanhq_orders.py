@@ -5,7 +5,11 @@ from pprint import pprint
 import pytest
 from dhanhq import DhanCore
 from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.leg_name import LegName
+from dhanhq.constants.order_type import OrderType
+from dhanhq.constants.product_type import ProductType
 from dhanhq.constants.transaction_type import TransactionType
+from dhanhq.constants.validity import Validity
 
 
 # from tests.conftest import api_access_token_fixture
@@ -39,7 +43,7 @@ class TestE2E_Dhanhq_Orders:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/modify_pending_order.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_modify_order(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.modify_order("string", DhanCore.LIMIT, "ENTRY_LEG", 1, 11, 12.0, 1, DhanCore.DAY)
+        actual_response = dhanhq_fixture.modify_order("string", OrderType.LIMIT, LegName.ENTRY_LEG, 1, 11, 12.0, 1, Validity.DAY)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
@@ -56,7 +60,7 @@ class TestE2E_Dhanhq_Orders:
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_place_order(self, expected_dict, dhanhq_fixture):
         actual_response = dhanhq_fixture.place_order("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY,
-                                                     100, DhanCore.LIMIT, DhanCore.CNC, 99.99, 0)
+                                                     100, OrderType.LIMIT, ProductType.CNC, 99.99, 0)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
@@ -65,7 +69,7 @@ class TestE2E_Dhanhq_Orders:
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_place_slice_order(self, expected_dict, dhanhq_fixture):
         actual_response = dhanhq_fixture.place_slice_order("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY,
-                                                           100, DhanCore.LIMIT, DhanCore.CNC, 99.99, 0)
+                                                           100, OrderType.LIMIT, ProductType.CNC, 99.99, 0)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']

@@ -28,24 +28,24 @@ class Portfolio:
         Convert Position from Intraday to Delivery or vice versa.
 
         Args:
-            from_product_type (str): The product type to convert from (e.g., CNC).
-            exchange_segment (str): The exchange segment (e.g., NSE_EQ).
-            position_type (str): The type of position (e.g., LONG).
+            from_product_type (ProductType): The product type to convert from (e.g., CNC).
+            exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE_EQ).
+            position_type (PositionType): The type of position (e.g., LONG).
             security_id (str): The ID of the security to convert.
             convert_qty (int): The quantity to convert.
-            to_product_type (str): The product type to convert to (e.g., CNC).
+            to_product_type (ProductType): The product type to convert to (e.g., CNC).
 
         Returns:
             dict: The response containing the status of the conversion.
         """
         endpoint = '/positions/convert'
         payload = {
-            "fromProductType": from_product_type,
-            "exchangeSegment": exchange_segment,
-            "positionType": position_type,
+            "fromProductType": from_product_type.name,
+            "exchangeSegment": exchange_segment.name,
+            "positionType": position_type.name,
             "securityId": security_id,
             "convertQty": convert_qty,
-            "toProductType": to_product_type
+            "toProductType": to_product_type.name
         }
         return self.dhan_http.post(endpoint, payload)
 

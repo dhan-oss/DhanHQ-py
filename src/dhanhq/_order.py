@@ -1,3 +1,6 @@
+from dhanhq.constants.amo_time import AMOTime
+from dhanhq.constants.validity import Validity
+
 
 class Order:
 
@@ -44,26 +47,26 @@ class Order:
 
         Args:
             order_id (str): The ID of the order to modify.
-            order_type (str): The type of order (e.g., LIMIT, MARKET).
-            leg_name (str): The name of the leg to modify.
+            order_type (OrderType): The type of order (e.g., LIMIT, MARKET).
+            leg_name (LegName): The name of the leg to modify.
             quantity (int): The new quantity for the order.
             price (float): The new price for the order.
             trigger_price (float): The trigger price for the order.
             disclosed_quantity (int): The disclosed quantity for the order.
-            validity (str): The validity of the order.
+            validity (Validity): The validity of the order.
 
         Returns:
             dict: The response containing the status of the modification.
         """
         payload = {
             "orderId": str(order_id),
-            "orderType": order_type,
-            "legName": leg_name,
+            "orderType": order_type.name,
+            "legName": leg_name.name,
             "quantity": quantity,
             "price": price,
             "disclosedQuantity": disclosed_quantity,
             "triggerPrice": trigger_price,
-            "validity": validity
+            "validity": validity.name
         }
         return self.dhan_http.put(f'/orders/{order_id}', payload)
 
@@ -81,24 +84,24 @@ class Order:
 
     def place_order(self, security_id, exchange_segment, transaction_type, quantity,
                     order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
-                    after_market_order=False, validity='DAY', amo_time='OPEN',
+                    after_market_order=False, validity=Validity.DAY, amo_time=AMOTime.OPEN,
                     bo_profit_value=None, bo_stop_loss_Value=None, tag=None, should_slice=False):
         """
         Place a new order in the Dhan account.
 
         Args:
             security_id (str): The ID of the security to trade.
-            exchange_segment (str): The exchange segment (e.g., NSE, BSE).
-            transaction_type (str): The type of transaction (BUY/SELL).
+            exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
+            transaction_type (TransactionType): The type of transaction (BUY/SELL).
             quantity (int): The quantity of the order.
-            order_type (str): The type of order (LIMIT, MARKET, etc.).
-            product_type (str): The product type (CNC, INTRA, etc.).
+            order_type (OrderType): The type of order (LIMIT, MARKET, etc.).
+            product_type (ProductType): The product type (CNC, INTRA, etc.).
             price (float): The price of the order.
             trigger_price (float): The trigger price for the order.
             disclosed_quantity (int): The disclosed quantity for the order.
             after_market_order (bool): Flag for after market order.
-            validity (str): The validity of the order (DAY, IOC, etc.).
-            amo_time (str): The time for AMO orders.
+            validity (Validity): The validity of the order (DAY, IOC, etc.).
+            amo_time (AMOTime): The time for AMO orders.
             bo_profit_value (float): The profit value for BO orders.
             bo_stop_loss_Value (float): The stop loss value for BO orders.
             tag (str): Optional correlation ID for tracking.
@@ -107,20 +110,18 @@ class Order:
             dict: The response containing the status of the order placement.
         """
 
-        if after_market_order and (amo_time not in ['OPEN', 'OPEN_30', 'OPEN_60']):
-            raise Exception("amo_time value must be one of ['OPEN','OPEN_30','OPEN_60']")
-
         payload = {
-            "transactionType": transaction_type.upper(),
-            "exchangeSegment": exchange_segment.upper(),
-            "productType": product_type.upper(),
-            "orderType": order_type.upper(),
-            "validity": validity.upper(),
+            "transactionType": transaction_type.name,
+            "exchangeSegment": exchange_segment.name,
+            "productType": product_type.name,
+            "orderType": order_type.name,
+            "validity": validity.name,
             "securityId": security_id,
             "quantity": int(quantity),
             "disclosedQuantity": int(disclosed_quantity),
             "price": float(price),
             "afterMarketOrder": after_market_order,
+            "amoTime": amo_time.name,
             "boProfitValue": bo_profit_value,
             "boStopLossValue": bo_stop_loss_Value,
             "triggerPrice": float(trigger_price)
@@ -136,23 +137,23 @@ class Order:
 
     def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
                           order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
-                          after_market_order=False, validity='DAY', amo_time='OPEN',
+                          after_market_order=False, validity=Validity.DAY, amo_time=AMOTime.OPEN,
                           bo_profit_value=None, bo_stop_loss_Value=None, tag=None):
         """
         Place a new slice order in the Dhan account.
 
         Args:
             security_id (str): The ID of the security to trade.
-            exchange_segment (str): The exchange segment (e.g., NSE, BSE).
-            transaction_type (str): The type of transaction (BUY/SELL).
+            exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
+            transaction_type (TransactionType): The type of transaction (BUY/SELL).
             quantity (int): The quantity of the order.
             order_type (str): The type of order (LIMIT, MARKET, etc.).
-            product_type (str): The product type (CNC, MIS, etc.).
+            product_type (ProductType): The product type (CNC, MIS, etc.).
             price (float): The price of the order.
             trigger_price (float): The trigger price for the order.
             disclosed_quantity (int): The disclosed quantity for the order.
             after_market_order (bool): Flag for after market order.
-            validity (str): The validity of the order (DAY, IOC, etc.).
+            validity (Validity): The validity of the order (DAY, IOC, etc.).
             amo_time (str): The time for AMO orders.
             bo_profit_value (float): The profit value for BO orders.
             bo_stop_loss_Value (float): The stop loss value for BO orders.

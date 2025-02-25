@@ -1,8 +1,8 @@
 from enum import Enum
 
-class TransactionType(Enum):
-    BUY = "Buy"
-    SELL = "Sell"
+class Validity(Enum):
+    DAY = "Valid till end of day"
+    IOC = "Immediate or Cancel"
 
     @property
     def description(self):
