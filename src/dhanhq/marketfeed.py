@@ -17,7 +17,7 @@ import json
 class DhanFeed:
     # Constants
     """WebSocket URL for DhanHQ Live Market Feed"""
-    market_feed_wss = 'wss://api-feed.dhan.co?version=2&authType=2'
+    market_feed_wss_url = 'wss://api-feed.dhan.co?version=2&authType=2'
 
     """Constants for Request Code"""
     Ticker = 15
@@ -55,12 +55,12 @@ class DhanFeed:
 
     async def connect(self):
         """Initiates the connection to the Websockets."""
-        if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
+        if not self.ws or self.ws.state == websockets.protocol.State.CLOSED: # type: ignore
             if self.version == 'v1':
-                self.ws = await websockets.connect(market_feed_wss)
+                self.ws = await websockets.connect(self.market_feed_wss_url)
                 await self.authorize()
             elif self.version == 'v2':
-                url = f"{market_feed_wss}&token={self.access_token}&clientId={self.client_id}"
+                url = f"{self.market_feed_wss_url}&token={self.access_token}&clientId={self.client_id}"
                 self.ws = await websockets.connect(url)
             else:
                 raise ValueError(f"Unsupported version: {self.version}")
@@ -74,7 +74,7 @@ class DhanFeed:
 
     async def get_instrument_data(self):
         """Fetches data and initiates process for conversion."""
-        response = await self.ws.recv()
+        response = await self.ws.recv() # type: ignore
         self.data = self.process_data(response)
         return self.data
 
@@ -116,7 +116,7 @@ class DhanFeed:
             authorization_packet = header + payload
 
             # Send authorization packet
-            await self.ws.send(authorization_packet)
+            await self.ws.send(authorization_packet) # type: ignore
             self.is_authorized = True
             print("Authorization successful!")
         except Exception as e:
@@ -179,7 +179,7 @@ class DhanFeed:
                         for instrument_group in new_instrument_list[instrument_type]:
                             self.subscription_code = int(instrument_type)
                             subscription_packet = self.create_subscription_packet(instrument_group, self.subscription_code)
-                            await self.ws.send(subscription_packet)
+                            await self.ws.send(subscription_packet) # type: ignore
         elif self.version == 'v2':
             new_instrument_list = self.validate_and_process_tuples(self.instruments)
             for instrument_type, instrument_groups in new_instrument_list.items():
@@ -197,7 +197,7 @@ class DhanFeed:
                                 } for ex, token in batch
                             ]
                         }
-                        await self.ws.send(json.dumps(subscription_message))
+                        await self.ws.send(json.dumps(subscription_message)) # type: ignore
 
     def get_exchange_segment(self, exchange_code):
         """Convert numeric exchange code to string representation"""
@@ -408,7 +408,7 @@ class DhanFeed:
 
         while True:
             response = await websocket.recv()
-            await self.on_message_received(response)
+            await self.on_message_received(response) # type: ignore
 
     def pad_with_zeros(self, data, length):
         """Pads a binary data string with zeros to a specified length for server to read."""
@@ -453,7 +453,7 @@ class DhanFeed:
         self.instruments = list(unique_symbols_set)
 
         # If the WebSocket is open, send the subscription packet for the new symbols
-        if self.ws and not self.ws.closed:
+        if self.ws and not self.ws.closed: # type: ignore
             # Prepare the instruments list for subscription
             group_size = 100
             new_instrument_list = self.validate_and_process_tuples(symbols, group_size)
@@ -491,7 +491,7 @@ class DhanFeed:
         self.instruments = list(unique_symbols_set)
 
         # If the WebSocket is open, send the unsubscription packet for the symbols
-        if self.ws and not self.ws.closed:
+        if self.ws and not self.ws.closed: # type: ignore
             # Prepare the instruments list for unsubscription
             group_size = 100
             instrument_list_to_unsubscribe = self.validate_and_process_tuples(symbols, group_size)
