@@ -4,6 +4,13 @@ from unittest.mock import patch
 import pytest
 
 from dhanhq import DhanContext
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.leg_name import LegName
+from dhanhq.constants.order_flag import OrderFlag
+from dhanhq.constants.order_type import OrderType
+from dhanhq.constants.product_type import ProductType
+from dhanhq.constants.transaction_type import TransactionType
+from dhanhq.constants.validity import Validity
 from dhanhq.dhan_http import DhanHTTP
 from dhanhq.dhancore import DhanCore
 
@@ -20,8 +27,8 @@ class TestDhanhq_ForeverOrder:
         quantity = 100
         price = 108
         trigger_Price = 110
-        dhanhq_obj.place_forever("security_id", "exchange_segment", "transaction_type",
-                                 "product_type", "order_type", quantity, price, trigger_Price)
+        dhanhq_obj.place_forever("security_id", ExchangeSegment.BSE_EQ, TransactionType.BUY,
+                                 ProductType.INTRADAY, OrderType.STOP_LOSS, quantity, price, trigger_Price)
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint
 
@@ -33,8 +40,8 @@ class TestDhanhq_ForeverOrder:
         price = 108
         trigger_price = 110
         disclosed_quantity = 555
-        dhanhq_obj.modify_forever(order_id, "order_flag", "order_type", "leg_name",
-                                  quantity, price, trigger_price, disclosed_quantity,"validity")
+        dhanhq_obj.modify_forever(order_id, OrderFlag.SINGLE, OrderType.STOP_LOSS, LegName.STOP_LOSS_LEG,
+                                  quantity, price, trigger_price, disclosed_quantity,Validity.IOC)
         mock_update_request.assert_called_once()
         assert mock_update_request.call_args[0][0] == endpoint
 

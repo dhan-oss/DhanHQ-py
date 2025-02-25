@@ -6,6 +6,7 @@ import pytest
 from dhanhq import DhanCore
 from dhanhq.constants.exchange_segment import ExchangeSegment
 from dhanhq.constants.leg_name import LegName
+from dhanhq.constants.order_flag import OrderFlag
 from dhanhq.constants.order_type import OrderType
 from dhanhq.constants.product_type import ProductType
 from dhanhq.constants.transaction_type import TransactionType
@@ -26,7 +27,7 @@ class TestE2E_Dhanhq_Forever_Orders:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/modify_pending_order.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_modify_order(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.modify_forever("order_id", "SINGLE", OrderType.LIMIT, LegName.TARGET_LEG,
+        actual_response = dhanhq_fixture.modify_forever("order_id", OrderFlag.SINGLE, OrderType.LIMIT, LegName.TARGET_LEG,
                                                         100, 99.99, 99.99, 100, Validity.DAY)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']

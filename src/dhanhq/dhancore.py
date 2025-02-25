@@ -19,25 +19,6 @@ class DhanCore(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, 
                MarketFeed, HistoricalData, OptionChain):
     """DhanHQ Class having Core APIs"""
 
-    # """Constants for Product Type"""
-    # CNC = 'CNC'
-    # INTRA = "INTRADAY"
-    # MARGIN = 'MARGIN'
-    # CO = 'CO'
-    # BO = 'BO'
-    # MTF = 'MTF'
-
-    # """Constants for Order Type"""
-    # LIMIT = 'LIMIT'
-    # MARKET = 'MARKET'
-    # SL = "STOP_LOSS"
-    # SLM = "STOP_LOSS_MARKET"
-
-    # """Constants for Validity"""
-    # DAY = 'DAY'
-    # IOC = 'IOC'
-
-
     def __init__(self, dhan_context):
         for parent in [Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
                        MarketFeed, HistoricalData, OptionChain]:
