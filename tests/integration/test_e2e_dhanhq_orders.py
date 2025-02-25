@@ -4,6 +4,9 @@ from pprint import pprint
 
 import pytest
 from dhanhq import DhanCore
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.transaction_type import TransactionType
+
 
 # from tests.conftest import api_access_token_fixture
 
@@ -52,7 +55,7 @@ class TestE2E_Dhanhq_Orders:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/place_order.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_place_order(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.place_order("security_id", DhanCore.NSE, DhanCore.BUY,
+        actual_response = dhanhq_fixture.place_order("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY,
                                                      100, DhanCore.LIMIT, DhanCore.CNC, 99.99, 0)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
@@ -61,7 +64,7 @@ class TestE2E_Dhanhq_Orders:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/place_slice_order.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_place_slice_order(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.place_slice_order("security_id", DhanCore.NSE, DhanCore.BUY,
+        actual_response = dhanhq_fixture.place_slice_order("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY,
                                                            100, DhanCore.LIMIT, DhanCore.CNC, 99.99, 0)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']

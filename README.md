@@ -1,3 +1,5 @@
+from dhanhq.constants.exchange_segment import ExchangeSegmentfrom dhanhq.constants.exchange_segment import ExchangeSegment
+
 # DhanHQ-py : v2.0.2
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
@@ -132,14 +134,15 @@ pip install dhanhq
 ### Hands-on API
 
 ```python
-from dhanhq import DhanContext, DhanCore
+from dhanhq import DhanContext, DhanCore 
+from dhanhq.constants.exchange_segment import ExchangeSegment
 
 dhan_context = DhanContext("client_id", "access_token")
 dhan = DhanCore(dhan_context)
 
 # Place an order for Equity Cash
 dhan.place_order(security_id='1333',  # HDFC Bank
-                 exchange_segment=dhan.NSE,
+                 exchange_segment=ExchangeSegment.NSE_EQ,
                  transaction_type=dhan.BUY,
                  quantity=10,
                  order_type=dhan.MARKET,
@@ -148,7 +151,7 @@ dhan.place_order(security_id='1333',  # HDFC Bank
 
 # Place an order for NSE Futures & Options
 dhan.place_order(security_id='52175',  # Nifty PE
-                 exchange_segment=dhan.NSE_FNO,
+                 exchange_segment=ExchangeSegment.NSE_FNO,
                  transaction_type=dhan.BUY,
                  quantity=550,
                  order_type=dhan.MARKET,
@@ -230,7 +233,7 @@ dhan.ohlc_data(
 # Place Forever Order (SINGLE)
 dhan.place_forever(
   security_id="1333",
-  exchange_segment=dhan.NSE,
+  exchange_segment=ExchangeSegment.NSE,
   transaction_type=dhan.BUY,
   product_type=dhan.CNC,
   quantity=10,

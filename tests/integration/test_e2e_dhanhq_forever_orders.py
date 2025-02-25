@@ -4,6 +4,9 @@ from pprint import pprint
 
 import pytest
 from dhanhq import DhanCore
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.transaction_type import TransactionType
+
 
 # from tests.conftest import api_access_token_fixture
 
@@ -37,7 +40,7 @@ class TestE2E_Dhanhq_Forever_Orders:
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_place_forever(self, expected_dict, dhanhq_fixture):
 
-        actual_response = dhanhq_fixture.place_forever("security_id", DhanCore.NSE, DhanCore.BUY, DhanCore.CNC,
+        actual_response = dhanhq_fixture.place_forever("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY, DhanCore.CNC,
                                                        DhanCore.LIMIT, 100, 99.99, 99.99)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']

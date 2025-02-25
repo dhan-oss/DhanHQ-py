@@ -19,20 +19,6 @@ class DhanCore(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, 
                MarketFeed, HistoricalData, OptionChain):
     """DhanHQ Class having Core APIs"""
 
-    """Constants for Exchange Segment"""
-    NSE = 'NSE_EQ'
-    BSE = 'BSE_EQ'
-    CUR = 'NSE_CURRENCY'
-    MCX = 'MCX_COMM'
-    FNO = 'NSE_FNO'
-    NSE_FNO = 'NSE_FNO'
-    BSE_FNO = 'BSE_FNO'
-    INDEX = 'IDX_I'
-
-    """Constants for Transaction Type"""
-    BUY = 'BUY'
-    SELL = 'SELL'
-
     """Constants for Product Type"""
     CNC = 'CNC'
     INTRA = "INTRADAY"

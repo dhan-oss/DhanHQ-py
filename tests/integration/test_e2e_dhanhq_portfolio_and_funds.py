@@ -4,6 +4,9 @@ from pprint import pprint
 
 import pytest
 from dhanhq import DhanCore
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.transaction_type import TransactionType
+
 
 class TestE2E_Dhanhq_Portfolio:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/get-current-holdings.json')
@@ -26,7 +29,7 @@ class TestE2E_Dhanhq_Portfolio:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/convert_position.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_convert_position(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.convert_position(DhanCore.CNC, DhanCore.NSE, "LONG", "security_id", -99, DhanCore.INTRA)
+        actual_response = dhanhq_fixture.convert_position(DhanCore.CNC, ExchangeSegment.NSE_EQ, "LONG", "security_id", -99, DhanCore.INTRA)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
@@ -43,7 +46,7 @@ class TestE2E_Dhanhq_Funds:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/margin_calculator.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_margin_calculator(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.margin_calculator("security_id", DhanCore.NSE, DhanCore.BUY, 100, DhanCore.CNC, 99.99)
+        actual_response = dhanhq_fixture.margin_calculator("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY, 100, DhanCore.CNC, 99.99)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']

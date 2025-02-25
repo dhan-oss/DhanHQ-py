@@ -19,16 +19,6 @@ class DhanFeed:
     """WebSocket URL for DhanHQ Live Market Feed"""
     market_feed_wss = 'wss://api-feed.dhan.co?version=2&authType=2'
 
-    """Constants for Exchange Segment"""
-    IDX = 0
-    NSE = 1
-    NSE_FNO = 2
-    NSE_CURR = 3
-    BSE = 4
-    MCX = 5
-    BSE_CURR = 7
-    BSE_FNO = 8
-
     """Constants for Request Code"""
     Ticker = 15
     Quote = 17

@@ -1,17 +1,21 @@
-from dhanhq import DhanCore
+from dhanhq import DhanCore, DhanContext
 import logging
+
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.transaction_type import TransactionType
 
 logging.basicConfig(level=logging.DEBUG)
 
-dhan = DhanCore("your_client_id", "your_access_token")
+dhan_context = DhanContext("client_id", "access_token")
+dhan = DhanCore(dhan_context)
 
 # Replace  your_client_id with Dhan Client ID.
 # Replace "your_access_token" with your access token. Do remember it needs to be inside "".
 
 # Place an order for Equity Cash
 dhan.place_order(security_id='1333',            # HDFC Bank
-    exchange_segment=dhan.NSE,
-    transaction_type=dhan.BUY,
+    exchange_segment=ExchangeSegment.NSE_EQ,
+    transaction_type=TransactionType.BUY,
     quantity=10,
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
@@ -19,8 +23,8 @@ dhan.place_order(security_id='1333',            # HDFC Bank
 
 # Place an order for NSE Futures & Options
 dhan.place_order(security_id='52175',           # Nifty PE
-    exchange_segment=dhan.NSE_FNO,
-    transaction_type=dhan.BUY,
+    exchange_segment=ExchangeSegment.NSE_FNO,
+    transaction_type=TransactionType.BUY,
     quantity=550,
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
@@ -28,8 +32,8 @@ dhan.place_order(security_id='52175',           # Nifty PE
 
 # Place an order for Currency
 dhan.place_order(security_id= '10093',          # USDINR
-    exchange_segment= dhan.CUR,
-    transaction_type= dhan.BUY,
+    exchange_segment= ExchangeSegment.NSE_CURRENCY,
+    transaction_type= TransactionType.BUY,
     quantity=1,
     order_type = dhan.MARKET,
     validity= dhan.DAY,
@@ -38,8 +42,8 @@ dhan.place_order(security_id= '10093',          # USDINR
 
 # Place an order for BSE Equity
 dhan.place_order(security_id='500180',          # HDFC Bank
-    exchange_segment=dhan.BSE,
-    transaction_type=dhan.BUY,
+    exchange_segment=ExchangeSegment.BSE_EQ,
+    transaction_type=TransactionType.BUY,
     quantity=1,
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
@@ -47,8 +51,8 @@ dhan.place_order(security_id='500180',          # HDFC Bank
 
 # Place an order for BSE Futures & Options
 dhan.place_order(security_id='1135553',         # Sensex PE
-    exchange_segment=dhan.BSE_FNO,
-    transaction_type=dhan.BUY,
+    exchange_segment=ExchangeSegment.BSE_FNO,
+    transaction_type=TransactionType.BUY,
     quantity=1,
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
@@ -56,8 +60,8 @@ dhan.place_order(security_id='1135553',         # Sensex PE
 
 # Place an order for MCX Commodity
 dhan.place_order(security_id= '114',            # Gold
-    exchange_segment= dhan.MCX,
-    transaction_type= dhan.BUY,
+    exchange_segment= ExchangeSegment.MCX_COMM,
+    transaction_type= TransactionType.BUY,
     quantity=1,
     order_type=dhan.MARKET,
     product_type= dhan.INTRA,
@@ -65,8 +69,8 @@ dhan.place_order(security_id= '114',            # Gold
 
 # Place Slice Order
 dhan.place_slice_order(security_id='52175',     # Nifty PE
-    exchange_segment=dhan.NSE_FNO,
-    transaction_type=dhan.BUY,
+    exchange_segment=ExchangeSegment.NSE_FNO,
+    transaction_type=TransactionType.BUY,
     quantity=2000,              #Nifty freeze quantity is 1800
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
@@ -74,8 +78,8 @@ dhan.place_slice_order(security_id='52175',     # Nifty PE
 
 # Place MTF Order
 dhan.place_order(security_id='1333',            # HDFC Bank
-    exchange_segment=dhan.NSE,
-    transaction_type=dhan.BUY,
+    exchange_segment=ExchangeSegment.NSE_EQ,
+    transaction_type=TransactionType.BUY,
     quantity=100,
     order_type=dhan.MARKET,
     product_type=dhan.MTF,
@@ -84,6 +88,7 @@ dhan.place_order(security_id='1333',            # HDFC Bank
 
 # Fetch all orders
 dhan.get_order_list()
+order_id= "13200000321"
 
 # Get order by id
 dhan.get_order_by_id(order_id)
@@ -103,7 +108,7 @@ dhan.modify_order(
 dhan.cancel_order(order_id)
 
 # Get order by correlation id
-dhan.get_order_by_corelationID(correlationID)
+dhan.get_order_by_correlationID("correlationID")
 
 # Get trade book
 dhan.get_trade_book()
@@ -112,4 +117,6 @@ dhan.get_trade_book()
 dhan.get_trade_book(order_id)
 
 # Get trade history
+from_date = "2025-01-01"
+to_date = "2025-01-31"
 dhan.get_trade_history(from_date,to_date,page_number=0)
