@@ -5,7 +5,7 @@ import pytest
 
 from dhanhq import DhanContext
 from dhanhq.dhan_http import DhanHTTP
-from dhanhq.dhanhq import dhanhq
+from dhanhq.dhancore import DhanCore
 
 
 class TestDhanhq_ForeverOrder:

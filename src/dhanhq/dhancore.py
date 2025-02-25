@@ -15,8 +15,8 @@ from dhanhq import (Order, ForeverOrder, Portfolio, Statement, TraderControl, Se
                     HistoricalData, OptionChain, MarketFeed, Funds)
 
 
-class dhanhq(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
-             MarketFeed, HistoricalData, OptionChain):
+class DhanCore(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
+               MarketFeed, HistoricalData, OptionChain):
     """DhanHQ Class having Core APIs"""
 
     """Constants for Exchange Segment"""

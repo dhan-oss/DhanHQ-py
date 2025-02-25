@@ -17,6 +17,11 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
 
+## v3
+
+- Renamed `dhanhq` class to `DhanCore`
+- Added Type-checking cabability in code
+
 ## v2.1 - What's new
 
 DhanHQ v2.1 is more modular and secure.
@@ -127,29 +132,29 @@ pip install dhanhq
 ### Hands-on API
 
 ```python
-from dhanhq import DhanContext, dhanhq
+from dhanhq import DhanContext, DhanCore
 
-dhan_context = DhanContext("client_id","access_token")
-dhan = dhanhq(dhan_context)
+dhan_context = DhanContext("client_id", "access_token")
+dhan = DhanCore(dhan_context)
 
 # Place an order for Equity Cash
-dhan.place_order(security_id='1333',            # HDFC Bank
-    exchange_segment=dhan.NSE,
-    transaction_type=dhan.BUY,
-    quantity=10,
-    order_type=dhan.MARKET,
-    product_type=dhan.INTRA,
-    price=0)
-    
+dhan.place_order(security_id='1333',  # HDFC Bank
+                 exchange_segment=dhan.NSE,
+                 transaction_type=dhan.BUY,
+                 quantity=10,
+                 order_type=dhan.MARKET,
+                 product_type=dhan.INTRA,
+                 price=0)
+
 # Place an order for NSE Futures & Options
-dhan.place_order(security_id='52175',           # Nifty PE
-    exchange_segment=dhan.NSE_FNO,
-    transaction_type=dhan.BUY,
-    quantity=550,
-    order_type=dhan.MARKET,
-    product_type=dhan.INTRA,
-    price=0)
-  
+dhan.place_order(security_id='52175',  # Nifty PE
+                 exchange_segment=dhan.NSE_FNO,
+                 transaction_type=dhan.BUY,
+                 quantity=550,
+                 order_type=dhan.MARKET,
+                 product_type=dhan.INTRA,
+                 price=0)
+
 # Fetch all orders
 dhan.get_order_list()
 
@@ -175,19 +180,20 @@ dhan.get_positions()
 dhan.get_holdings()
 
 # Intraday Minute Data
-dhan.intraday_minute_data(security_id,exchange_segment,instrument_type)
+dhan.intraday_minute_data(security_id, exchange_segment, instrument_type)
 
 # Historical Daily Data
-dhan.historical_daily_data(security_id,exchange_segment,instrument_type,expiry_code,from_date,to_date)
+dhan.historical_daily_data(security_id, exchange_segment, instrument_type, expiry_code, from_date, to_date)
 
 # Time Converter
-dhan.convert_to_date_time(EPOCH Date)
+dhan.convert_to_date_time(EPOCH
+Date)
 
 # Get trade book
 dhan.get_trade_book(order_id)
 
 # Get trade history
-dhan.get_trade_history(from_date,to_date,page_number=0)
+dhan.get_trade_history(from_date, to_date, page_number=0)
 
 # Get fund limits
 dhan.get_fund_limits()
@@ -197,39 +203,39 @@ dhan.generate_tpin()
 
 # Enter TPIN in Form
 dhan.open_browser_for_tpin(isin='INE00IN01015',
-    qty=1,
-    exchange='NSE')
+                           qty=1,
+                           exchange='NSE')
 
 # EDIS Status and Inquiry
 dhan.edis_inquiry()
 
 # Expiry List of Underlying
 dhan.expiry_list(
-    under_security_id=13,                       # Nifty
-    under_exchange_segment="IDX_I"
+  under_security_id=13,  # Nifty
+  under_exchange_segment="IDX_I"
 )
 
 # Option Chain
 dhan.option_chain(
-    under_security_id=13,                       # Nifty
-    under_exchange_segment="IDX_I",
-    expiry="2024-10-31"
+  under_security_id=13,  # Nifty
+  under_exchange_segment="IDX_I",
+  expiry="2024-10-31"
 )
 
 # Market Quote Data                     # LTP - ticker_data, OHLC - ohlc_data, Full Packet - quote_data
 dhan.ohlc_data(
-    securities = {"NSE_EQ":[1333]}
+  securities={"NSE_EQ": [1333]}
 )
 
 # Place Forever Order (SINGLE)
 dhan.place_forever(
-    security_id="1333",
-    exchange_segment= dhan.NSE,
-    transaction_type= dhan.BUY,
-    product_type=dhan.CNC,
-    quantity= 10,
-    price= 1900,
-    trigger_Price= 1950
+  security_id="1333",
+  exchange_segment=dhan.NSE,
+  transaction_type=dhan.BUY,
+  product_type=dhan.CNC,
+  quantity=10,
+  price=1900,
+  trigger_Price=1950
 )
 ```
 

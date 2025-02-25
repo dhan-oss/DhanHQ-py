@@ -3,7 +3,7 @@ import os
 from pprint import pprint
 
 import pytest
-from dhanhq import dhanhq
+from dhanhq import DhanCore
 
 # from tests.conftest import api_access_token_fixture
 
@@ -19,8 +19,8 @@ class TestE2E_Dhanhq_Forever_Orders:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/modify_pending_order.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_modify_order(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.modify_forever("order_id", "SINGLE", dhanhq.LIMIT, "TARGET_LEG",
-                                                        100, 99.99, 99.99, 100,dhanhq.DAY)
+        actual_response = dhanhq_fixture.modify_forever("order_id", "SINGLE", DhanCore.LIMIT, "TARGET_LEG",
+                                                        100, 99.99, 99.99, 100, DhanCore.DAY)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
@@ -37,8 +37,8 @@ class TestE2E_Dhanhq_Forever_Orders:
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_place_forever(self, expected_dict, dhanhq_fixture):
 
-        actual_response = dhanhq_fixture.place_forever("security_id", dhanhq.NSE, dhanhq.BUY, dhanhq.CNC,
-                                                       dhanhq.LIMIT,100, 99.99, 99.99)
+        actual_response = dhanhq_fixture.place_forever("security_id", DhanCore.NSE, DhanCore.BUY, DhanCore.CNC,
+                                                       DhanCore.LIMIT, 100, 99.99, 99.99)
         # assert actual_response['status'] == expected_dict['status']
         # assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']

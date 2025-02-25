@@ -67,7 +67,7 @@ pytest --cache-clear -s
 ```
 
 To deactivate virtual environment
-```python
+```bash
 deactivate
 ```
 

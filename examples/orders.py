@@ -1,9 +1,9 @@
-from dhanhq import dhanhq
+from dhanhq import DhanCore
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-dhan = dhanhq(your_client_id, "your_access_token")
+dhan = DhanCore("your_client_id", "your_access_token")
 
 # Replace  your_client_id with Dhan Client ID.
 # Replace "your_access_token" with your access token. Do remember it needs to be inside "".
@@ -16,7 +16,7 @@ dhan.place_order(security_id='1333',            # HDFC Bank
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
     price=0)
-    
+
 # Place an order for NSE Futures & Options
 dhan.place_order(security_id='52175',           # Nifty PE
     exchange_segment=dhan.NSE_FNO,
@@ -25,7 +25,7 @@ dhan.place_order(security_id='52175',           # Nifty PE
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
     price=0)
-    
+
 # Place an order for Currency
 dhan.place_order(security_id= '10093',          # USDINR
     exchange_segment= dhan.CUR,
@@ -53,8 +53,8 @@ dhan.place_order(security_id='1135553',         # Sensex PE
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
     price=0,)
-    
-# Place an order for MCX Commodity    
+
+# Place an order for MCX Commodity
 dhan.place_order(security_id= '114',            # Gold
     exchange_segment= dhan.MCX,
     transaction_type= dhan.BUY,
@@ -62,7 +62,7 @@ dhan.place_order(security_id= '114',            # Gold
     order_type=dhan.MARKET,
     product_type= dhan.INTRA,
     price=0)
-    
+
 # Place Slice Order
 dhan.place_slice_order(security_id='52175',     # Nifty PE
     exchange_segment=dhan.NSE_FNO,
@@ -71,7 +71,7 @@ dhan.place_slice_order(security_id='52175',     # Nifty PE
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
     price=0)
-   
+
 # Place MTF Order
 dhan.place_order(security_id='1333',            # HDFC Bank
     exchange_segment=dhan.NSE,
@@ -92,11 +92,11 @@ dhan.get_order_by_id(order_id)
 dhan.modify_order(
     order_id= "13200000321",
     order_type= dhan.LIMIT,
-    leg_name= "ENTRY_LEG", 
+    leg_name= "ENTRY_LEG",
     quantity= 10,                   # Enter modified quantity or skip it
     price= 200,                     # Enter modified price or skip it
-    trigger_price= 0, 
-    disclosed_quantity= 0, 
+    trigger_price= 0,
+    disclosed_quantity= 0,
     validity= dhan.DAY)
 
 # Cancel order
