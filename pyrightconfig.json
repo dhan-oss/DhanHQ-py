@@ -1,3 +1,6 @@
 {
-  "reportAttributeAccessIssue": "warning"
+  "venvPath": ".venv",
+  "include": ["src","tests", "examples"],
+  "reportAttributeAccessIssue": "warning",
+  "reportPossiblyUnboundVariable": "warning"
 }
