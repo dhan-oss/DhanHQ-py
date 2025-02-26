@@ -1,3 +1,5 @@
+from typing import Optional
+
 from dhanhq.constants.exchange_segment import ExchangeSegment
 from dhanhq.constants.leg_name import LegName
 from dhanhq.constants.order_flag import OrderFlag
@@ -16,7 +18,7 @@ class ForeverOrder:
                       product_type: ProductType, order_type: OrderType, quantity: int, price: float,
                       trigger_Price: float, order_flag: OrderFlag=OrderFlag.SINGLE, disclosed_quantity: int=0,
                       validity: Validity=Validity.DAY, price1: float=0, trigger_Price1: float=0, quantity1: int=0,
-                      tag: str=None, symbol: str="") -> dict[str,str]:
+                      tag: Optional[str]=None, symbol: str="") -> dict[str,str]:
         """
         Place a new forever order in the Dhan account.
 
@@ -31,11 +33,11 @@ class ForeverOrder:
             trigger_Price (float): The trigger price for the order.
             order_flag (OrderFlag): The order flag (default is SINGLE).
             disclosed_quantity (int): The disclosed quantity for the order.
-            validity (Validity): The validity of the order (DAY, IOC, etc.).
+            validity (Validity): The validity of the order (DAY, IOC, etc.) defaults to DAY.
             price1 (float): The secondary price for the order.
             trigger_Price1 (float): The secondary trigger price for the order.
             quantity1 (int): The secondary quantity for the order.
-            tag (str): Optional correlation ID for tracking.
+            tag (Optional[str]): Optional correlation ID for tracking.
             symbol (str): The trading symbol for the order.
 
         Returns:

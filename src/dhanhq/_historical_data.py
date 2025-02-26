@@ -5,6 +5,9 @@ This data is presented in the form of a candle and gives you timestamp, open, hi
 import logging
 
 from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.expiry_code import ExpiryCode
+from dhanhq.constants.instrument_type import InstrumentType
+from dhanhq.constants.interval import Interval
 
 
 class HistoricalData:
@@ -12,72 +15,56 @@ class HistoricalData:
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def intraday_minute_data(self, security_id: str, exchange_segment: ExchangeSegment, instrument_type: str,
-                             from_date:str, to_date: str, interval: int=1):
+    def intraday_minute_data(self, security_id: str, exchange_segment: ExchangeSegment,
+                             instrument_type: InstrumentType, from_date:str, to_date: str, interval: Interval=Interval.ONE_MINUTE) -> dict[str, str]:
         """
         Retrieve OHLC & Volume of minute candles for desired instrument for last 5 trading day.
 
         Args:
             security_id (str): The ID of the security.
             exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
-            instrument_type (str): The type of instrument (e.g., stock, option).
+            instrument_type (InstrumentType): The type of instrument (e.g., stock, option).
             from_date (str): from data
             to_date (str): to date
-            interval (int): Defaults to 1 minute interval.
+            interval (Interval): Defaults to 1 minute interval.
 
         Returns:
             dict: The response containing intraday minute data.
         """
-        if interval not in [1, 5, 15, 25, 60]:
-            # Raising and catching an exception in same method is bad practice. Replaced it with this clean code
-            err = "interval value must be ['1','5','15','25','60']"
-            logging.error('Exception in dhanhq>>intraday_minute_data: %s', err)
-            return {
-                'status': 'failure',
-                'remarks': err,
-                'data': '',
-            }
         endpoint = '/charts/intraday'
         payload = {
             'securityId': security_id,
             'exchangeSegment': exchange_segment.name,
-            'instrument': instrument_type,
-            'interval': interval,
+            'instrument': instrument_type.name,
+            'interval': interval.value,
             'fromDate': from_date,
             'toDate': to_date
         }
         return self.dhan_http.post(endpoint, payload)
 
-    def historical_daily_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, expiry_code=0):
+    def historical_daily_data(self, security_id: str, exchange_segment: ExchangeSegment,
+                              instrument_type: InstrumentType, from_date: str, to_date: str,
+                              expiry_code: ExpiryCode=ExpiryCode.CURRENT_OR_NEAR_EXPIRY):
         """
         Retrieve OHLC & Volume of daily candle for desired instrument.
 
         Args:
             security_id (str): Security ID of the instrument.
-            exchange_segment (str): The exchange segment (e.g., NSE, BSE).
-            instrument_type (str): The type of instrument (e.g., stock, option).
-            expiry_code (str): The expiry code for derivatives.
+            exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
+            instrument_type (InstrumentType): The type of instrument (e.g., stock, option).
+            expiry_code (ExpiryCode): The expiry code for derivatives, the default value being CURRENT_OR_NEAR_EXPIRY.
             from_date (str): The start date for the historical data.
             to_date (str): The end date for the historical data.
 
         Returns:
             dict: The response containing historical daily data.
         """
-        if expiry_code not in [0, 1, 2, 3]:
-            # Raising and catching an exception in same method is bad practice. Replaced it with this clean code
-            err = "expiry_code value must be ['0','1','2','3']"
-            logging.error('Exception in dhanhq>>intraday_history_minute_charts: %s', err)
-            return {
-                'status': 'failure',
-                'remarks': err,
-                'data': '',
-            }
         endpoint = '/charts/historical'
         payload = {
             "securityId": security_id,
-            "exchangeSegment": exchange_segment,
-            "instrument": instrument_type,
-            "expiryCode": expiry_code,
+            "exchangeSegment": exchange_segment.name,
+            "instrument": instrument_type.name,
+            "expiryCode": expiry_code.value,
             "fromDate": from_date,
             "toDate": to_date
         }
