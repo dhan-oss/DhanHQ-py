@@ -1,27 +1,15 @@
-from json import dumps as json_dumps
 from unittest.mock import patch
 
-import pytest
-
-from dhanhq import DhanContext
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.leg_name import LegName
-from dhanhq.constants.order_flag import OrderFlag
-from dhanhq.constants.order_type import OrderType
-from dhanhq.constants.product_type import ProductType
-from dhanhq.constants.transaction_type import TransactionType
-from dhanhq.constants.validity import Validity
-from dhanhq.dhan_http import DhanHTTP
-from dhanhq.dhancore import DhanCore
+from dhanhq.constants import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
 
 
 class TestDhanhq_ForeverOrder:
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_get_forever(self,mock_read_request,dhanhq_obj):
         dhanhq_obj.get_forever()
         mock_read_request.assert_called_once_with('/forever/orders')
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_place_forever(self,mock_create_request, dhanhq_obj):
         endpoint = '/forever/orders'
         quantity = 100
@@ -32,7 +20,7 @@ class TestDhanhq_ForeverOrder:
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhan_http.DhanHTTP.put")
+    @patch("dhanhq.http.DhanHTTP.put")
     def test_modify_forever(self, mock_update_request, dhanhq_obj):
         order_id = 123
         endpoint = f'/forever/orders/{order_id}'
@@ -45,7 +33,7 @@ class TestDhanhq_ForeverOrder:
         mock_update_request.assert_called_once()
         assert mock_update_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhan_http.DhanHTTP.delete")
+    @patch("dhanhq.http.DhanHTTP.delete")
     def test_cancel_forever(self, mock_delete_request, dhanhq_obj):
         order_id = "123"
         endpoint = f'/forever/orders/{order_id}'

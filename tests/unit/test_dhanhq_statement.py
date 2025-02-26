@@ -1,30 +1,24 @@
-from json import dumps as json_dumps
 from unittest.mock import patch
 
-import pytest
-
-from dhanhq import DhanContext
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.instrument_type import InstrumentType
-from dhanhq.dhan_http import DhanHTTP
-from dhanhq.dhancore import DhanCore
+from dhanhq.constants import ExchangeSegment, InstrumentType
+from dhanhq.http import DhanHTTP
 
 
 class TestDhanhq_Statement:
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_get_trade_book_without_orderid(self, mock_read_request, dhanhq_obj):
         endpoint = '/trades/'
         dhanhq_obj.get_trade_book()
         mock_read_request.assert_called_once_with(endpoint)
 
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_get_trade_book_with_orderid(self, mock_read_request, dhanhq_obj):
         order_id = "order_id"
         endpoint = f'/trades/{order_id}'
         dhanhq_obj.get_trade_book(order_id)
         mock_read_request.assert_called_once_with(endpoint)
 
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_get_trade_history(self, mock_read_request, dhanhq_obj):
         from_date = "from_date"
         to_date = "to_date"
@@ -33,7 +27,7 @@ class TestDhanhq_Statement:
         dhanhq_obj.get_trade_history(from_date,to_date,page_number)
         mock_read_request.assert_called_once_with(endpoint)
 
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_ledger_report(self, mock_read_request, dhanhq_obj):
         from_date = "from_date"
         to_date = "to_date"
@@ -41,7 +35,7 @@ class TestDhanhq_Statement:
         dhanhq_obj.ledger_report(from_date,to_date)
         mock_read_request.assert_called_once_with(endpoint)
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_intraday_minute_data(self, mock_create_request, dhanhq_obj):
         endpoint = f'/charts/intraday'
         security_id="security_id"
@@ -55,7 +49,7 @@ class TestDhanhq_Statement:
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_historical_daily_data(self, mock_create_request, dhanhq_obj):
         endpoint = f'/charts/historical'
         security_id='security_id'
@@ -69,7 +63,7 @@ class TestDhanhq_Statement:
         assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
         assert mock_create_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_ticker_data(self, mock_create_request, dhanhq_obj):
         endpoint = '/marketfeed/ltp'
         securities = {
@@ -83,7 +77,7 @@ class TestDhanhq_Statement:
         assert mock_create_request.call_args[0][0] == endpoint
         assert mock_create_request.call_args[0][1] == securities
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_ohlc_data(self, mock_create_request, dhanhq_obj):
         endpoint = '/marketfeed/ohlc'
         securities = {
@@ -97,7 +91,7 @@ class TestDhanhq_Statement:
         assert mock_create_request.call_args[0][0] == endpoint
         assert mock_create_request.call_args[0][1] == securities
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_quote_data(self, mock_create_request, dhanhq_obj):
         endpoint = '/marketfeed/quote'
         securities = {
@@ -111,7 +105,7 @@ class TestDhanhq_Statement:
         assert mock_create_request.call_args[0][0] == endpoint
         assert mock_create_request.call_args[0][1] == securities
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_option_chain(self, mock_create_request, dhanhq_obj):
         endpoint = '/optionchain'
         mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
@@ -120,7 +114,7 @@ class TestDhanhq_Statement:
         assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
         assert mock_create_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @patch("dhanhq.http.DhanHTTP.post")
     def test_expiry_list(self, mock_create_request, dhanhq_obj):
         endpoint = '/optionchain/expirylist'
         mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}

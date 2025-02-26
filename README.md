@@ -49,7 +49,7 @@ DhanHQ v2.1 is more modular and secure.
   Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
 
 
-- Its SDK users, no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanContext` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanContext just once and use that context for other API classes. Quick glance of how affected code initialization is below:
+- Its SDK users, no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanConnection` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanConnection just once and use that context for other API classes. Quick glance of how affected code initialization is below:
 
   | Before This Version                                | After This Release                   |
   |----------------------------------------------------|--------------------------------------|
@@ -136,10 +136,10 @@ pip install dhanhq
 ### Hands-on API
 
 ```python
-from dhanhq import DhanContext, DhanCore 
+from dhanhq import DhanConnection, DhanCore
 from dhanhq.constants.exchange_segment import ExchangeSegment
 
-dhan_context = DhanContext("client_id", "access_token")
+dhan_context = DhanConnection("client_id", "access_token")
 dhan = DhanCore(dhan_context)
 
 # Place an order for Equity Cash
@@ -245,33 +245,34 @@ dhan.place_forever(
 ```
 
 ### Market Feed Usage
+
 ```python
-from dhanhq import DhanContext, DhanFeed
+from dhanhq import DhanConnection, DhanFeed
 
 # Define and use your dhan_context if you haven't already done so like below:
-dhan_context = DhanContext("client_id","access_token")
+dhan_context = DhanConnection("client_id", "access_token")
 
 # Structure for subscribing is (exchange_segment, "security_id", subscription_type)
 
-instruments = [(DhanFeed.NSE, "1333", DhanFeed.Ticker),   # Ticker - Ticker Data
-    (DhanFeed.NSE, "1333", DhanFeed.Quote),     # Quote - Quote Data
-    (DhanFeed.NSE, "1333", DhanFeed.Full),      # Full - Full Packet
-    (DhanFeed.NSE, "11915", DhanFeed.Ticker),
-    (DhanFeed.NSE, "11915", DhanFeed.Full)]
+instruments = [(DhanFeed.NSE, "1333", DhanFeed.Ticker),  # Ticker - Ticker Data
+               (DhanFeed.NSE, "1333", DhanFeed.Quote),  # Quote - Quote Data
+               (DhanFeed.NSE, "1333", DhanFeed.Full),  # Full - Full Packet
+               (DhanFeed.NSE, "11915", DhanFeed.Ticker),
+               (DhanFeed.NSE, "11915", DhanFeed.Full)]
 
-version = "v2"          # Mention Version and set to latest version 'v2'
+version = "v2"  # Mention Version and set to latest version 'v2'
 
 # In case subscription_type is left as blank, by default Ticker mode will be subscribed.
 
 try:
-    data = DhanFeed(dhan_context, instruments, version)
-    while True:
-        data.run_forever()
-        response = data.get_data()
-        print(response)
+  data = DhanFeed(dhan_context, instruments, version)
+  while True:
+    data.run_forever()
+    response = data.get_data()
+    print(response)
 
 except Exception as e:
-    print(e)
+  print(e)
 
 # Close Connection
 data.disconnect()
@@ -288,21 +289,24 @@ data.unsubscribe_symbols(unsub_instruments)
 ```
 
 ### Live Order Update Usage
+
 ```python
-from dhanhq import DhanContext, OrderSocket
+from dhanhq import DhanConnection, OrderSocket
 import time
 
 # Define and use your dhan_context if you haven't already done so like below:
-dhan_context = DhanContext("client_id","access_token")
+dhan_context = DhanConnection("client_id", "access_token")
+
 
 def run_order_update():
-    order_client = OrderSocket(dhan_context)
-    while True:
-        try:
-            order_client.connect_to_dhan_websocket_sync()
-        except Exception as e:
-            print(f"Error connecting to Dhan WebSocket: {e}. Reconnecting in 5 seconds...")
-            time.sleep(5)
+  order_client = OrderSocket(dhan_context)
+  while True:
+    try:
+      order_client.connect_to_dhan_websocket_sync()
+    except Exception as e:
+      print(f"Error connecting to Dhan WebSocket: {e}. Reconnecting in 5 seconds...")
+      time.sleep(5)
+
 
 run_order_update()
 ```

@@ -11,10 +11,10 @@
 import logging
 from typing import Optional
 
-from dhanhq.dhan_http import DhanHTTP
+from dhanhq.http import DhanHTTP
 #from dhanhq.dhan_websocket import DhanHQWebSocket # If you have a WebSocket class
 
-class DhanContext:
+class DhanConnection:
     """
         A class that encapsulates connection context to Dhan APIs like client-id, access-tocken, base-url
         and passes this to all the connection protocols like http and websocket that it is composed of.
@@ -48,7 +48,7 @@ class DhanContext:
         Return HTTP Connection Request object that has all necessary context to connect to Dhan API
 
         Returns
-        http_connection_request (DhanHTTP): DhanContext enabled HTTP Connection Request object
+        http_connection_request (DhanHTTP): DhanConnection enabled HTTP Connection Request object
         """
         return self.dhan_http
 

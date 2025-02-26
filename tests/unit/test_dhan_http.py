@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 import requests
 
-from dhanhq.dhan_http import DhanHTTP
+from dhanhq.http import DhanHTTP
 
 @pytest.fixture
 def dhan_http():
@@ -94,26 +94,26 @@ class TestDhan_Private_SendRequest:
         assert response['status'] == 'failure'
 
 class TestDhan_CRUD_Methods:
-    @patch("dhanhq.DhanHTTP._send_request")
+    @patch("dhanhq.http.DhanHTTP._send_request")
     def test_get(self,mock_send_request,dhan_http):
         endpoint = "/endpoint"
         dhan_http.get(endpoint)
         mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.GET, endpoint, )
 
-    @patch("dhanhq.DhanHTTP._send_request")
+    @patch("dhanhq.http.DhanHTTP._send_request")
     def test_delete(self,mock_send_request,dhan_http):
         endpoint = "/endpoint"
         dhan_http.delete(endpoint)
         mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.DELETE, endpoint)
 
-    @patch("dhanhq.DhanHTTP._send_request")
+    @patch("dhanhq.http.DhanHTTP._send_request")
     def test_put(self,mock_send_request,dhan_http):
         endpoint = "/endpoint"
         payload = {"key": "value"}
         dhan_http.put(endpoint,payload)
         mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.PUT, endpoint, payload)
 
-    @patch("dhanhq.DhanHTTP._send_request")
+    @patch("dhanhq.http.DhanHTTP._send_request")
     def test_post(self,mock_send_request,dhan_http):
         endpoint = "/endpoint"
         payload = {"key": "value"}

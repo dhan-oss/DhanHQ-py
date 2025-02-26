@@ -11,15 +11,16 @@
 from datetime import datetime, timedelta, timezone, date
 from typing import Union
 
-from dhanhq import (Order, ForeverOrder, Portfolio, Statement, TraderControl, Security,
-                    HistoricalData, OptionChain, MarketFeed, Funds, DhanContext)
+from dhanhq.api import DhanConnection
+from dhanhq.api.ondemand import (Order, ForeverOrder, Portfolio, Statement, TraderControl, Security,
+                    HistoricalData, OptionChain, MarketFeed, Funds)
 
 
 class DhanCore(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
                MarketFeed, HistoricalData, OptionChain):
     """DhanHQ Class having Core APIs"""
 
-    def __init__(self, dhan_context :DhanContext):
+    def __init__(self, dhan_context :DhanConnection):
         for parent in [Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
                        MarketFeed, HistoricalData, OptionChain]:
             parent.__init__(self,dhan_context)

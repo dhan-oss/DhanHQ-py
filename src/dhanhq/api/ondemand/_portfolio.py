@@ -1,6 +1,4 @@
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.position_type import PositionType
-from dhanhq.constants.product_type import ProductType
+from dhanhq.constants import ExchangeSegment, PositionType, ProductType
 
 
 class Portfolio:

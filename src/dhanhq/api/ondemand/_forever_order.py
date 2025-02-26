@@ -1,12 +1,6 @@
 from typing import Optional
 
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.leg_name import LegName
-from dhanhq.constants.order_flag import OrderFlag
-from dhanhq.constants.order_type import OrderType
-from dhanhq.constants.product_type import ProductType
-from dhanhq.constants.transaction_type import TransactionType
-from dhanhq.constants.validity import Validity
+from dhanhq.constants import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
 
 
 class ForeverOrder:

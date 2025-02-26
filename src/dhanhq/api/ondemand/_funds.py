@@ -1,6 +1,4 @@
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.product_type import ProductType
-from dhanhq.constants.transaction_type import TransactionType
+from dhanhq.constants import ExchangeSegment, ProductType, TransactionType
 
 
 class Funds:

@@ -3,11 +3,7 @@ import os
 from pprint import pprint
 
 import pytest
-from dhanhq import DhanCore
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.position_type import PositionType
-from dhanhq.constants.product_type import ProductType
-from dhanhq.constants.transaction_type import TransactionType
+from dhanhq.constants import ExchangeSegment, PositionType, ProductType, TransactionType
 
 
 class TestE2E_Dhanhq_Portfolio:

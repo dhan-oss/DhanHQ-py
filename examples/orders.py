@@ -1,16 +1,10 @@
-from dhanhq import DhanCore, DhanContext
 import logging
-
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.leg_name import LegName
-from dhanhq.constants.order_type import OrderType
-from dhanhq.constants.product_type import ProductType
-from dhanhq.constants.transaction_type import TransactionType
-from dhanhq.constants.validity import Validity
+from dhanhq.api import DhanCore, DhanConnection
+from dhanhq.constants import ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
 
 logging.basicConfig(level=logging.DEBUG)
 
-dhan_context = DhanContext("client_id", "access_token")
+dhan_context = DhanConnection("client_id", "access_token")
 dhan = DhanCore(dhan_context)
 
 # Replace  your_client_id with Dhan Client ID.

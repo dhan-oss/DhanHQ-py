@@ -1,15 +1,11 @@
-from json import dumps as json_dumps
 from unittest.mock import patch
 
-import pytest
+from dhanhq.api import DhanCore
+from dhanhq.http import DhanHTTP
 
-import dhanhq.dhancore
-from dhanhq import DhanContext
-from dhanhq.dhan_http import DhanHTTP
-from dhanhq.dhancore import DhanCore
 
 class TestDhanhq_ElectronicDelivery:
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_generate_tpin_for_success(self, mock_read_request, dhanhq_obj):
         mock_read_request.return_value = { 'status': DhanHTTP.HttpResponseStatus.SUCCESS.value, 'remarks': '', 'data': '', }
         json_response = dhanhq_obj.generate_tpin()
@@ -17,7 +13,7 @@ class TestDhanhq_ElectronicDelivery:
         assert json_response['remarks'] == DhanCore.OTP_SENT # ToDo: Ideally, response.data should be set so
         assert json_response['data'] == ''
 
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_generate_tpin_for_failure(self, mock_read_request, dhanhq_obj):
         mock_read_request.return_value = {
             'status': DhanHTTP.HttpResponseStatus.FAILURE.value,
@@ -32,8 +28,8 @@ class TestDhanhq_ElectronicDelivery:
         assert json_response['remarks'].startswith('status code :')
         assert json_response['data'] == ''
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
-    @patch.object(dhanhq.dhancore.DhanCore,"_save_as_temp_html_file_and_open_in_browser")
+    @patch("dhanhq.http.DhanHTTP.post")
+    @patch.object(DhanCore, "_save_as_temp_html_file_and_open_in_browser")
     def test_open_browser_for_tpin_success(self, mock_save_and_open, mock_create_request, dhanhq_obj):
         # print(mock_create_request)
         # print(mock_save_and_open)
@@ -45,8 +41,8 @@ class TestDhanhq_ElectronicDelivery:
         assert response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
         mock_save_and_open.assert_called_once()
 
-    @patch('dhanhq.dhan_http.DhanHTTP.post')
-    @patch.object(dhanhq.dhancore.DhanCore,"_save_as_temp_html_file_and_open_in_browser")
+    @patch('dhanhq.http.DhanHTTP.post')
+    @patch.object(DhanCore, "_save_as_temp_html_file_and_open_in_browser")
     def test_open_browser_for_tpin_failure(self, mock_save_and_open, mock_create_request, dhanhq_obj):
         mock_create_request.return_value = {
             'status': DhanHTTP.HttpResponseStatus.FAILURE.value,
@@ -56,7 +52,7 @@ class TestDhanhq_ElectronicDelivery:
         assert response['status'] == DhanHTTP.HttpResponseStatus.FAILURE.value
         mock_save_and_open.assert_not_called()
 
-    @patch("dhanhq.dhan_http.DhanHTTP.get")
+    @patch("dhanhq.http.DhanHTTP.get")
     def test_edis_inquiry(self, mock_read_request, dhanhq_obj):
         isin = "123"
         endpoint = f'/edis/inquire/{isin}'

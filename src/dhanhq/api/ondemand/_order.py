@@ -1,12 +1,6 @@
 from typing import Optional
 
-from dhanhq.constants.amo_time import AMOTime
-from dhanhq.constants.exchange_segment import ExchangeSegment
-from dhanhq.constants.leg_name import LegName
-from dhanhq.constants.order_type import OrderType
-from dhanhq.constants.product_type import ProductType
-from dhanhq.constants.transaction_type import TransactionType
-from dhanhq.constants.validity import Validity
+from dhanhq.constants import AMOTime, ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
 
 
 class Order:
