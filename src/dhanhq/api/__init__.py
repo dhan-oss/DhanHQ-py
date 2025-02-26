@@ -1,4 +1,4 @@
 from .dhan_connection import DhanConnection
-from .dhancore import DhanCore
+from .dhan_core import DhanCore
 
 __all__ = ['DhanConnection', 'DhanCore']
