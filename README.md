@@ -36,15 +36,15 @@ DhanHQ v2.1 is more modular and secure.
   | Before This Version                                                    | After This Release                               |
   |------------------------------------------------------------------------|--------------------------------------------------|
   | from dhanhq import dhanhq | from dhanhq import dhanhq |
-  | from dhanhq import marketfeed.DhanFeed | from dhanhq import DhanFeed |
+  | from dhanhq import marketfeed.LiveMarketFeed | from dhanhq import LiveMarketFeed |
   | from dhanhq import orderupdate.OrderSocket | from dhanhq import OrderSocket |
 
 - The constants that were earlier part of modules `marketfeed` and `orderupdate` are now moved to its respective classes contained in the modules for better developer experience. 
 
   | Before This Version | After This Release |
   |---------------------|--------------------|
-  | marketfeed.NSE      | DhanFeed.NSE       |
-  | marketfeed.Ticker | DhanFeed.Ticker |
+  | marketfeed.NSE      | LiveMarketFeed.NSE       |
+  | marketfeed.Ticker | LiveMarketFeed.Ticker |
 
   Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
 
@@ -54,7 +54,7 @@ DhanHQ v2.1 is more modular and secure.
   | Before This Version                                | After This Release                   |
   |----------------------------------------------------|--------------------------------------|
   | `dhanhq('client_id','access_token')`               | `dhanhq('dhan_context')`              |
-  | `DhanFeed('client_id','access_token',instruments)` | `DhanFeed('dhan_context',instruments)` |
+  | `LiveMarketFeed('client_id','access_token',instruments)` | `LiveMarketFeed('dhan_context',instruments)` |
   | `OrderSocket('client_id','access_token')`          | `OrderSocket('dhan_context')`         |
 
   **Note:** The **_Hands-on API_** section is updated to reflect this change, for your convenience.
@@ -247,25 +247,25 @@ dhan.place_forever(
 
 ```python
 from dhanhq.api import DhanConnection 
-from dhanhq.api.stream import DhanFeed
+from dhanhq.api.stream import LiveMarketFeed
 
 # Define and use your dhan_context if you haven't already done so like below:
 dhan_context = DhanConnection("client_id", "access_token")
 
 # Structure for subscribing is (exchange_segment, "security_id", subscription_type)
 
-instruments = [(DhanFeed.NSE, "1333", DhanFeed.Ticker),  # Ticker - Ticker Data
-               (DhanFeed.NSE, "1333", DhanFeed.Quote),  # Quote - Quote Data
-               (DhanFeed.NSE, "1333", DhanFeed.Full),  # Full - Full Packet
-               (DhanFeed.NSE, "11915", DhanFeed.Ticker),
-               (DhanFeed.NSE, "11915", DhanFeed.Full)]
+instruments = [(LiveMarketFeed.NSE, "1333", LiveMarketFeed.Ticker),  # Ticker - Ticker Data
+               (LiveMarketFeed.NSE, "1333", LiveMarketFeed.Quote),  # Quote - Quote Data
+               (LiveMarketFeed.NSE, "1333", LiveMarketFeed.Full),  # Full - Full Packet
+               (LiveMarketFeed.NSE, "11915", LiveMarketFeed.Ticker),
+               (LiveMarketFeed.NSE, "11915", LiveMarketFeed.Full)]
 
 version = "v2"  # Mention Version and set to latest version 'v2'
 
 # In case subscription_type is left as blank, by default Ticker mode will be subscribed.
 
 try:
-  data = DhanFeed(dhan_context, instruments, version)
+  data = LiveMarketFeed(dhan_context, instruments, version)
   while True:
     data.run_forever()
     response = data.get_data()
@@ -278,12 +278,12 @@ except Exception as e:
 data.disconnect()
 
 # Subscribe instruments while connection is open
-sub_instruments = [(DhanFeed.NSE, "14436", DhanFeed.Ticker)]
+sub_instruments = [(LiveMarketFeed.NSE, "14436", LiveMarketFeed.Ticker)]
 
 data.subscribe_symbols(sub_instruments)
 
 # Unsubscribe instruments which are already active on connection
-unsub_instruments = [(DhanFeed.NSE, "1333", 16)]
+unsub_instruments = [(LiveMarketFeed.NSE, "1333", 16)]
 
 data.unsubscribe_symbols(unsub_instruments)
 ```

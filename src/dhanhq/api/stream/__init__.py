@@ -1,4 +1,4 @@
-from .marketfeed import DhanFeed
+from .live_market_feed import LiveMarketFeed
 from .orderupdate import OrderSocket
 
-__all__ = ['DhanFeed', 'OrderSocket']
+__all__ = ['LiveMarketFeed', 'OrderSocket']

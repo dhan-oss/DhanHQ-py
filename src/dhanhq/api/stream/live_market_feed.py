@@ -14,7 +14,7 @@ from collections import defaultdict
 import json
 
 
-class DhanFeed:
+class LiveMarketFeed:
     # Constants
     """WebSocket URL for DhanHQ Live Market Feed"""
     market_feed_wss_url = 'wss://api-feed.dhan.co?version=2&authType=2'
@@ -26,7 +26,7 @@ class DhanFeed:
     Full = 21
 
     def __init__(self, dhan_context, instruments, version='v1'):
-        """Initializes the DhanFeed instance with user credentials, instruments to subscribe, and callback functions."""
+        """Initializes the LiveMarketFeed instance with user credentials, instruments to subscribe, and callback functions."""
 
         self.client_id = dhan_context.get_client_id()
         self.access_token = dhan_context.get_access_token()
