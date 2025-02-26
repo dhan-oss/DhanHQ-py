@@ -10,6 +10,7 @@ __pycache__/
 .coverage
 .todo
 *.csv
+.coverage.*
 
 # Temp ignore
 *.toml

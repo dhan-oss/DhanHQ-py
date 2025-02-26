@@ -17,17 +17,21 @@ from dhanhq.api.ondemand import (OrderEndpoint, ForeverOrderEndpoint, PortfolioE
                                  MarketFeedEndpoint, FundsEndpoint)
 
 
-class DhanCore(OrderEndpoint, ForeverOrderEndpoint, PortfolioEndpoint, FundsEndpoint,
-               StatementEndpoint, TraderControlEndpoint, SecurityEndpoint,
-               MarketFeedEndpoint, HistoricalDataEndpoint, OptionChainEndpoint):
+class DhanCore:
     """DhanHQ Class having Core APIs"""
 
     def __init__(self, dhan_context :DhanConnection):
-        for parent in [OrderEndpoint, ForeverOrderEndpoint, PortfolioEndpoint, FundsEndpoint, StatementEndpoint,
-                       TraderControlEndpoint, SecurityEndpoint, MarketFeedEndpoint, HistoricalDataEndpoint,
-                       OptionChainEndpoint]:
-            parent.__init__(self,dhan_context)
         self.dhan_http = dhan_context.get_dhan_http()
+        self.orderEndpoint = OrderEndpoint(dhan_context)
+        self.foreverOrderEndpoint = ForeverOrderEndpoint(dhan_context)
+        self.portfolioEndpoint = PortfolioEndpoint(dhan_context)
+        self.fundsEndpoint = FundsEndpoint(dhan_context)
+        self.statementEndpoint = StatementEndpoint(dhan_context)
+        self.traderControlEndpoint = TraderControlEndpoint(dhan_context)
+        self.securityEndpoint = SecurityEndpoint(dhan_context)
+        self.marketFeedEndpoint = MarketFeedEndpoint(dhan_context)
+        self.historicalDataEndpoint = HistoricalDataEndpoint(dhan_context)
+        self.optionChainEndpoint = OptionChainEndpoint(dhan_context)
 
     @staticmethod
     def convert_to_date_time(epoch :int) -> Union[datetime, date]:

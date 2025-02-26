@@ -11,7 +11,7 @@ dhan = DhanCore(dhan_context)
 # Replace "your_access_token" with your access token. Do remember it needs to be inside "".
 
 # Place an order for Equity Cash
-dhan.place_order(security_id='1333',            # HDFC Bank
+dhan.orderEndpoint.place_order(security_id='1333',            # HDFC Bank
     exchange_segment=ExchangeSegment.NSE_EQ,
     transaction_type=TransactionType.BUY,
     quantity=10,
@@ -20,7 +20,7 @@ dhan.place_order(security_id='1333',            # HDFC Bank
     price=0)
 
 # Place an order for NSE Futures & Options
-dhan.place_order(security_id='52175',           # Nifty PE
+dhan.orderEndpoint.place_order(security_id='52175',           # Nifty PE
     exchange_segment=ExchangeSegment.NSE_FNO,
     transaction_type=TransactionType.BUY,
     quantity=550,
@@ -29,7 +29,7 @@ dhan.place_order(security_id='52175',           # Nifty PE
     price=0)
 
 # Place an order for Currency
-dhan.place_order(security_id= '10093',          # USDINR
+dhan.orderEndpoint.place_order(security_id= '10093',          # USDINR
     exchange_segment= ExchangeSegment.NSE_CURRENCY,
     transaction_type= TransactionType.BUY,
     quantity=1,
@@ -39,7 +39,7 @@ dhan.place_order(security_id= '10093',          # USDINR
     price=0)
 
 # Place an order for BSE Equity
-dhan.place_order(security_id='500180',          # HDFC Bank
+dhan.orderEndpoint.place_order(security_id='500180',          # HDFC Bank
     exchange_segment=ExchangeSegment.BSE_EQ,
     transaction_type=TransactionType.BUY,
     quantity=1,
@@ -48,7 +48,7 @@ dhan.place_order(security_id='500180',          # HDFC Bank
     price=0,)
 
 # Place an order for BSE Futures & Options
-dhan.place_order(security_id='1135553',         # Sensex PE
+dhan.orderEndpoint.place_order(security_id='1135553',         # Sensex PE
     exchange_segment=ExchangeSegment.BSE_FNO,
     transaction_type=TransactionType.BUY,
     quantity=1,
@@ -57,7 +57,7 @@ dhan.place_order(security_id='1135553',         # Sensex PE
     price=0,)
 
 # Place an order for MCX Commodity
-dhan.place_order(security_id= '114',            # Gold
+dhan.orderEndpoint.place_order(security_id= '114',            # Gold
     exchange_segment= ExchangeSegment.MCX_COMM,
     transaction_type= TransactionType.BUY,
     quantity=1,
@@ -66,7 +66,7 @@ dhan.place_order(security_id= '114',            # Gold
     price=0)
 
 # Place Slice Order
-dhan.place_slice_order(security_id='52175',     # Nifty PE
+dhan.orderEndpoint.place_slice_order(security_id='52175',     # Nifty PE
     exchange_segment=ExchangeSegment.NSE_FNO,
     transaction_type=TransactionType.BUY,
     quantity=2000,              #Nifty freeze quantity is 1800
@@ -75,7 +75,7 @@ dhan.place_slice_order(security_id='52175',     # Nifty PE
     price=0)
 
 # Place MTF Order
-dhan.place_order(security_id='1333',            # HDFC Bank
+dhan.orderEndpoint.place_order(security_id='1333',            # HDFC Bank
     exchange_segment=ExchangeSegment.NSE_EQ,
     transaction_type=TransactionType.BUY,
     quantity=100,
@@ -85,14 +85,14 @@ dhan.place_order(security_id='1333',            # HDFC Bank
 
 
 # Fetch all orders
-dhan.get_order_list()
+dhan.orderEndpoint.get_order_list()
 order_id= "13200000321"
 
 # Get order by id
-dhan.get_order_by_id(order_id)
+dhan.orderEndpoint.get_order_by_id(order_id)
 
 # Modify order
-dhan.modify_order(
+dhan.orderEndpoint.modify_order(
     order_id= "13200000321",
     order_type= OrderType.LIMIT,
     leg_name= LegName.ENTRY_LEG,
@@ -103,18 +103,18 @@ dhan.modify_order(
     validity= Validity.DAY)
 
 # Cancel order
-dhan.cancel_order(order_id)
+dhan.orderEndpoint.cancel_order(order_id)
 
 # Get order by correlation id
-dhan.get_order_by_correlationID("correlationID")
+dhan.orderEndpoint.get_order_by_correlationID("correlationID")
 
 # Get trade book
-dhan.get_trade_book()
+dhan.statementEndpoint.get_trade_book()
 
 # Get trades of an order
-dhan.get_trade_book(order_id)
+dhan.statementEndpoint.get_trade_book(order_id)
 
 # Get trade history
 from_date = "2025-01-01"
 to_date = "2025-01-31"
-dhan.get_trade_history(from_date,to_date,page_number=0)
+dhan.statementEndpoint.get_trade_history(from_date,to_date,page_number=0)

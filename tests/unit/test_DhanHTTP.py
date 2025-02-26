@@ -24,7 +24,7 @@ def mock_failure_response():
     mock_response._content = b'{"errorType": "test_error", "errorMessage": "test message"}'
     return mock_response
 
-class TestDhan_Constructor:
+class TestDhanHTTP_Constructor:
     def test_init_success(self, dhan_http):
         application_json = "application/json"
         client_id = "test_client_id"
@@ -38,7 +38,7 @@ class TestDhan_Constructor:
         assert dhan_http.header["Content-type"] == application_json
         assert dhan_http.header["Accept"] == application_json
 
-class TestDhan_Private_ParseResponse:
+class TestDhanHTTP_Private_ParseResponse:
     def test_parse_response_success_with_status_code_200(self, dhan_http, mock_success_response):
         json_response = dhan_http._parse_response(mock_success_response)
         assert json_response["status"] == "success"
@@ -59,7 +59,7 @@ class TestDhan_Private_ParseResponse:
         assert json_response["remarks"]["error_message"] == "test message"
         assert json_response["data"] == ""
 
-class TestDhan_Private_SendRequest:
+class TestDhanHTTP_Private_SendRequest:
     @patch("requests.Session.post")
     def test_send_request_with_payload_add_clientid_to_it(self,mock_requests_session_post, dhan_http):
         """Tests POST request with a payload and verifies payload content."""
@@ -93,7 +93,7 @@ class TestDhan_Private_SendRequest:
         response = dhan_http._send_request(DhanHTTP.HttpMethod.POST, endpoint, {"test": "test"})
         assert response['status'] == 'failure'
 
-class TestDhan_CRUD_Methods:
+class TestDhanHTTP_CRUD_Methods:
     @patch("dhanhq.http.DhanHTTP._send_request")
     def test_get(self,mock_send_request,dhan_http):
         endpoint = "/endpoint"
