@@ -1,6 +1,6 @@
 from dhanhq.constants.exchange_segment import ExchangeSegmentfrom dhanhq.constants.exchange_segment import ExchangeSegment
 
-# DhanHQ-py : v2.0.2
+# DhanHQ-py : v3.0.0
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -18,81 +18,21 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
+- [DhanHQ Java SDK](https://github.com/karthiks/DhanHQ-java)
 
-## v3 (upcoming release)
+> Vision: SDK APIs irrespective of the language share common experience as much as possible and that the SDK APIs mimic the API Doc, so that the later is the single source of truth!
+
+## v3.0.0
+
+> This version's API is completely new from its earlier version that has come this far with incessant refactoring of the legacy code that was buggy (see Github issues of the repository) and had no test coverage. 
+
+> Websockets are moved under `api.stream` package and the REST API endpoints are put under `api.ondemand` package. `DhanConnection` and `DhanCore` being the starting points for API interaction, are put under `api`. This SDK's API only gets better with your love, so start using it today in your algorithmic trading!
 
 - Renamed `dhanhq` class to `DhanCore`
 - Added Type-hints for static and dynamic type-checking of code and better end-user experience of SDK
 - Extracted and grouped constants under varied classes/enums to avoid bugs
-- (API akin to Java SDK, to have unified API experience irrespective of language version SDK used to access Dhan APIs) - WIP
-
-## v2.1 - What's new
-
-DhanHQ v2.1 is more modular and secure.
-
-- The project is restructured to contemporary "best practices" in the python world. How does this affect you? Your imports would change like below:
-
-
-  | Before This Version                                                    | After This Release                               |
-  |------------------------------------------------------------------------|--------------------------------------------------|
-  | from dhanhq import dhanhq | from dhanhq import dhanhq |
-  | from dhanhq import marketfeed.LiveMarketFeed | from dhanhq import LiveMarketFeed |
-  | from dhanhq import orderupdate.OrderSocket | from dhanhq import OrderSocket |
-
-- The constants that were earlier part of modules `marketfeed` and `orderupdate` are now moved to its respective classes contained in the modules for better developer experience. 
-
-  | Before This Version | After This Release |
-  |---------------------|--------------------|
-  | marketfeed.NSE      | LiveMarketFeed.NSE       |
-  | marketfeed.Ticker | LiveMarketFeed.Ticker |
-
-  Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
-
-
-- Its SDK users, no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanConnection` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanConnection just once and use that context for other API classes. Quick glance of how affected code initialization is below:
-
-  | Before This Version                                | After This Release                   |
-  |----------------------------------------------------|--------------------------------------|
-  | `dhanhq('client_id','access_token')`               | `dhanhq('dhan_context')`              |
-  | `LiveMarketFeed('client_id','access_token',instruments)` | `LiveMarketFeed('dhan_context',instruments)` |
-  | `OrderSocket('client_id','access_token')`          | `OrderSocket('dhan_context')`         |
-
-  **Note:** The **_Hands-on API_** section is updated to reflect this change, for your convenience.
-
-- Code coverage improvements with robust unit & integration tests for safe and speed delivery of features. Will strengthen even more in upcoming releases.
-
-## v2.0 - What's New
-
-DhanHQ v2 extends execution capability with live order updates, market quotes and forever orders on superfast APIs. Some of the key highlights from this version are:
-    
-- Fetch LTP, Quote (with OI) and Market Depth data directly on API, for upto 1000 instruments at once with Market Quote API.
-
-- Option Chain API which gives OI, greeks, volume, top bid/ask and price data of all strikes of a particular underlying.
-
-- Place, modify and manage your Forever Orders, including single and OCO orders to manage risk and trade efficiently with Forever Order API.
-
-- Order Updates are sent in real time via websockets, which will update order status of all your orders placed via any platform - `order_update`.
-
-- Intraday Minute Data now provides OHLC with Volume data for last 5 trading days across timeframes such as 1 min, 5 min, 15 min, 25 min and 60 min - `intraday_minute_data`.
-
-- Full Packet in Live Market Feed (`marketfeed`).
-
-- Margin Calculator (`margin_calculator`) and Kill Switch (`kill_switch`) APIs.
-
-### Breaking Changes
-
-- Replaced `intraday_daily_minute_data` and `historical_minute_charts` as functions from v1.2.4
-
-- `quantity` field needs to be placed order quantity instead of pending order quantity in Order Modification
-
-- EPOCH time instead of Julian time in Historical Data API, and same changed for `convert_to_date_time` function
-
-- `historical_daily_data` takes `security_id` as argument instead of `symbol`
-
-- Nomenclature changes in `get_order_by_corelationID` to `get_order_by_correlationID`.
-
-You can read about all other updates from DhanHQ V2 here: [DhanHQ Releases](https://dhanhq.co/docs/v2/releases/).
-
+- API akin to Java SDK, to have unified API experience irrespective of language version SDK used to access Dhan APIs
+- The code will become more object-oriented akin to its Java counterpart and as end-user developer you wouldn't miss the goodness of the language and the richness of the domain.
 
 ## Features
 
@@ -143,7 +83,7 @@ dhan_context = DhanConnection("client_id", "access_token")
 dhan = DhanCore(dhan_context)
 
 # Place an order for Equity Cash
-dhan.place_order(security_id='1333',  # HDFC Bank
+dhan.orderEndpoint.place_order(security_id='1333',  # HDFC Bank
                  exchange_segment=ExchangeSegment.NSE_EQ,
                  transaction_type=dhan.BUY,
                  quantity=10,
@@ -152,7 +92,7 @@ dhan.place_order(security_id='1333',  # HDFC Bank
                  price=0)
 
 # Place an order for NSE Futures & Options
-dhan.place_order(security_id='52175',  # Nifty PE
+dhan.orderEndpoint.place_order(security_id='52175',  # Nifty PE
                  exchange_segment=ExchangeSegment.NSE_FNO,
                  transaction_type=dhan.BUY,
                  quantity=550,
@@ -161,78 +101,78 @@ dhan.place_order(security_id='52175',  # Nifty PE
                  price=0)
 
 # Fetch all orders
-dhan.get_order_list()
+dhan.orderEndpoint.get_order_list()
 
 # Get order by id
-dhan.get_order_by_id(order_id)
+dhan.orderEndpoint.get_order_by_id(order_id)
 
 # Modify order
-dhan.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity)
+dhan.orderEndpoint.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity)
 
 # Cancel order
-dhan.cancel_order(order_id)
+dhan.orderEndpoint.cancel_order(order_id)
 
 # Get order by correlation id
-dhan.get_order_by_corelationID(corelationID)
+dhan.orderEndpoint.get_order_by_corelationID(corelationID)
 
 # Get Instrument List
-dhan.fetch_security_list("compact")
+dhan.securityEndpoint.fetch_security_list("compact")
 
 # Get positions
-dhan.get_positions()
+dhan.portfolioEndpoint.get_positions()
 
 # Get holdings
-dhan.get_holdings()
+dhan.portfolioEndpoint.get_holdings()
 
 # Intraday Minute Data
-dhan.intraday_minute_data(security_id, exchange_segment, instrument_type)
+dhan.orderEndpoint.intraday_minute_data(security_id, exchange_segment, instrument_type)
 
 # Historical Daily Data
-dhan.historical_daily_data(security_id, exchange_segment, instrument_type, expiry_code, from_date, to_date)
+dhan.historicalDataEndpoint.historical_daily_data(security_id, exchange_segment, instrument_type, expiry_code, from_date, to_date)
 
 # Time Converter
 dhan.convert_to_date_time(EPOCHDate)
 
 # Get trade book
-dhan.get_trade_book(order_id)
+dhan.statementEndpoint.get_trade_book(order_id)
 
 # Get trade history
-dhan.get_trade_history(from_date, to_date, page_number=0)
+dhan.statementEndpoint.get_trade_history(from_date, to_date, page_number=0)
 
 # Get fund limits
-dhan.get_fund_limits()
+dhan.fundsEndpoint.get_fund_limits()
 
 # Generate TPIN
-dhan.generate_tpin()
+dhan.securityEndpoint.generate_tpin()
 
 # Enter TPIN in Form
-dhan.open_browser_for_tpin(isin='INE00IN01015',
+dhan.securityEndpoint.open_browser_for_tpin(isin='INE00IN01015',
                            qty=1,
                            exchange='NSE')
 
 # EDIS Status and Inquiry
-dhan.edis_inquiry()
+dhan.securityEndpoint.edis_inquiry()
 
 # Expiry List of Underlying
-dhan.expiry_list(
+dhan.optionChainEndpoint.expiry_list(
   under_security_id=13,  # Nifty
   under_exchange_segment="IDX_I"
 )
 
 # Option Chain
-dhan.option_chain(
+dhan.optionChainEndpoint.option_chain(
   under_security_id=13,  # Nifty
   under_exchange_segment="IDX_I",
   expiry="2024-10-31"
 )
 
 # Market Quote Data                     # LTP - ticker_data, OHLC - ohlc_data, Full Packet - quote_data
-dhan.ohlc_data(
+dhan.marketFeedEndpoint.ohlc_data(
   securities={"NSE_EQ": [1333]}
 )
 
 # Place Forever Order (SINGLE)
-dhan.place_forever(
+dhan.foreverOrderEndpoint.place_forever(
   security_id="1333",
   exchange_segment=ExchangeSegment.NSE,
   transaction_type=dhan.BUY,
