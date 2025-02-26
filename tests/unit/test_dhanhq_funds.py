@@ -4,6 +4,9 @@ from unittest.mock import patch
 import pytest
 
 from dhanhq import DhanContext
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.product_type import ProductType
+from dhanhq.constants.transaction_type import TransactionType
 from dhanhq.dhan_http import DhanHTTP
 from dhanhq.dhancore import DhanCore
 
@@ -20,7 +23,7 @@ class TestDhanhq_Funds:
         endpoint = '/margincalculator'
         quantity=100
         price = 99.99
-        dhanhq_obj.margin_calculator("security_id", "exchange_segment", "transaction_type",
-                                     100, "product_type", price)
+        dhanhq_obj.margin_calculator("security_id", ExchangeSegment.NSE_EQ, TransactionType.BUY,
+                                     quantity, ProductType.MARGIN, price)
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint

@@ -1,3 +1,7 @@
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.position_type import PositionType
+from dhanhq.constants.product_type import ProductType
+
 
 class Portfolio:
 
@@ -22,8 +26,8 @@ class Portfolio:
         """
         return self.dhan_http.get('/positions')
 
-    def convert_position(self, from_product_type, exchange_segment, position_type,
-                         security_id, convert_qty, to_product_type):
+    def convert_position(self, from_product_type: ProductType, exchange_segment: ExchangeSegment,
+                         position_type: PositionType, security_id: str, convert_qty: int, to_product_type: ProductType) -> dict:
         """
         Convert Position from Intraday to Delivery or vice versa.
 

@@ -1,3 +1,4 @@
+from typing import Optional
 
 
 class Statement:
@@ -5,7 +6,7 @@ class Statement:
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def get_trade_book(self, order_id=None):
+    def get_trade_book(self, order_id :Optional[str]=None):
         """
         Retrieve a list of all trades executed in a day.
 
@@ -20,7 +21,7 @@ class Statement:
         endpoint = f'/trades/{order_id if order_id is not None else ""}'
         return self.dhan_http.get(endpoint)
 
-    def get_trade_history(self, from_date, to_date, page_number=0):
+    def get_trade_history(self, from_date: str, to_date: str, page_number: int=0) -> dict:
         """
         Retrieve the trade history for a specific date range.
 
@@ -35,7 +36,7 @@ class Statement:
         endpoint = f'/trades/{from_date}/{to_date}/{page_number}'
         return self.dhan_http.get(endpoint)
 
-    def ledger_report(self, from_date, to_date):
+    def ledger_report(self, from_date: str, to_date: str) -> dict:
         """
         Retrieve the ledger details for a specific date range.
 

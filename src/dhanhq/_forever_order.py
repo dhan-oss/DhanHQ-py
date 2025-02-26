@@ -1,4 +1,9 @@
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.leg_name import LegName
 from dhanhq.constants.order_flag import OrderFlag
+from dhanhq.constants.order_type import OrderType
+from dhanhq.constants.product_type import ProductType
+from dhanhq.constants.transaction_type import TransactionType
 from dhanhq.constants.validity import Validity
 
 
@@ -7,9 +12,11 @@ class ForeverOrder:
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def place_forever(self, security_id, exchange_segment, transaction_type, product_type, order_type,
-                      quantity, price, trigger_Price, order_flag=OrderFlag.SINGLE, disclosed_quantity=0, validity=Validity.DAY,
-                      price1=0, trigger_Price1=0, quantity1=0, tag=None, symbol=""):
+    def place_forever(self, security_id: str, exchange_segment: ExchangeSegment, transaction_type: TransactionType,
+                      product_type: ProductType, order_type: OrderType, quantity: int, price: float,
+                      trigger_Price: float, order_flag: OrderFlag=OrderFlag.SINGLE, disclosed_quantity: int=0,
+                      validity: Validity=Validity.DAY, price1: float=0, trigger_Price1: float=0, quantity1: int=0,
+                      tag: str=None, symbol: str="") -> dict[str,str]:
         """
         Place a new forever order in the Dhan account.
 
@@ -58,8 +65,8 @@ class ForeverOrder:
 
         return self.dhan_http.post(endpoint, payload)
 
-    def modify_forever(self, order_id, order_flag, order_type, leg_name,
-                       quantity, price, trigger_price, disclosed_quantity, validity):
+    def modify_forever(self, order_id: str, order_flag: OrderFlag, order_type: OrderType, leg_name: LegName,
+                       quantity: int, price: float, trigger_price: float, disclosed_quantity: int, validity: Validity) -> dict[str, str]:
         """
         Modify a forever order based on the specified leg name.
         The variables that can be modified include price, quantity, order type, and validity.

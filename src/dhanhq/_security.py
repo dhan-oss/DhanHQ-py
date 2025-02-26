@@ -4,7 +4,7 @@ from webbrowser import open as web_open
 import logging
 import requests
 
-from dhanhq import DhanHTTP
+from dhanhq import DhanHTTP, DhanContext
 
 
 class Security:
@@ -16,10 +16,10 @@ class Security:
     COMPACT_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master.csv'
     DETAILED_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master-detailed.csv'
 
-    def __init__(self, dhan_context):
+    def __init__(self, dhan_context: DhanContext):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def _save_as_temp_html_file_and_open_in_browser(self, form_html):
+    def _save_as_temp_html_file_and_open_in_browser(self, form_html: str) -> None:
         temp_web_form_html = "temp_form.html"
         with open(temp_web_form_html, "w") as f:
             f.write(form_html)

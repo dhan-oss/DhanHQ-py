@@ -11,6 +11,7 @@
 import logging
 from enum import Enum
 from json import dumps as json_dumps, loads as json_loads
+from typing import Optional
 
 import requests
 
@@ -23,7 +24,7 @@ class DhanHTTP:
         SUCCESS = 'success'
         FAILURE = 'failure'
 
-    class HttpMethods(Enum):
+    class HttpMethod(Enum):
         """Constants for HTTP Requests"""
         GET = 'GET'
         POST = 'POST'
@@ -33,7 +34,7 @@ class DhanHTTP:
     HTTP_DEFAULT_TIME_OUT = 60
     API_BASE_URL = 'https://api.dhan.co/v2'
 
-    def __init__(self, client_id, access_token, disable_ssl=False, pool=None):
+    def __init__(self, client_id :str, access_token :str, disable_ssl=False, pool=None):
         self.client_id = client_id
         self.access_token = access_token
         self.base_url = DhanHTTP.API_BASE_URL
@@ -50,14 +51,13 @@ class DhanHTTP:
             reqadapter = requests.adapters.HTTPAdapter(**pool) # type: ignore
             self.session.mount("https://", reqadapter)
 
-    def _send_request(self, method, endpoint, payload=None):
+    def _send_request(self, method :HttpMethod, endpoint :str, payload: Optional[dict]={}) -> dict:
         url = self.base_url + endpoint
         if payload:
             payload["dhanClientId"] = self.client_id
-            payload = json_dumps(payload)
         try:
             response = getattr(self.session, method.value.lower())(url,
-                                                                   data=payload,
+                                                                   data=json_dumps(payload),
                                                                    headers=self.header,
                                                                    timeout=self.timeout)
             return self._parse_response(response)
@@ -103,7 +103,7 @@ class DhanHTTP:
             'data': data,
         }
 
-    def get(self, endpoint):
+    def get(self, endpoint: str) -> dict:
         """
         Do HTTP-GET request to Dhan Endpoint.
 
@@ -113,9 +113,9 @@ class DhanHTTP:
         Returns:
         dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethods.GET, endpoint)
+        return self._send_request(DhanHTTP.HttpMethod.GET, endpoint)
 
-    def post(self, endpoint, payload):
+    def post(self, endpoint: str, payload: dict) -> dict:
         """
         Do HTTP-POST request to Dhan Endpoint.
 
@@ -126,9 +126,9 @@ class DhanHTTP:
         Returns:
         dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethods.POST, endpoint, payload)
+        return self._send_request(DhanHTTP.HttpMethod.POST, endpoint, payload)
 
-    def put(self, endpoint, payload):
+    def put(self, endpoint: str, payload: dict) -> dict:
         """
         Do HTTP-PUT request to Dhan Endpoint.
 
@@ -139,9 +139,9 @@ class DhanHTTP:
         Returns:
         dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethods.PUT, endpoint, payload)
+        return self._send_request(DhanHTTP.HttpMethod.PUT, endpoint, payload)
 
-    def delete(self, endpoint):
+    def delete(self, endpoint: str) -> dict:
         """
         Do HTTP-DELETE request to Dhan Endpoint.
 
@@ -151,4 +151,4 @@ class DhanHTTP:
         Returns:
         dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethods.DELETE, endpoint)
+        return self._send_request(DhanHTTP.HttpMethod.DELETE, endpoint)

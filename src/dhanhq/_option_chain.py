@@ -1,10 +1,12 @@
+from dhanhq.constants.exchange_segment import ExchangeSegment
+
 
 class OptionChain:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def option_chain(self, under_security_id, under_exchange_segment, expiry):
+    def option_chain(self, under_security_id: int, under_exchange_segment: str, expiry: str) -> dict[str,str]:
         """
         Retrieve the real-time Option Chain for a specified underlying instrument.
 
@@ -25,13 +27,13 @@ class OptionChain:
         }
         return self.dhan_http.post(endpoint, payload)
 
-    def expiry_list(self, under_security_id, under_exchange_segment):
+    def expiry_list(self, under_security_id:int, under_exchange_segment: ExchangeSegment) -> dict[str,str]:
         """
         Retrieve the dates of all expiries for a specified underlying instrument.
 
         Args:
             under_security_id (int): The security ID of the underlying instrument.
-            under_exchange_segment (str): The exchange segment of the underlying instrument (e.g., NSE, BSE).
+            under_exchange_segment (ExchangeSegment): The exchange segment of the underlying instrument (e.g., NSE_EQ, BSE_FNO).
 
         Returns:
             dict: The response containing list of dates for which option expiries
@@ -40,7 +42,7 @@ class OptionChain:
         endpoint = '/optionchain/expirylist'
         payload = {
             "UnderlyingScrip": under_security_id,
-            "UnderlyingSeg": under_exchange_segment
+            "UnderlyingSeg": under_exchange_segment.name
         }
         return self.dhan_http.post(endpoint, payload)
 

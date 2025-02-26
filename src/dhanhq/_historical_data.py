@@ -4,19 +4,26 @@ This data is presented in the form of a candle and gives you timestamp, open, hi
 """
 import logging
 
+from dhanhq.constants.exchange_segment import ExchangeSegment
+
+
 class HistoricalData:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def intraday_minute_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, interval=1):
+    def intraday_minute_data(self, security_id: str, exchange_segment: ExchangeSegment, instrument_type: str,
+                             from_date:str, to_date: str, interval: int=1):
         """
         Retrieve OHLC & Volume of minute candles for desired instrument for last 5 trading day.
 
         Args:
             security_id (str): The ID of the security.
-            exchange_segment (str): The exchange segment (e.g., NSE, BSE).
+            exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
             instrument_type (str): The type of instrument (e.g., stock, option).
+            from_date (str): from data
+            to_date (str): to date
+            interval (int): Defaults to 1 minute interval.
 
         Returns:
             dict: The response containing intraday minute data.
@@ -33,7 +40,7 @@ class HistoricalData:
         endpoint = '/charts/intraday'
         payload = {
             'securityId': security_id,
-            'exchangeSegment': exchange_segment,
+            'exchangeSegment': exchange_segment.name,
             'instrument': instrument_type,
             'interval': interval,
             'fromDate': from_date,

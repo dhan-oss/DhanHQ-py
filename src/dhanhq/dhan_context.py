@@ -9,6 +9,7 @@
 """
 
 import logging
+from typing import Optional
 
 from dhanhq.dhan_http import DhanHTTP
 #from dhanhq.dhan_websocket import DhanHQWebSocket # If you have a WebSocket class
@@ -19,7 +20,7 @@ class DhanContext:
         and passes this to all the connection protocols like http and websocket that it is composed of.
     """
 
-    def __init__(self, client_id, access_token, disable_ssl=False, pool=None):
+    def __init__(self, client_id: str, access_token: str, disable_ssl: bool=False, pool: Optional[dict]=None):
         try:
             self.client_id = client_id
             self.access_token = access_token
@@ -28,21 +29,21 @@ class DhanContext:
         except Exception as e:
             logging.error('Exception in dhanhq>>init : %s', e)
 
-    def get_client_id(self):
+    def get_client_id(self) -> str:
         """
         Return client's id that is used to identify the client interacting with Dhan API
         Returns client_id that is used to identify the client interacting with Dhan API
         """
         return self.client_id
 
-    def get_access_token(self):
+    def get_access_token(self) -> str:
         """
         Return authorization token that is used for connecting to Dhan API
         Returns access_token that is used for authorization in accessing Dhan API
         """
         return self.access_token
 
-    def get_dhan_http(self):
+    def get_dhan_http(self) -> DhanHTTP:
         """
         Return HTTP Connection Request object that has all necessary context to connect to Dhan API
 

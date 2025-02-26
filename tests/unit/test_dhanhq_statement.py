@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from dhanhq import DhanContext
+from dhanhq.constants.exchange_segment import ExchangeSegment
 from dhanhq.dhan_http import DhanHTTP
 from dhanhq.dhancore import DhanCore
 
@@ -43,7 +44,7 @@ class TestDhanhq_Statement:
     def test_intraday_minute_data(self, mock_create_request, dhanhq_obj):
         endpoint = f'/charts/intraday'
         security_id="security_id"
-        exchange_segment="exchange_segment"
+        exchange_segment=ExchangeSegment.NSE_EQ
         instrument_type="instrument_type"
         from_date="from_date"
         to_date="to_date"
@@ -56,7 +57,7 @@ class TestDhanhq_Statement:
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_intraday_minute_data_fails_for_bad_interval_input(self, mock_create_request, dhanhq_obj):
         security_id="security_id"
-        exchange_segment="exchange_segment"
+        exchange_segment=ExchangeSegment.NSE_EQ
         instrument_type="instrument_type"
         from_date="from_date"
         to_date="to_date"
@@ -69,7 +70,7 @@ class TestDhanhq_Statement:
     def test_historical_daily_data(self, mock_create_request, dhanhq_obj):
         endpoint = f'/charts/historical'
         security_id='security_id'
-        exchange_segment='exchange_segment'
+        exchange_segment=ExchangeSegment.NSE_EQ
         instrument_type='instrument_type'
         from_date="from_date"
         to_date="to_date"
@@ -82,7 +83,7 @@ class TestDhanhq_Statement:
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_historical_daily_data_fails_for_bad_expiry_code(self, mock_create_request, dhanhq_obj):
         security_id='security_id'
-        exchange_segment='exchange_segment'
+        exchange_segment=ExchangeSegment.NSE_EQ
         instrument_type='instrument_type'
         from_date="from_date"
         to_date="to_date"
@@ -146,7 +147,7 @@ class TestDhanhq_Statement:
     def test_expiry_list(self, mock_create_request, dhanhq_obj):
         endpoint = '/optionchain/expirylist'
         mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
-        json_response = dhanhq_obj.expiry_list("under_security_id", "under_exchange_segment")
+        json_response = dhanhq_obj.expiry_list("under_security_id", ExchangeSegment.NSE_FNO)
         mock_create_request.assert_called_once()
         assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
         assert mock_create_request.call_args[0][0] == endpoint

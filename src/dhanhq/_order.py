@@ -1,4 +1,11 @@
+from typing import Optional
+
 from dhanhq.constants.amo_time import AMOTime
+from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.constants.leg_name import LegName
+from dhanhq.constants.order_type import OrderType
+from dhanhq.constants.product_type import ProductType
+from dhanhq.constants.transaction_type import TransactionType
 from dhanhq.constants.validity import Validity
 
 
@@ -16,7 +23,7 @@ class Order:
         """
         return self.dhan_http.get('/orders')
 
-    def get_order_by_id(self, order_id):
+    def get_order_by_id(self, order_id: str) -> dict[str, str]:
         """
         Retrieve the details and status of an order from the orderbook placed during the day.
 
@@ -28,7 +35,7 @@ class Order:
         """
         return self.dhan_http.get(f'/orders/{order_id}')
 
-    def get_order_by_correlationID(self, correlation_id):
+    def get_order_by_correlationID(self, correlation_id: str) -> dict[str, str]:
         """
         Retrieve the order status using a field called correlation_id.
 
@@ -40,8 +47,9 @@ class Order:
         """
         return self.dhan_http.get(f'/orders/external/{correlation_id}')
 
-    def modify_order(self, order_id, order_type, leg_name, quantity,
-                     price, trigger_price, disclosed_quantity, validity):
+    def modify_order(self, order_id: str, order_type: OrderType, leg_name: LegName,
+                     quantity: int, price: float, trigger_price: float,
+                     disclosed_quantity: int, validity: Validity) -> dict[str, str]:
         """
         Modify a pending order in the orderbook.
 
@@ -70,7 +78,7 @@ class Order:
         }
         return self.dhan_http.put(f'/orders/{order_id}', payload)
 
-    def cancel_order(self, order_id):
+    def cancel_order(self, order_id: str):
         """
         Cancel a pending order in the orderbook using the order ID.
 
@@ -82,10 +90,11 @@ class Order:
         """
         return self.dhan_http.delete(f'/orders/{order_id}')
 
-    def place_order(self, security_id, exchange_segment, transaction_type, quantity,
-                    order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
-                    after_market_order=False, validity=Validity.DAY, amo_time=AMOTime.OPEN,
-                    bo_profit_value=None, bo_stop_loss_Value=None, tag=None, should_slice=False):
+    def place_order(self, security_id: str, exchange_segment: ExchangeSegment, transaction_type: TransactionType,
+                    quantity: int, order_type: OrderType, product_type: ProductType, price: float,
+                    trigger_price :float=0, disclosed_quantity: int=0, after_market_order: bool=False,
+                    validity: Validity=Validity.DAY, amo_time: AMOTime=AMOTime.OPEN, bo_profit_value: float=0,
+                    bo_stop_loss_Value: float=0, tag: Optional[str]=None, should_slice: bool=False) -> dict[str, str]:
         """
         Place a new order in the Dhan account.
 
@@ -105,6 +114,7 @@ class Order:
             bo_profit_value (float): The profit value for BO orders.
             bo_stop_loss_Value (float): The stop loss value for BO orders.
             tag (str): Optional correlation ID for tracking.
+            should_slice (bool): Defaults to False. Set True to slice order.
 
         Returns:
             dict: The response containing the status of the order placement.
@@ -135,10 +145,11 @@ class Order:
             endpoint += '/slicing'
         return self.dhan_http.post(endpoint, payload)
 
-    def place_slice_order(self, security_id, exchange_segment, transaction_type, quantity,
-                          order_type, product_type, price, trigger_price=0, disclosed_quantity=0,
-                          after_market_order=False, validity=Validity.DAY, amo_time=AMOTime.OPEN,
-                          bo_profit_value=None, bo_stop_loss_Value=None, tag=None):
+    def place_slice_order(self, security_id: str, exchange_segment: ExchangeSegment, transaction_type: TransactionType,
+                    quantity: int, order_type: OrderType, product_type: ProductType, price: float,
+                    trigger_price :float=0, disclosed_quantity: int=0, after_market_order: bool=False,
+                    validity: Validity=Validity.DAY, amo_time: AMOTime=AMOTime.OPEN, bo_profit_value: float=0,
+                    bo_stop_loss_Value: float=0, tag: Optional[str]=None) -> dict[str, str]:
         """
         Place a new slice order in the Dhan account.
 
