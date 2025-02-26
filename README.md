@@ -19,10 +19,12 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
 
-## v3
+## v3 (upcoming release)
 
 - Renamed `dhanhq` class to `DhanCore`
-- Added Type-checking cabability in code
+- Added Type-hints for static and dynamic type-checking of code and better end-user experience of SDK
+- Extracted and grouped constants under varied classes/enums to avoid bugs
+- (API akin to Java SDK, to have unified API experience irrespective of language version SDK used to access Dhan APIs) - WIP
 
 ## v2.1 - What's new
 
