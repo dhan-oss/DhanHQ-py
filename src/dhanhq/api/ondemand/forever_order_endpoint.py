@@ -3,7 +3,7 @@ from typing import Optional
 from dhanhq.constants import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
 
 
-class ForeverOrder:
+class ForeverOrderEndpoint:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()

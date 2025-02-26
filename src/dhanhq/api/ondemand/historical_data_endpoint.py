@@ -7,7 +7,7 @@ import logging
 from dhanhq.constants import ExchangeSegment, ExpiryCode, InstrumentType, Interval
 
 
-class HistoricalData:
+class HistoricalDataEndpoint:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
@@ -46,7 +46,7 @@ class HistoricalData:
         Retrieve OHLC & Volume of daily candle for desired instrument.
 
         Args:
-            security_id (str): Security ID of the instrument.
+            security_id (str): SecurityEndpoint ID of the instrument.
             exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
             instrument_type (InstrumentType): The type of instrument (e.g., stock, option).
             expiry_code (ExpiryCode): The expiry code for derivatives, the default value being CURRENT_OR_NEAR_EXPIRY.

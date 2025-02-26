@@ -7,12 +7,12 @@ import requests
 from dhanhq.api import DhanConnection
 from dhanhq.http import DhanHTTP
 
-class Security:
+class SecurityEndpoint:
 
     """"Constants for HTTP Responses"""
     OTP_SENT = 'OTP sent'
 
-    """CSV URL for Security ID List"""
+    """CSV URL for SecurityEndpoint ID List"""
     COMPACT_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master.csv'
     DETAILED_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master-detailed.csv'
 
@@ -104,9 +104,9 @@ class Security:
         import pandas as pd
         try:
             if mode == 'compact':
-                csv_url = Security.COMPACT_CSV_URL
+                csv_url = SecurityEndpoint.COMPACT_CSV_URL
             elif mode == 'detailed':
-                csv_url = Security.DETAILED_CSV_URL
+                csv_url = SecurityEndpoint.DETAILED_CSV_URL
             else:
                 raise ValueError("Invalid mode. Choose 'compact' or 'detailed'.")
 

@@ -3,7 +3,7 @@ from typing import Optional
 from dhanhq.constants import AMOTime, ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
 
 
-class Order:
+class OrderEndpoint:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()

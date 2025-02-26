@@ -1,7 +1,7 @@
 from dhanhq.constants import ExchangeSegment, PositionType, ProductType
 
 
-class Portfolio:
+class PortfolioEndpoint:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()

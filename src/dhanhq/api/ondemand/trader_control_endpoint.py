@@ -1,7 +1,7 @@
 from dhanhq.constants.kill_switch_status import KillSwitchStatus
 
 
-class TraderControl:
+class TraderControlEndpoint:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()

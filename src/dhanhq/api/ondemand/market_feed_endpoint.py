@@ -1,5 +1,5 @@
 
-class MarketFeed:
+class MarketFeedEndpoint:
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
