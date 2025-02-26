@@ -136,8 +136,8 @@ pip install dhanhq
 ### Hands-on API
 
 ```python
-from dhanhq import DhanConnection, DhanCore
-from dhanhq.constants.exchange_segment import ExchangeSegment
+from dhanhq.api import DhanConnection, DhanCore
+from dhanhq.constants import ExchangeSegment
 
 dhan_context = DhanConnection("client_id", "access_token")
 dhan = DhanCore(dhan_context)
@@ -191,8 +191,7 @@ dhan.intraday_minute_data(security_id, exchange_segment, instrument_type)
 dhan.historical_daily_data(security_id, exchange_segment, instrument_type, expiry_code, from_date, to_date)
 
 # Time Converter
-dhan.convert_to_date_time(EPOCH
-Date)
+dhan.convert_to_date_time(EPOCHDate)
 
 # Get trade book
 dhan.get_trade_book(order_id)
@@ -247,7 +246,8 @@ dhan.place_forever(
 ### Market Feed Usage
 
 ```python
-from dhanhq import DhanConnection, DhanFeed
+from dhanhq.api import DhanConnection 
+from dhanhq.api.stream import DhanFeed
 
 # Define and use your dhan_context if you haven't already done so like below:
 dhan_context = DhanConnection("client_id", "access_token")
@@ -291,7 +291,8 @@ data.unsubscribe_symbols(unsub_instruments)
 ### Live Order Update Usage
 
 ```python
-from dhanhq import DhanConnection, OrderSocket
+from dhanhq.api import DhanConnection 
+from dhanhq.api.stream import OrderSocket
 import time
 
 # Define and use your dhan_context if you haven't already done so like below:
