@@ -1,6 +1,18 @@
 {
   "venvPath": ".venv",
-  "include": ["src","tests", "examples"],
+  "include": [
+    "src",
+    "tests",
+    "examples"
+  ],
+
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs"
+  ],
+
   "reportAttributeAccessIssue": "warning",
   "reportPossiblyUnboundVariable": "warning"
 }
