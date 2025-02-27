@@ -1,6 +1,6 @@
 from typing import Optional
 
-from dhanhq.constants import AMOTime, ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
+from dhanhq.constant import AMOTime, ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
 
 
 class OrderEndpoint:

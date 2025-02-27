@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from dhanhq.constants import KillSwitchStatus
+from dhanhq.constant import KillSwitchStatus
 
 
 class TestDhanhq_TraderControls:

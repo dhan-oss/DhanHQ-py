@@ -1,4 +1,4 @@
-from dhanhq.constants import ExchangeSegment, ProductType, TransactionType
+from dhanhq.constant import ExchangeSegment, ProductType, TransactionType
 
 
 class FundsEndpoint:

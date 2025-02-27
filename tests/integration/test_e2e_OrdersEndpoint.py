@@ -3,7 +3,7 @@ import os
 from pprint import pprint
 
 import pytest
-from dhanhq.constants import ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
+from dhanhq.constant import ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
 
 
 # from tests.conftest import api_access_token_fixture

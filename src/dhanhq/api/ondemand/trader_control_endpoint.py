@@ -1,4 +1,4 @@
-from dhanhq.constants.kill_switch_status import KillSwitchStatus
+from dhanhq.constant.kill_switch_status import KillSwitchStatus
 
 
 class TraderControlEndpoint:

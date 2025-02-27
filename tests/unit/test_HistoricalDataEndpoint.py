@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from dhanhq.constants import ExchangeSegment, InstrumentType
+from dhanhq.constant import ExchangeSegment, InstrumentType
 from dhanhq.http import DhanHTTP
 
 

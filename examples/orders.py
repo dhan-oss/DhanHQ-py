@@ -1,6 +1,6 @@
 import logging
 from dhanhq.api import DhanCore, DhanConnection
-from dhanhq.constants import ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
+from dhanhq.constant import ExchangeSegment, LegName, OrderType, ProductType, TransactionType, Validity
 
 logging.basicConfig(level=logging.DEBUG)
 

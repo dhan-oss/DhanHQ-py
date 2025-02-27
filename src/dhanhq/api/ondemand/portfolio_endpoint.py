@@ -1,4 +1,4 @@
-from dhanhq.constants import ExchangeSegment, PositionType, ProductType
+from dhanhq.constant import ExchangeSegment, PositionType, ProductType
 
 
 class PortfolioEndpoint:

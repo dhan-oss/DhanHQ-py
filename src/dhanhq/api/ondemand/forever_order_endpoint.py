@@ -1,6 +1,6 @@
 from typing import Optional
 
-from dhanhq.constants import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
+from dhanhq.constant import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
 
 
 class ForeverOrderEndpoint:

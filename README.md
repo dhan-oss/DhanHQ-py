@@ -77,28 +77,28 @@ pip install dhanhq
 
 ```python
 from dhanhq.api import DhanConnection, DhanCore
-from dhanhq.constants import ExchangeSegment
+from dhanhq.constant import ExchangeSegment
 
 dhan_context = DhanConnection("client_id", "access_token")
 dhan = DhanCore(dhan_context)
 
 # Place an order for Equity Cash
 dhan.orderEndpoint.place_order(security_id='1333',  # HDFC Bank
-                 exchange_segment=ExchangeSegment.NSE_EQ,
-                 transaction_type=dhan.BUY,
-                 quantity=10,
-                 order_type=dhan.MARKET,
-                 product_type=dhan.INTRA,
-                 price=0)
+                               exchange_segment=ExchangeSegment.NSE_EQ,
+                               transaction_type=dhan.BUY,
+                               quantity=10,
+                               order_type=dhan.MARKET,
+                               product_type=dhan.INTRA,
+                               price=0)
 
 # Place an order for NSE Futures & Options
 dhan.orderEndpoint.place_order(security_id='52175',  # Nifty PE
-                 exchange_segment=ExchangeSegment.NSE_FNO,
-                 transaction_type=dhan.BUY,
-                 quantity=550,
-                 order_type=dhan.MARKET,
-                 product_type=dhan.INTRA,
-                 price=0)
+                               exchange_segment=ExchangeSegment.NSE_FNO,
+                               transaction_type=dhan.BUY,
+                               quantity=550,
+                               order_type=dhan.MARKET,
+                               product_type=dhan.INTRA,
+                               price=0)
 
 # Fetch all orders
 dhan.orderEndpoint.get_order_list()
@@ -107,7 +107,8 @@ dhan.orderEndpoint.get_order_list()
 dhan.orderEndpoint.get_order_by_id(order_id)
 
 # Modify order
-dhan.orderEndpoint.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity, validity)
+dhan.orderEndpoint.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity,
+                                validity)
 
 # Cancel order
 dhan.orderEndpoint.cancel_order(order_id)
@@ -128,7 +129,8 @@ dhan.portfolioEndpoint.get_holdings()
 dhan.orderEndpoint.intraday_minute_data(security_id, exchange_segment, instrument_type)
 
 # Historical Daily Data
-dhan.historicalDataEndpoint.historical_daily_data(security_id, exchange_segment, instrument_type, expiry_code, from_date, to_date)
+dhan.historicalDataEndpoint.historical_daily_data(security_id, exchange_segment, instrument_type, expiry_code,
+                                                  from_date, to_date)
 
 # Time Converter
 dhan.convert_to_date_time(EPOCHDate)
@@ -147,39 +149,39 @@ dhan.securityEndpoint.generate_tpin()
 
 # Enter TPIN in Form
 dhan.securityEndpoint.open_browser_for_tpin(isin='INE00IN01015',
-                           qty=1,
-                           exchange='NSE')
+                                            qty=1,
+                                            exchange='NSE')
 
 # EDIS Status and Inquiry
 dhan.securityEndpoint.edis_inquiry()
 
 # Expiry List of Underlying
 dhan.optionChainEndpoint.expiry_list(
-  under_security_id=13,  # Nifty
-  under_exchange_segment="IDX_I"
+    under_security_id=13,  # Nifty
+    under_exchange_segment="IDX_I"
 )
 
 # Option Chain
 dhan.optionChainEndpoint.option_chain(
-  under_security_id=13,  # Nifty
-  under_exchange_segment="IDX_I",
-  expiry="2024-10-31"
+    under_security_id=13,  # Nifty
+    under_exchange_segment="IDX_I",
+    expiry="2024-10-31"
 )
 
 # Market Quote Data                     # LTP - ticker_data, OHLC - ohlc_data, Full Packet - quote_data
 dhan.marketFeedEndpoint.ohlc_data(
-  securities={"NSE_EQ": [1333]}
+    securities={"NSE_EQ": [1333]}
 )
 
 # Place Forever Order (SINGLE)
 dhan.foreverOrderEndpoint.place_forever(
-  security_id="1333",
-  exchange_segment=ExchangeSegment.NSE,
-  transaction_type=dhan.BUY,
-  product_type=dhan.CNC,
-  quantity=10,
-  price=1900,
-  trigger_Price=1950
+    security_id="1333",
+    exchange_segment=ExchangeSegment.NSE,
+    transaction_type=dhan.BUY,
+    product_type=dhan.CNC,
+    quantity=10,
+    price=1900,
+    trigger_Price=1950
 )
 ```
 

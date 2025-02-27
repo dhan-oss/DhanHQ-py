@@ -1,4 +1,4 @@
-from dhanhq.constants import ExchangeSegment
+from dhanhq.constant import ExchangeSegment
 
 
 class OptionChainEndpoint:

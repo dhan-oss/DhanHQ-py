@@ -4,7 +4,7 @@ This data is presented in the form of a candle and gives you timestamp, open, hi
 """
 import logging
 
-from dhanhq.constants import ExchangeSegment, ExpiryCode, InstrumentType, Interval
+from dhanhq.constant import ExchangeSegment, ExpiryCode, InstrumentType, Interval
 
 
 class HistoricalDataEndpoint:
