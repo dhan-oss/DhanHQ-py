@@ -404,7 +404,7 @@ class LiveMarketFeed:
 
     async def on_connection_opened(self, websocket):
         "Callback function executed when the WebSocket connection is opened."
-        await websocket.send(self.create_subscription_packet(self.instruments, subscribe=True))
+        await websocket.send(self.create_subscription_packet(self.instruments))
 
         while True:
             response = await websocket.recv()
