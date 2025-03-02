@@ -11,7 +11,7 @@ class StatementEndpoint:
         Retrieve a list of all trades executed in a day.
 
         Args:
-            order_id (str, optional): The ID of the specific order to retrieve trades for.
+            order_id (str, optional): The ID of the specific order_req to retrieve trades for.
 
         Returns:
             dict: The response containing trade book data.

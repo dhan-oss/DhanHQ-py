@@ -14,28 +14,28 @@ class ForeverOrderEndpoint:
                       validity: Validity=Validity.DAY, price1: float=0, trigger_Price1: float=0, quantity1: int=0,
                       tag: Optional[str]=None, symbol: str="") -> dict[str,str]:
         """
-        Place a new forever order in the Dhan account.
+        Place a new forever order_req in the Dhan account.
 
         Args:
             security_id (str): The ID of the security to trade.
             exchange_segment (ExchangeSegment): The exchange segment (e.g., NSE, BSE).
             transaction_type (TransactionType): The type of transaction (BUY/SELL).
             product_type (ProductType): The product type (e.g., CNC, INTRA).
-            order_type (OrderType): The type of order (LIMIT, MARKET, etc.).
-            quantity (int): The quantity of the order.
-            price (float): The price of the order.
-            trigger_Price (float): The trigger price for the order.
-            order_flag (OrderFlag): The order flag (default is SINGLE).
-            disclosed_quantity (int): The disclosed quantity for the order.
-            validity (Validity): The validity of the order (DAY, IOC, etc.) defaults to DAY.
-            price1 (float): The secondary price for the order.
-            trigger_Price1 (float): The secondary trigger price for the order.
-            quantity1 (int): The secondary quantity for the order.
+            order_type (OrderType): The type of order_req (LIMIT, MARKET, etc.).
+            quantity (int): The quantity of the order_req.
+            price (float): The price of the order_req.
+            trigger_Price (float): The trigger price for the order_req.
+            order_flag (OrderFlag): The order_req flag (default is SINGLE).
+            disclosed_quantity (int): The disclosed quantity for the order_req.
+            validity (Validity): The validity of the order_req (DAY, IOC, etc.) defaults to DAY.
+            price1 (float): The secondary price for the order_req.
+            trigger_Price1 (float): The secondary trigger price for the order_req.
+            quantity1 (int): The secondary quantity for the order_req.
             tag (Optional[str]): Optional correlation ID for tracking.
-            symbol (str): The trading symbol for the order.
+            symbol (str): The trading symbol for the order_req.
 
         Returns:
-            dict: The response containing the status of the order placement.
+            dict: The response containing the status of the order_req placement.
         """
         endpoint = '/forever/orders'
         payload = {
@@ -64,19 +64,19 @@ class ForeverOrderEndpoint:
     def modify_forever(self, order_id: str, order_flag: OrderFlag, order_type: OrderType, leg_name: LegName,
                        quantity: int, price: float, trigger_price: float, disclosed_quantity: int, validity: Validity) -> dict[str, str]:
         """
-        Modify a forever order based on the specified leg name.
-        The variables that can be modified include price, quantity, order type, and validity.
+        Modify a forever order_req based on the specified leg name.
+        The variables that can be modified include price, quantity, order_req type, and validity.
 
         Args:
-            order_id (str): The ID of the order to modify.
-            order_flag (OrderFlag): The order flag indicating the type of order (e.g., SINGLE, OCO).
-            order_type (OrderType): The type of order (e.g., LIMIT, MARKET).
+            order_id (str): The ID of the order_req to modify.
+            order_flag (OrderFlag): The order_req flag indicating the type of order_req (e.g., SINGLE, OCO).
+            order_type (OrderType): The type of order_req (e.g., LIMIT, MARKET).
             leg_name (LegName): The name of the leg to modify.
-            quantity (int): The new quantity for the order.
-            price (float): The new price for the order.
-            trigger_price (float): The trigger price for the order.
-            disclosed_quantity (int): The disclosed quantity for the order.
-            validity (Validity): The validity of the order.
+            quantity (int): The new quantity for the order_req.
+            price (float): The new price for the order_req.
+            trigger_price (float): The trigger price for the order_req.
+            disclosed_quantity (int): The disclosed quantity for the order_req.
+            validity (Validity): The validity of the order_req.
 
         Returns:
             dict: The response containing the status of the modification.
@@ -101,6 +101,6 @@ class ForeverOrderEndpoint:
         return self.dhan_http.get(endpoint)
 
     def cancel_forever(self, order_id):
-        """Delete Forever orders using the order id of an order."""
+        """Delete Forever orders using the order_req id of an order_req."""
         endpoint = f'/forever/orders/{order_id}'
         return self.dhan_http.delete(endpoint)

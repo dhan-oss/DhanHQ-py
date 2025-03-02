@@ -13,12 +13,12 @@ import json
 
 class OrderSocket:
     """
-    A class to manage WebSocket connections for order updates.
+    A class to manage WebSocket connections for order_req updates.
 
     Attributes:
         client_id (str): The client ID for authentication.
         access_token (str): The access token for authentication.
-        order_feed_wss (str): The WebSocket URL for order updates.
+        order_feed_wss (str): The WebSocket URL for order_req updates.
     """
 
     def __init__(self, dhan_context):
@@ -31,11 +31,11 @@ class OrderSocket:
         """
         self.client_id = dhan_context.get_client_id()
         self.access_token = dhan_context.get_access_token()
-        self.order_feed_wss = "wss://api-order-update.dhan.co"
+        self.order_feed_wss = "wss://api-order_req-update.dhan.co"
 
     async def connect_order_update(self):
         """
-        Connects to the WebSocket and listens for order updates.
+        Connects to the WebSocket and listens for order_req updates.
 
         This method authenticates the client and processes incoming messages.
         """
@@ -58,10 +58,10 @@ class OrderSocket:
 
     async def handle_order_update(self, order_update):
         """
-        Handles incoming order update messages.
+        Handles incoming order_req update messages.
 
         Args:
-            order_update (dict): The order update message received from the WebSocket.
+            order_update (dict): The order_req update message received from the WebSocket.
         """
         if order_update.get('Type') == 'order_alert':
             data = order_update.get('Data', {})

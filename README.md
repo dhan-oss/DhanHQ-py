@@ -82,7 +82,7 @@ from dhanhq.constant import ExchangeSegment
 dhan_context = DhanConnection("client_id", "access_token")
 dhan = DhanCore(dhan_context)
 
-# Place an order for Equity Cash
+# Place an order_req for Equity Cash
 dhan.orderEndpoint.place_order(security_id='1333',  # HDFC Bank
                                exchange_segment=ExchangeSegment.NSE_EQ,
                                transaction_type=dhan.BUY,
@@ -91,7 +91,7 @@ dhan.orderEndpoint.place_order(security_id='1333',  # HDFC Bank
                                product_type=dhan.INTRA,
                                price=0)
 
-# Place an order for NSE Futures & Options
+# Place an order_req for NSE Futures & Options
 dhan.orderEndpoint.place_order(security_id='52175',  # Nifty PE
                                exchange_segment=ExchangeSegment.NSE_FNO,
                                transaction_type=dhan.BUY,
@@ -103,17 +103,17 @@ dhan.orderEndpoint.place_order(security_id='52175',  # Nifty PE
 # Fetch all orders
 dhan.orderEndpoint.get_order_list()
 
-# Get order by id
+# Get order_req by id
 dhan.orderEndpoint.get_order_by_id(order_id)
 
-# Modify order
+# Modify order_req
 dhan.orderEndpoint.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price, disclosed_quantity,
                                 validity)
 
-# Cancel order
+# Cancel order_req
 dhan.orderEndpoint.cancel_order(order_id)
 
-# Get order by correlation id
+# Get order_req by correlation id
 dhan.orderEndpoint.get_order_by_corelationID(corelationID)
 
 # Get Instrument List

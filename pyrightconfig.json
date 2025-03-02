@@ -2,11 +2,11 @@
   "venvPath": ".venv",
   "include": [
     "src",
-    "tests",
-    "examples"
+    "tests"
   ],
 
   "exclude": [
+    "lab/",
     "**/node_modules",
     "**/__pycache__",
     "src/experimental",

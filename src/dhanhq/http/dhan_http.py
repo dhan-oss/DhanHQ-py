@@ -48,8 +48,8 @@ class DhanHTTP:
         self.disable_ssl = disable_ssl
         self.session = requests.Session()
         if pool:
-            reqadapter = requests.adapters.HTTPAdapter(**pool) # type: ignore
-            self.session.mount("https://", reqadapter)
+            http_adapter = requests.adapters.HTTPAdapter(**pool) # type: ignore
+            self.session.mount("https://", http_adapter)
 
     def _send_request(self, method :HttpMethod, endpoint :str, payload: Optional[dict]={}) -> dict:
         url = self.base_url + endpoint

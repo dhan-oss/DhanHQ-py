@@ -7,7 +7,9 @@ from .instrument_type import InstrumentType
 from .interval import Interval
 from .kill_switch_status import KillSwitchStatus
 from .leg_name import LegName
+from .option_type import OptionType
 from .order_flag import OrderFlag
+from .order_status import OrderStatus
 from .order_type import OrderType
 from .position_type import PositionType
 from .product_type import ProductType
@@ -16,6 +18,6 @@ from .transaction_type import TransactionType
 from .validity import Validity
 
 __all__ = ['AMOTime', 'Exchange', 'ExchangeSegment', 'ExpiryCode',
-           'InstrumentType', 'Interval', 'KillSwitchStatus',
-           'LegName', 'OrderFlag', 'OrderType', 'PositionType', 'ProductType',
-           'Segment', 'TransactionType', 'Validity']
+           'InstrumentType', 'Interval', 'KillSwitchStatus', 'LegName',
+           'OptionType', 'OrderFlag', 'OrderStatus', 'OrderType',
+           'PositionType', 'ProductType', 'Segment', 'TransactionType', 'Validity']
