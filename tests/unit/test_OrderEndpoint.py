@@ -7,13 +7,6 @@ from dhanhq.dto import NewOrderRequest, ModifyOrderRequest
 class TestOrderEndpoint:
 
     @staticmethod
-    def __order_response_stub():
-        return {
-            "orderId": "112111182198",
-            "orderStatus": "PENDING",
-        }
-
-    @staticmethod
     def __order_stub():
         return {
             "dhanClientId": "1000000003",
@@ -76,9 +69,9 @@ class TestOrderEndpoint:
 
 
     @patch("dhanhq.http.DhanHTTP.get")
-    def test_get_order_list_success(self, mock_read_request, dhanhq_obj):
+    def test_get_orders_success(self, mock_read_request, dhanhq_obj):
         orderEndpoint = dhanhq_obj.orderEndpoint
-        orderEndpoint.get_order_list()
+        orderEndpoint.get_orders()
         mock_read_request.assert_called_once_with('/orders')
 
     @patch("dhanhq.http.DhanHTTP.get")
@@ -99,17 +92,14 @@ class TestOrderEndpoint:
 
     @patch("dhanhq.http.DhanHTTP.delete")
     def test_cancel_order_success(self, mock_delete_request, dhanhq_obj):
-        mock_delete_request.return_value = {
-            "orderId": "112111182045",
-            "orderStatus": "CANCELLED"
-        }
+        mock_delete_request.return_value = { "orderId": "112111182045", "orderStatus": "CANCELLED" }
         order_id = "12345"
         dhanhq_obj.orderEndpoint.cancel_pending_order(order_id)
         mock_delete_request.assert_called_once_with(f'/orders/{order_id}')
 
     @patch("dhanhq.http.DhanHTTP.post")
     def test_place_order_success(self, mock_create_request, dhanhq_obj):
-        mock_create_request.return_value = self.__order_response_stub()
+        mock_create_request.return_value = { "orderId": "112111182198", "orderStatus": "PENDING", }
         endpoint = '/orders'
         requestParams = NewOrderRequest(security_id="1",
                                         exchange_segment=ExchangeSegment.NSE_EQ,
@@ -124,7 +114,7 @@ class TestOrderEndpoint:
 
     @patch("dhanhq.http.DhanHTTP.post")
     def test_place_slice_order_success(self, mock_create_request, dhanhq_obj):
-        mock_create_request.return_value = self.__order_response_stub()
+        mock_create_request.return_value = { "orderId": "112111182198", "orderStatus": "PENDING", }
         endpoint = '/orders/slicing'
         requestParams = NewOrderRequest(security_id="1",
                                         exchange_segment=ExchangeSegment.NSE_EQ,
@@ -140,7 +130,7 @@ class TestOrderEndpoint:
 
     @patch("dhanhq.http.DhanHTTP.put")
     def test_modify_order_success(self, mock_update_request, dhanhq_obj):
-        mock_update_request.return_value = self.__order_response_stub()
+        mock_update_request.return_value = { "orderId": "112111182198", "orderStatus": "PENDING", }
         requestParams = ModifyOrderRequest(order_id="123",
                                            quantity=100,
                                            order_type=OrderType.STOP_LOSS,

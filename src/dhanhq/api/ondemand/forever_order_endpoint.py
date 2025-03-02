@@ -1,6 +1,9 @@
-from typing import Optional
+from typing import Optional, List
+
+from pydantic import TypeAdapter
 
 from dhanhq.constant import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
+from dhanhq.dto import ForeverOrderResponse, ForeverOrder
 
 
 class ForeverOrderEndpoint:
@@ -8,11 +11,11 @@ class ForeverOrderEndpoint:
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def place_forever(self, security_id: str, exchange_segment: ExchangeSegment, transaction_type: TransactionType,
-                      product_type: ProductType, order_type: OrderType, quantity: int, price: float,
-                      trigger_Price: float, order_flag: OrderFlag=OrderFlag.SINGLE, disclosed_quantity: int=0,
-                      validity: Validity=Validity.DAY, price1: float=0, trigger_Price1: float=0, quantity1: int=0,
-                      tag: Optional[str]=None, symbol: str="") -> dict[str,str]:
+    def place_forever_order(self, security_id: str, exchange_segment: ExchangeSegment, transaction_type: TransactionType,
+                            product_type: ProductType, order_type: OrderType, quantity: int, price: float,
+                            trigger_Price: float, order_flag: OrderFlag=OrderFlag.SINGLE, disclosed_quantity: int=0,
+                            validity: Validity=Validity.DAY, price1: float=0, trigger_Price1: float=0, quantity1: int=0,
+                            tag: Optional[str]=None, symbol: str="") -> ForeverOrderResponse:
         """
         Place a new forever order_req in the Dhan account.
 
@@ -59,10 +62,11 @@ class ForeverOrderEndpoint:
         if tag not in (None, ''):
             payload["correlationId"] = tag
 
-        return self.dhan_http.post(endpoint, payload)
+        dict_response = self.dhan_http.post(endpoint, payload)
+        return ForeverOrderResponse(**dict_response)
 
-    def modify_forever(self, order_id: str, order_flag: OrderFlag, order_type: OrderType, leg_name: LegName,
-                       quantity: int, price: float, trigger_price: float, disclosed_quantity: int, validity: Validity) -> dict[str, str]:
+    def modify_forever_order(self, order_id: str, order_flag: OrderFlag, order_type: OrderType, leg_name: LegName,
+                             quantity: int, price: float, trigger_price: float, disclosed_quantity: int, validity: Validity) -> ForeverOrderResponse:
         """
         Modify a forever order_req based on the specified leg name.
         The variables that can be modified include price, quantity, order_req type, and validity.
@@ -93,14 +97,19 @@ class ForeverOrderEndpoint:
             "triggerPrice": trigger_price,
             "validity": validity.name
         }
-        return self.dhan_http.put(endpoint, payload)
+        dict_response = self.dhan_http.put(endpoint, payload)
+        return ForeverOrderResponse(**dict_response)
 
-    def get_forever(self):
+    def get_forever_orders(self) -> list[ForeverOrder]:
         """Retrieve a list of all existing Forever Orders."""
         endpoint = '/forever/orders'
-        return self.dhan_http.get(endpoint)
+        dict_response = self.dhan_http.get(endpoint)
+        adapter = TypeAdapter(List[ForeverOrder])
+        forever_orders = adapter.validate_python(dict_response)
+        return forever_orders
 
-    def cancel_forever(self, order_id):
+    def cancel_pending_forever_order(self, order_id) -> ForeverOrderResponse:
         """Delete Forever orders using the order_req id of an order_req."""
         endpoint = f'/forever/orders/{order_id}'
-        return self.dhan_http.delete(endpoint)
+        dict_response = self.dhan_http.delete(endpoint)
+        return ForeverOrderResponse(**dict_response)

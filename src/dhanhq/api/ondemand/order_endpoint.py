@@ -11,7 +11,7 @@ class OrderEndpoint:
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def get_order_list(self) -> list[Order]:
+    def get_orders(self) -> list[Order]:
         """
         Retrieve a list of all orders requested in a day with their last updated status.
 
