@@ -12,7 +12,7 @@ class TestE2E_OrdersEndpoint:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/get-current-orders-list.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_get_orders(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.orderEndpoint.get_orders()
+        actual_response = dhanhq_fixture.orderEndpoint.get_current_orders()
         # pprint(actual_response)
         assert actual_response['status'] == expected_dict['status']
         assert actual_response['remarks'] == expected_dict['remarks']

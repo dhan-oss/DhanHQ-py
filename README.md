@@ -32,7 +32,7 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - Added Type-hints for static and dynamic type-checking of code and better end-user experience of SDK
 - Extracted and grouped constants under varied classes/enums to avoid bugs
 - API akin to Java SDK, to have unified API experience irrespective of language version SDK used to access Dhan APIs
-- The code will become more object-oriented akin to its Java counterpart and as end-user developer you wouldn't miss the goodness of the language and the richness of the domain.
+- The code is well object-oriented akin to its Java counterpart and as end-user developer you wouldn't miss the goodness of the language and the richness of the domain making you focus on solving your business problems.
 
 ## Features
 
@@ -63,6 +63,38 @@ Get all information of your trading account like balance, margin utilised, colla
 * **eDIS Authorisation**  
 To sell holding stocks, one needs to complete the CDSL eDIS flow, generate T-PIN & mark stock to complete the sell action.
 
+
+## SDK API Cheatsheet
+
+| Endpoint                        | Action                                                                                                                                                                                     | Returns                              |
+|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
+| `dhanCore.orderEndpoint`        | `place_new_order(order_req: NewOrderRequest)`                                                                                                                                              | `OrderResponse`                      |
+|                                 | `get_current_orders()`                                                                                                                                                                     | `list[Order]`                        |
+|                                 | `get_order_by_id(orderID: str)`                                                                                                                                                            | `Order`                              |
+|                                 | `get_order_by_correlationID(correlationID: str)`                                                                                                                                           | `Order`                              |
+|                                 | `modify_pending_order(order_req: ModifyOrderRequest)`                                                                                                                                      | `OrderResponse`                      |
+|                                 | `cancel_pending_order(order_id: str)`                                                                                                                                                      | `OrderResponse`                      |
+| `dhanCore.foreverOrderEndpoint` | `place_forever_order(feo_req: NewForeverOrderRequest)`                                                                                                                                     | `ForeverOrderResponse`               |
+|                                 | `get_forever_orders()`                                                                                                                                                                     | `list[ForeverOrder]`                 |
+|                                 | `modify_forever_order(feo_req: ModifyForeverOrderRequest)`                                                                                                                                 | `ForeverOrderResponse`               |
+|                                 | `cancel_pending_forever_order(order_id: str)`                                                                                                                                              | `ForeverOrderResponse`               |
+| `dhanCore.portfolioEndpoint`    | `get_current_holdings()`                                                                                                                                                                   | `List<Holding>`                      |
+|                                 | `get_current_positions()`                                                                                                                                                                  | `List<Position>`                     |
+|                                 | ```convertPosition(convertPositionRequest: ConvertPositionRequest)```                                                                                                                      | `dict`                               |
+| `dhanCore.fundsEndpoint`        | `getFundLimitDetails()`                                                                                                                                                                    | `FundSummary`                        |
+|                                 | ```computeMargin(String securityID, ExchangeSegment exchangeSegment, TransactionType transactionType, int quantity, ProductType productType, BigDecimal price)```                          | `Margin`                             |
+|                                 | ```computeMargin(String securityID, ExchangeSegment exchangeSegment, TransactionType transactionType, int quantity, ProductType productType, BigDecimal price, BigDecimal triggerPrice)``` | `Margin`                             |
+| `dhanCore.traderControlEndpoint` | `manageKillSwitch(KillSwitchStatus killSwitchStatus)`                                                                                                                                      | `String`                             |
+| `dhanCore.statementEndpoint`    | `getLedgerReport(LocalDate fromDate, LocalDate toDate)`                                                                                                                                    | `Ledger`                             |
+| `dhanCore.marketQuotesEndpoint` | `getLTPFor(ExchangeSegmentSecurities exchangeSegmentSecurities)`                                                                                                                           | `ExchangeSegmentCandlesticksWrapper` |
+|                                 | `getOHLCFor(ExchangeSegmentSecurities exchangeSegmentSecurities)`                                                                                                                          | `ExchangeSegmentCandlesticksWrapper` |
+|                                 | `getQuoteFor(ExchangeSegmentSecurities exchangeSegmentSecurities)`                                                                                                                         | `ExchangeSegmentCandlesticksWrapper` |
+| `dhanCore.securityEndpoint`     | `getEDISStatusOf(String isin)`                                                                                                                                                             | `EDISStatus`                         |
+|                                 | `generateTPIN()`                                                                                                                                                                           | `String`                             |
+|                                 | `openBrowserForTPin(String isin, int quantity, Exchange exchange, Segment segment, boolean bulk)`                                                                                          |                                      |
+|                                 | `createTempHtmlFile(String formHtml)`                                                                                                                                                      | `File`                               |
+|                                 | `openInBrowser(File tempFile)`                                                                                                                                                             |                                      |
+
 ## Quickstart
 
 You can install the package via pip
@@ -70,8 +102,6 @@ You can install the package via pip
 ```
 pip install dhanhq
 ```
-
-
 
 ### Hands-on API
 
@@ -101,7 +131,7 @@ dhan.orderEndpoint.place_order(security_id='52175',  # Nifty PE
                                price=0)
 
 # Fetch all orders
-dhan.orderEndpoint.get_order_list()
+dhan.orderEndpoint.get_current_orders()
 
 # Get order_req by id
 dhan.orderEndpoint.get_order_by_id(order_id)
@@ -120,10 +150,10 @@ dhan.orderEndpoint.get_order_by_corelationID(corelationID)
 dhan.securityEndpoint.fetch_security_list("compact")
 
 # Get positions
-dhan.portfolioEndpoint.get_positions()
+dhan.portfolioEndpoint.get_current_positions()
 
 # Get holdings
-dhan.portfolioEndpoint.get_holdings()
+dhan.portfolioEndpoint.get_current_holdings()
 
 # Intraday Minute Data
 dhan.orderEndpoint.intraday_minute_data(security_id, exchange_segment, instrument_type)
@@ -174,7 +204,7 @@ dhan.marketFeedEndpoint.ohlc_data(
 )
 
 # Place Forever Order (SINGLE)
-dhan.foreverOrderEndpoint.place_forever(
+dhan.foreverOrderEndpoint.place_forever_order(
     security_id="1333",
     exchange_segment=ExchangeSegment.NSE,
     transaction_type=dhan.BUY,

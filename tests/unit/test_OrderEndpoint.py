@@ -70,7 +70,7 @@ class TestOrderEndpoint:
 
     @patch("dhanhq.http.DhanHTTP.get")
     def test_get_orders_success(self, mock_read_request, dhanhq_obj):
-        dhanhq_obj.orderEndpoint.get_orders()
+        dhanhq_obj.orderEndpoint.get_current_orders()
         mock_read_request.assert_called_once_with('/orders')
 
     @patch("dhanhq.http.DhanHTTP.get")

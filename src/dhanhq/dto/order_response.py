@@ -1,6 +1,4 @@
-from pydantic import Field, validator, field_validator, BaseModel
-
-from pydantic.dataclasses import dataclass
+from pydantic import Field, field_validator, BaseModel
 
 from dhanhq.constant import OrderStatus
 

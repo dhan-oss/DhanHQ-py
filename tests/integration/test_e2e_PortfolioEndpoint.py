@@ -10,7 +10,7 @@ class TestE2E_PortfolioEndpoint:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/get-current-holdings.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_get_holdings(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.portfolioEndpoint.get_holdings()
+        actual_response = dhanhq_fixture.portfolioEndpoint.get_current_holdings()
         assert actual_response['status'] == expected_dict['status']
         assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
@@ -18,7 +18,7 @@ class TestE2E_PortfolioEndpoint:
     json_file_path = os.path.join(os.path.dirname(__file__), '../data/get_positions.json')
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_get_positions(self, expected_dict, dhanhq_fixture):
-        actual_response = dhanhq_fixture.portfolioEndpoint.get_positions()
+        actual_response = dhanhq_fixture.portfolioEndpoint.get_current_positions()
         assert actual_response['status'] == expected_dict['status']
         assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
