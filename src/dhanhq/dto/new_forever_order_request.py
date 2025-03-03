@@ -15,7 +15,6 @@ class NewForeverOrderRequest(BaseModel):
     # Automatically generate camelCase aliases for all fields
     model_config = ConfigDict(alias_generator=CommonUtils.to_camel_case, populate_by_name=True)
 
-
     security_id: constr(strict=True)  # type: ignore  # Suppress Pyright error for Constrained string
     exchange_segment: ExchangeSegment # Pydantic will raise ValidationError if this value is not assigned
     transaction_type: TransactionType #

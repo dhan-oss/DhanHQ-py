@@ -67,47 +67,20 @@ class OrderEndpoint:
                 Place a new slice order_req in the Dhan account.
         """
 
-        payload = {
-            "transactionType": order_req.transaction_type.name,
-            "exchangeSegment": order_req.exchange_segment.name,
-            "productType": order_req.product_type.name,
-            "orderType": order_req.order_type.name,
-            "validity": order_req.validity.name,
-            "securityId": order_req.security_id,
-            "quantity": order_req.quantity,
-            "disclosedQuantity": order_req.disclosed_quantity,
-            "price": order_req.price,
-            "afterMarketOrder": order_req.after_market_order,
-            "amoTime": order_req.amo_time.name,
-            "boProfitValue": order_req.bo_profit_value,
-            "boStopLossValue": order_req.bo_stop_loss_Value,
-            "triggerPrice": order_req.trigger_price
-        }
-
-        if order_req.correlation_id is not None and order_req.correlation_id != '':
-            payload["correlationId"] = order_req.correlation_id
-
         endpoint = '/orders'
         if order_req.should_slice:
             endpoint += '/slicing'
 
-        dict_response = self.dhan_http.post(endpoint, payload)
+        dict_response = self.dhan_http.post(endpoint,
+                                            order_req.model_dump(exclude={'should_slice'}))
         return OrderResponse(**dict_response)
 
     def modify_pending_order(self, order_req: ModifyOrderRequest) -> OrderResponse:
         """
         Modify a pending order_req in the orderbook.
         """
-        payload = {
-            "orderId": order_req.order_id,
-            "orderType": order_req.order_type.name,
-            "legName": order_req.leg_name.name,
-            "price": order_req.price,
-            "quantity": order_req.quantity,
-            "disclosedQuantity": order_req.disclosed_quantity,
-            "triggerPrice": order_req.trigger_price,
-            "validity": order_req.validity.name
-        }
-        dict_response = self.dhan_http.put(f'/orders/{order_req.order_id}', payload)
+
+        dict_response = self.dhan_http.put(f'/orders/{order_req.order_id}',
+                                           order_req.model_dump())
         return OrderResponse(**dict_response)
 

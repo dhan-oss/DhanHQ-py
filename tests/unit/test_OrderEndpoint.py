@@ -85,7 +85,6 @@ class TestOrderEndpoint:
         mock_read_request.return_value = self.__order_stub()
         correlation_id = "12345"
         order = dhanhq_obj.orderEndpoint.get_order_by_correlationID(correlation_id)
-        print(order.model_dump())
         mock_read_request.assert_called_once_with(f'/orders/external/{correlation_id}')
 
     @patch("dhanhq.http.DhanHTTP.delete")

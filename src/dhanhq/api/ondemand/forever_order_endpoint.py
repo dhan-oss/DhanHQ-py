@@ -37,27 +37,7 @@ class ForeverOrderEndpoint:
             dict: The response containing the status of the order_req placement.
         """
         endpoint = '/forever/orders'
-        payload = {
-            "orderFlag": feo_req.order_flag.name,
-            "transactionType": feo_req.transaction_type.name,
-            "exchangeSegment": feo_req.exchange_segment.name,
-            "productType": feo_req.product_type.name,
-            "orderType": feo_req.order_type.name,
-            "validity": feo_req.validity.name,
-            "securityId": feo_req.security_id,
-            "quantity": feo_req.quantity,
-            "disclosedQuantity": feo_req.disclosed_quantity,
-            "price": feo_req.price,
-            "triggerPrice": feo_req.trigger_price,
-            "price1": feo_req.price1,
-            "triggerPrice1": feo_req.trigger_price1,
-            "quantity1": feo_req.quantity1,
-        }
-
-        if feo_req.correlation_id not in (None, ''):
-            payload["correlationId"] = feo_req.correlation_id
-
-        dict_response = self.dhan_http.post(endpoint, payload)
+        dict_response = self.dhan_http.post(endpoint, feo_req.model_dump())
         return ForeverOrderResponse(**dict_response)
 
     def modify_forever_order(self, feo_req: ModifyForeverOrderRequest) -> ForeverOrderResponse:
@@ -66,18 +46,7 @@ class ForeverOrderEndpoint:
         The variables that can be modified include price, quantity, order_req type, and validity.
         """
         endpoint = f'/forever/orders/{feo_req.order_id}'
-        payload = {
-            "orderId": feo_req.order_id,
-            "orderFlag": feo_req.order_flag.name,
-            "orderType": feo_req.order_type.name,
-            "legName": feo_req.leg_name.name,
-            "quantity": feo_req.quantity,
-            "disclosedQuantity": feo_req.disclosed_quantity,
-            "price": feo_req.price,
-            "triggerPrice": feo_req.trigger_price,
-            "validity": feo_req.validity.name
-        }
-        dict_response = self.dhan_http.put(endpoint, payload)
+        dict_response = self.dhan_http.put(endpoint, feo_req.model_dump())
         return ForeverOrderResponse(**dict_response)
 
     def get_forever_orders(self) -> list[ForeverOrder]:
