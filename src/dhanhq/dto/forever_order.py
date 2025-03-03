@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator, constr
 
-from dhanhq.constant import OrderType, LegName, OptionType, OrderFlag
+from dhanhq.constant import LegName, OptionType, OrderFlag
 from dhanhq.constant import TransactionType, ExchangeSegment, ProductType, OrderStatus
 from dhanhq.helper import CommonUtils
 
@@ -14,17 +14,13 @@ class ForeverOrder(BaseModel):
     order_flag: OrderFlag
 
     order_id: str
-    # correlation_id: str
     order_status: OrderStatus
     transaction_type: TransactionType
     exchange_segment: ExchangeSegment
     product_type: ProductType
-    # order_type: OrderType
-    # validity: Validity
     trading_symbol: str
     security_id: str
     quantity: int
-    # disclosed_quantity: int
     price: float
     trigger_price: float
     leg_name:LegName
@@ -53,7 +49,6 @@ class ForeverOrder(BaseModel):
 
     @field_validator('order_status', 'transaction_type', 'exchange_segment',
                      'product_type', 'order_flag',
-                     # 'validity', 'order_type',
                      'leg_name', 'drv_option_type',
                      mode='before')
     def convert_string_to_enum(cls, value, field):

@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from dhanhq.constant import ExchangeSegment, LegName, OrderFlag, OrderType, ProductType, TransactionType, Validity
+from dhanhq.dto import NewForeverOrderRequest, ModifyForeverOrderRequest
 
 
 class TestForeverOrderEndpoint:
@@ -55,35 +56,39 @@ class TestForeverOrderEndpoint:
     @patch("dhanhq.http.DhanHTTP.get")
     def test_get_forever_orders(self,mock_read_request,dhanhq_obj):
         mock_read_request.return_value = self.__list_of_orders_stub()
-        foreverOrderEndpoint = dhanhq_obj.foreverOrderEndpoint
-        foreverOrderEndpoint.get_forever_orders()
+        dhanhq_obj.foreverOrderEndpoint.get_forever_orders()
         mock_read_request.assert_called_once_with('/forever/orders')
 
     @patch("dhanhq.http.DhanHTTP.post")
     def test_place_forever_order(self,mock_create_request, dhanhq_obj):
         mock_create_request.return_value = { "orderId": "112111182045", "orderStatus": "PENDING" }
-        foreverOrderEndpoint = dhanhq_obj.foreverOrderEndpoint
         endpoint = '/forever/orders'
-        quantity = 100
-        price = 108
-        trigger_Price = 110
-        foreverOrderEndpoint.place_forever_order("security_id", ExchangeSegment.BSE_EQ, TransactionType.BUY,
-                                                 ProductType.INTRADAY, OrderType.STOP_LOSS, quantity, price, trigger_Price)
+        requestParams = NewForeverOrderRequest(security_id="1",
+                                        exchange_segment=ExchangeSegment.NSE_EQ,
+                                        transaction_type=TransactionType.BUY,
+                                        quantity=100,
+                                        order_type=OrderType.MARKET,
+                                        product_type=ProductType.CNC,
+                                        price=123,
+                                        trigger_price=110)
+        dhanhq_obj.foreverOrderEndpoint.place_forever_order(requestParams)
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint
 
     @patch("dhanhq.http.DhanHTTP.put")
     def test_modify_forever_order(self, mock_update_request, dhanhq_obj):
-        mock_update_request.return_value = { "orderId": "112111182045", "orderStatus": "PENDING" }
-        foreverOrderEndpoint = dhanhq_obj.foreverOrderEndpoint
-        order_id = 123
-        endpoint = f'/forever/orders/{order_id}'
-        quantity = 100
-        price = 108
-        trigger_price = 110
-        disclosed_quantity = 555
-        foreverOrderEndpoint.modify_forever_order(order_id, OrderFlag.SINGLE, OrderType.STOP_LOSS, LegName.STOP_LOSS_LEG,
-                                                  quantity, price, trigger_price, disclosed_quantity, Validity.IOC)
+        mock_update_request.return_value = { "orderId": "123", "orderStatus": "PENDING" }
+        requestParams = ModifyForeverOrderRequest(order_id="123",
+                                                  order_flag=OrderFlag.SINGLE,
+                                                  order_type=OrderType.STOP_LOSS,
+                                                  leg_name=LegName.STOP_LOSS_LEG,
+                                                  quantity=100,
+                                                  price=108,
+                                                  trigger_price=110,
+                                                  disclosed_quantity=555,
+                                                  validity=Validity.IOC)
+        endpoint = f'/forever/orders/{requestParams.order_id}'
+        dhanhq_obj.foreverOrderEndpoint.modify_forever_order(requestParams)
         mock_update_request.assert_called_once()
         assert mock_update_request.call_args[0][0] == endpoint
 

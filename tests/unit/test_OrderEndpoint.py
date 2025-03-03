@@ -70,16 +70,14 @@ class TestOrderEndpoint:
 
     @patch("dhanhq.http.DhanHTTP.get")
     def test_get_orders_success(self, mock_read_request, dhanhq_obj):
-        orderEndpoint = dhanhq_obj.orderEndpoint
-        orderEndpoint.get_orders()
+        dhanhq_obj.orderEndpoint.get_orders()
         mock_read_request.assert_called_once_with('/orders')
 
     @patch("dhanhq.http.DhanHTTP.get")
     def test_get_order_by_id(self, mock_read_request, dhanhq_obj):
         mock_read_request.return_value = self.__order_stub()
-        orderEndpoint = dhanhq_obj.orderEndpoint
         order_id = "12345"
-        orderEndpoint.get_order_by_id(order_id)
+        dhanhq_obj.orderEndpoint.get_order_by_id(order_id)
         mock_read_request.assert_called_once_with(f'/orders/{order_id}')
 
     @patch("dhanhq.http.DhanHTTP.get")
