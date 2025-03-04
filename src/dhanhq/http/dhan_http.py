@@ -10,31 +10,31 @@
 
 import logging
 from enum import Enum
-from json import dumps as json_dumps, loads as json_loads
-from typing import Optional
+from typing import Optional, Any, Dict, Union
 
 import requests
 
+from dhanhq.http import DhanAPIException
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class HTTPMethod(Enum):
+    """Constants for HTTP Requests"""
+    GET = 'GET'
+    POST = 'POST'
+    PUT = 'PUT'
+    DELETE = 'DELETE'
 
 class DhanHTTP:
     """Manages API keys, connection context, and HTTP requests"""
 
-    class HttpResponseStatus(Enum):
-        """Constants for HTTP Status Codes"""
-        SUCCESS = 'success'
-        FAILURE = 'failure'
-
-    class HttpMethod(Enum):
-        """Constants for HTTP Requests"""
-        GET = 'GET'
-        POST = 'POST'
-        PUT = 'PUT'
-        DELETE = 'DELETE'
-
     HTTP_DEFAULT_TIME_OUT = 60
     API_BASE_URL = 'https://api.dhan.co/v2'
 
-    def __init__(self, client_id :str, access_token :str, disable_ssl=False, pool=None):
+    def __init__(self, client_id: str, access_token: str, disable_ssl: bool=False, pool: Union[dict,None]=None):
         self.client_id = client_id
         self.access_token = access_token
         self.base_url = DhanHTTP.API_BASE_URL
@@ -47,108 +47,86 @@ class DhanHTTP:
         }
         self.disable_ssl = disable_ssl
         self.session = requests.Session()
+        # self.session.headers.update({'k':'v'})
         if pool:
             http_adapter = requests.adapters.HTTPAdapter(**pool) # type: ignore
             self.session.mount("https://", http_adapter)
 
-    def _send_request(self, method :HttpMethod, endpoint :str, payload: Optional[dict]={}) -> dict:
-        url = self.base_url + endpoint
-        if payload:
-            payload["dhanClientId"] = self.client_id
-        try:
-            response = getattr(self.session, method.value.lower())(url,
-                                                                   data=json_dumps(payload),
-                                                                   headers=self.header,
-                                                                   timeout=self.timeout)
-            return self._parse_response(response)
-        except Exception as e:
-            logging.error('Exception in DhanHQConnection.%s: %s', method.value.upper(), e)
-            return {
-                'status': DhanHTTP.HttpResponseStatus.FAILURE.value,
-                'remarks': str(e),
-                'data': '',
-            }
 
-    def _parse_response(self, response):
-        """
-        Parse the API's string response to return a JSON as dict.
-
-        Args:
-            response (requests.Response): The response object from the API.
-
-        Returns:
-            dict: Parsed response containing status, remarks, and data.
-        """
-        try:
-            status = DhanHTTP.HttpResponseStatus.FAILURE.value
-            remarks = ''
-            data = ''
-            json_response = json_loads(response.content)
-            if (response.status_code >= 200) and (response.status_code <= 299):
-                status = DhanHTTP.HttpResponseStatus.SUCCESS.value
-                data = json_response
-            else:
-                remarks = {
-                    'error_code': (json_response.get('errorCode')),
-                    'error_type': (json_response.get('errorType')),
-                    'error_message': (json_response.get('errorMessage'))
-                }
-        except Exception as e:
-            logging.warning('Exception found in dhanhq>>find_error_code: %s', e)
-            status = DhanHTTP.HttpResponseStatus.FAILURE.value
-            remarks = str(e)
-        return {
-            'status': status,
-            'remarks': remarks,
-            'data': data,
+    def _make_request(self,
+                      method :HTTPMethod,
+                      endpoint :str,
+                      params: Optional[Dict[str, Any]] = None,
+                      data: Optional[Dict[str, Any]] = None,
+                      **kwargs) -> Any:
+        url = f'{self.base_url}{endpoint}'
+        http_method = method.value.lower()
+        merged_kwargs = {
+            **kwargs,
+            'headers': {**kwargs.get('headers', {}), **self.header},
+            'timeout': self.timeout
         }
 
-    def get(self, endpoint: str) -> dict:
+        if data is not None:
+            data['dhanClientId'] = self.client_id
+
+        try:
+            response = self.session.request(http_method,url, params, data, **merged_kwargs)
+            response.raise_for_status()  # Raise an exception for 4xx/5xx status codes
+
+            # Handle non-JSON responses (e.g., 202 Accepted with no JSON body)
+            if response.status_code == 202:
+                return 'Request accepted for processing'
+
+            response_json = response.json()
+            return response_json #['data']
+        except requests.exceptions.HTTPError as http_err:
+            logger.error(f'HTTP error occurred: {http_err}')
+            raise DhanAPIException(code=str(response.status_code), message={http_err}) # type: ignore
+        except requests.exceptions.ConnectionError as conn_err:
+            logger.error(f'Connection error occurred: {conn_err}')
+            raise DhanAPIException(code="HTTP 503: Service Unavailable: ConnectionError", message=str(conn_err))
+        except requests.exceptions.Timeout as timeout_err:
+            logger.error(f'Request timed out: {timeout_err}')
+            raise DhanAPIException(code="HTTP 408: Request Timeout Error", message=str(timeout_err))
+        except requests.exceptions.RequestException as req_err:
+            logger.error(f'An error occurred: {req_err}')
+            raise DhanAPIException(code=str(response.status_code), message={req_err}) # type: ignore
+        except Exception as err:
+            logger.error(f'An unexpected error occurred: {err}')
+            raise DhanAPIException(code="UNKNOWN_ERROR", message=str(err))
+
+
+    def get(self,
+            endpoint: str,
+            params: Optional[Dict[str, Any]] = None) -> Any:
         """
         Do HTTP-GET request to Dhan Endpoint.
-
-        Args:
-            endpoint (str): The endpoint ignoring the base URL.
-
-        Returns:
-        dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethod.GET, endpoint)
+        return self._make_request(HTTPMethod.GET, endpoint, params=params)
 
-    def post(self, endpoint: str, payload: dict) -> dict:
+
+    def post(self,
+             endpoint: str,
+             data: Optional[Dict[str, Any]] = None) -> Any:
         """
         Do HTTP-POST request to Dhan Endpoint.
-
-        Args:
-            endpoint (str): The endpoint ignoring the base URL.
-            payload (dict): The payload dict contains the data that needs to be sent to the server.
-
-        Returns:
-        dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethod.POST, endpoint, payload)
+        return self._make_request(HTTPMethod.POST, endpoint, data=data)
 
-    def put(self, endpoint: str, payload: dict) -> dict:
+
+    def put(self,
+            endpoint: str,
+            data: Optional[Dict[str, Any]] = None) -> Any:
         """
         Do HTTP-PUT request to Dhan Endpoint.
-
-        Args:
-            endpoint (str): The endpoint ignoring the base URL.
-            payload (dict): The payload dict contains the data that needs to be sent to the server.
-
-        Returns:
-        dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethod.PUT, endpoint, payload)
+        return self._make_request(HTTPMethod.PUT, endpoint, data=data)
 
-    def delete(self, endpoint: str) -> dict:
+
+    def delete(self,
+               endpoint: str) -> Any:
         """
         Do HTTP-DELETE request to Dhan Endpoint.
-
-        Args:
-            endpoint (str): The endpoint ignoring the base URL.
-
-        Returns:
-        dict: The response in dict format.
         """
-        return self._send_request(DhanHTTP.HttpMethod.DELETE, endpoint)
+        return self._make_request(HTTPMethod.DELETE, endpoint)

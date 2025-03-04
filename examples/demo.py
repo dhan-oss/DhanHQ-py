@@ -85,7 +85,7 @@ dhan.orderEndpoint.place_order(security_id='1333',            # HDFC Bank
 
 
 # Fetch all orders
-dhan.orderEndpoint.get_order_list()
+dhan.orderEndpoint.get_current_orders()
 order_id= "13200000321"
 
 # Get order by id

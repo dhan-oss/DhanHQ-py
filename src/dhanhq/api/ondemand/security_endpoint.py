@@ -25,23 +25,13 @@ class SecurityEndpoint:
             f.write(form_html)
         web_open(Path.cwd().joinpath(temp_web_form_html).as_uri())
 
-    def generate_tpin(self):
+    def generate_tpin(self) -> str:
         """
         Generate T-Pin on registered mobile number.
-
-        Returns:
-            dict: The response containing the status of T-Pin generation.
         """
         endpoint = '/edis/tpin'
-        response = self.dhan_http.get(endpoint)
-        response['data'] = ''
-        # ToDo: This is inconsistent. If success then data should be set and not remarks field
-        if response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value:
-            response['remarks'] = self.OTP_SENT
-        else:
-            # ToDo: Why this redundant code here?
-            response['remarks'] = 'status code : ' + response['remarks']['error_code']
-        return response
+        self.dhan_http.get(endpoint)
+        return self.OTP_SENT
 
     def open_browser_for_tpin(self, isin, qty, exchange, segment='EQ', bulk=False):
         """
@@ -65,16 +55,12 @@ class SecurityEndpoint:
             "segment": segment,
             "bulk": bulk
         }
-        response = self.dhan_http.post(endpoint, payload)
-        if response['status'] == DhanHTTP.HttpResponseStatus.FAILURE.value:
-            return response
-
-        data = json_loads(response['data'])
+        data = self.dhan_http.post(endpoint, payload)
+        # data = json_loads(response)
         form_html = data['edisFormHtml']  # data['edisFormHtml']
         form_html = form_html.replace('\\', '')
-        # print(form_html)
         self._save_as_temp_html_file_and_open_in_browser(form_html)
-        return response
+        return data
 
     def edis_inquiry(self, isin):
         """

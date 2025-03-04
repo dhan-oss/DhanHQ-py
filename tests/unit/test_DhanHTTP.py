@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytest
 import requests
 
-from dhanhq.http import DhanHTTP
+from dhanhq.http import DhanHTTP, HTTPMethod, DhanAPIException
+
 
 @pytest.fixture
 def dhan_http():
@@ -38,84 +39,57 @@ class TestDhanHTTP_Constructor:
         assert dhan_http.header["Content-type"] == application_json
         assert dhan_http.header["Accept"] == application_json
 
-class TestDhanHTTP_Private_ParseResponse:
-    def test_parse_response_success_with_status_code_200(self, dhan_http, mock_success_response):
-        json_response = dhan_http._parse_response(mock_success_response)
-        assert json_response["status"] == "success"
-        assert json_response["remarks"] == ""
-        assert json_response["data"] == {"data": "some data"}
-
-    def test_parse_response_success_with_status_code_299(self, dhan_http, mock_success_response):
-        mock_success_response.status_code = 299
-        json_response = dhan_http._parse_response(mock_success_response)
-        assert json_response["status"] == "success"
-        assert json_response["remarks"] == ""
-        assert json_response["data"] == {"data": "some data"}
-
-    def test_parse_response_error_with_status_code_400(self, dhan_http, mock_failure_response):
-        json_response = dhan_http._parse_response(mock_failure_response)
-        assert json_response["status"] == "failure"
-        assert json_response["remarks"]["error_type"] == "test_error"
-        assert json_response["remarks"]["error_message"] == "test message"
-        assert json_response["data"] == ""
-
-class TestDhanHTTP_Private_SendRequest:
-    @patch("requests.Session.post")
-    def test_send_request_with_payload_add_clientid_to_it(self,mock_requests_session_post, dhan_http):
-        """Tests POST request with a payload and verifies payload content."""
+class TestDhanHTTP_Private_MakeRequest:
+    @patch("requests.Session.request")
+    def test_make_request_with_payload_add_clientid_to_it(self, mock_request, dhan_http):
+        """Tests POST request with a data and verifies data content."""
         endpoint = "/endpoint"
         payload = {"key": "value"}
-        dhan_http._send_request(DhanHTTP.HttpMethod.POST, endpoint, payload)
-        mock_requests_session_post.assert_called_once_with(
-            dhan_http.base_url + endpoint,
-            data=json.dumps({**payload, "dhanClientId": dhan_http.client_id}),
-            headers=dhan_http.header,
-            timeout=dhan_http.timeout,
-        )
+        expected_payload = {**payload, "dhanClientId": dhan_http.client_id}
+        dhan_http._make_request(HTTPMethod.POST, endpoint, data=payload)
+        mock_request.assert_called_once_with('post', dhan_http.base_url + endpoint, None, expected_payload,
+                                             headers=dhan_http.header, timeout=dhan_http.timeout,)
 
-    @patch("requests.Session.get")
-    def test_send_request_get_no_payload(self, mock_requests_session_get, dhan_http):
-        """Tests GET request with no payload."""
+    @patch("requests.Session.request")
+    def test_make_request_get_no_params(self, mock_request, dhan_http):
+        """Tests GET request with no data."""
         endpoint = "/endpoint"
-        dhan_http._send_request(DhanHTTP.HttpMethod.GET, endpoint)
-        mock_requests_session_get.assert_called_once_with(
-            dhan_http.base_url + endpoint,
-            data='{}',
-            headers=dhan_http.header,
-            timeout=dhan_http.timeout
-        )
+        dhan_http._make_request(HTTPMethod.GET, endpoint)
+        mock_request.assert_called_once_with('get', dhan_http.base_url + endpoint, None, None,
+                                             headers=dhan_http.header, timeout=dhan_http.timeout)
 
-    @patch("requests.Session.post")
+    @patch("requests.Session.request")
     def test_send_request_exception(self, mock_requests_session_post, dhan_http):
         """Tests exception handling in _send_request."""
         endpoint = "/endpoint"
         mock_requests_session_post.side_effect = requests.exceptions.ConnectionError("Test Error")
-        response = dhan_http._send_request(DhanHTTP.HttpMethod.POST, endpoint, {"test": "test"})
-        assert response['status'] == 'failure'
+        with pytest.raises(DhanAPIException) as ex:
+            dhan_http._make_request(HTTPMethod.POST, endpoint, {"test": "test"})
+        assert "ConnectionError" in str(ex.value)
 
 class TestDhanHTTP_CRUD_Methods:
-    @patch("dhanhq.http.DhanHTTP._send_request")
-    def test_get(self,mock_send_request,dhan_http):
+    @patch("dhanhq.http.DhanHTTP._make_request")
+    def test_get(self, mock_make_request, dhan_http):
         endpoint = "/endpoint"
         dhan_http.get(endpoint)
-        mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.GET, endpoint, )
+        mock_make_request.assert_called_once_with(HTTPMethod.GET, endpoint, params=None)
 
-    @patch("dhanhq.http.DhanHTTP._send_request")
-    def test_delete(self,mock_send_request,dhan_http):
+    @patch("dhanhq.http.DhanHTTP._make_request")
+    def test_delete(self, mock_make_request, dhan_http):
         endpoint = "/endpoint"
         dhan_http.delete(endpoint)
-        mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.DELETE, endpoint)
+        mock_make_request.assert_called_once_with(HTTPMethod.DELETE, endpoint)
 
-    @patch("dhanhq.http.DhanHTTP._send_request")
-    def test_put(self,mock_send_request,dhan_http):
+    @patch("dhanhq.http.DhanHTTP._make_request")
+    def test_put(self, mock_make_request, dhan_http):
         endpoint = "/endpoint"
         payload = {"key": "value"}
         dhan_http.put(endpoint,payload)
-        mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.PUT, endpoint, payload)
+        mock_make_request.assert_called_once_with(HTTPMethod.PUT, endpoint, data=payload)
 
-    @patch("dhanhq.http.DhanHTTP._send_request")
-    def test_post(self,mock_send_request,dhan_http):
+    @patch("dhanhq.http.DhanHTTP._make_request")
+    def test_post(self, mock_make_request, dhan_http):
         endpoint = "/endpoint"
         payload = {"key": "value"}
         dhan_http.post(endpoint,payload)
-        mock_send_request.assert_called_once_with(DhanHTTP.HttpMethod.POST, endpoint, payload)
+        mock_make_request.assert_called_once_with(HTTPMethod.POST, endpoint, data=payload)

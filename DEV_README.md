@@ -66,6 +66,19 @@ pyt # Run `chmod u+x init-dev-env.sh` to ensure you have exec permission on this
 pytest --cache-clear -s
 ```
 
+To run pyright checking for static typing issues in code
+```bash
+pyr
+pyrv # To run it in verbose mode
+pyrw # To run it continuously watching for file changes
+```
+
+To run linging against the code
+```bash
+pyl # To run pylint linting
+flk # To run flake8 linting
+```
+
 To deactivate virtual environment
 ```bash
 deactivate

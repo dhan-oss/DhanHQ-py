@@ -11,13 +11,14 @@ class TestMarketFeedEndpoint:
         marketFeedEndpoint = dhanhq_obj.marketFeedEndpoint
         endpoint = '/marketfeed/ltp'
         securities = {
-            'exchange_segment1': 'security_id1',
-            'exchange_segment2': 'security_id2'
+            'exchange_segment1': 'sec1',
+            'exchange_segment2': 'sec2'
         }
-        mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
-        json_response = marketFeedEndpoint.ticker_data(securities)
+        expected_data = {'sec1': 99.9, 'sec2':88.8}
+        mock_create_request.return_value = expected_data
+        data = marketFeedEndpoint.ticker_data(securities)
         mock_create_request.assert_called_once()
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
+        assert data == expected_data
         assert mock_create_request.call_args[0][0] == endpoint
         assert mock_create_request.call_args[0][1] == securities
 
@@ -29,10 +30,11 @@ class TestMarketFeedEndpoint:
             'exchange_segment1': 'security_id1',
             'exchange_segment2': 'security_id2'
         }
-        mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
-        json_response = marketFeedEndpoint.ohlc_data(securities)
+        expected_data = {'open': 99.9, 'high': 100, 'low': 90, 'close': 101}
+        mock_create_request.return_value = expected_data
+        data = marketFeedEndpoint.ohlc_data(securities)
         mock_create_request.assert_called_once()
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
+        assert set(data.keys()) == {'open', 'high', 'low', 'close'}
         assert mock_create_request.call_args[0][0] == endpoint
         assert mock_create_request.call_args[0][1] == securities
 
@@ -44,9 +46,10 @@ class TestMarketFeedEndpoint:
             'exchange_segment1': 'security_id1',
             'exchange_segment2': 'security_id2'
         }
-        mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
-        json_response = marketFeedEndpoint.quote_data(securities)
+        expected_data = { 'quote': 100 }
+        mock_create_request.return_value = expected_data
+        data = marketFeedEndpoint.quote_data(securities)
         mock_create_request.assert_called_once()
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
+        assert data['quote'] == 100
         assert mock_create_request.call_args[0][0] == endpoint
         assert mock_create_request.call_args[0][1] == securities
