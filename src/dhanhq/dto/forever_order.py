@@ -11,22 +11,26 @@ class ForeverOrder(BaseModel):
     # Automatically generate camelCase aliases for all fields
     model_config = ConfigDict(alias_generator=CommonUtils.to_camel_case, populate_by_name=True)
 
-    order_flag: OrderFlag
 
     order_id: str
     order_status: OrderStatus
-    transaction_type: TransactionType
-    exchange_segment: ExchangeSegment
-    product_type: ProductType
-    trading_symbol: str
+    order_flag: OrderFlag
+    leg_name:LegName
+
     security_id: str
+    trading_symbol: str
+    exchange_segment: ExchangeSegment
+    transaction_type: TransactionType
+    product_type: ProductType
+
     quantity: int
     price: float
     trigger_price: float
-    leg_name:LegName
+
     create_time: str
     update_time: str
     exchange_time: str
+
     drv_expiry_date: constr(strict=True)  # type: ignore  # Suppress Pyright error for Constrained string
     drv_option_type: Optional[OptionType]
     drv_strike_price: float
