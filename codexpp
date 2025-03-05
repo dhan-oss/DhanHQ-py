@@ -1,0 +1,14 @@
+from dhanhq import dhan  
+
+# Replace with your API Key & Secret Key
+api_key = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzQxMjc0OTI1LCJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJ3ZWJob29rVXJsIjoiIiwiZGhhbkNsaWVudElkIjoiMTEwMjg5MTI1NSJ9.VyzQEKsDjbXgq1ZxohqRIQwFygGl3BpCzFi4_5KK8xjk6jpOAzqhO3jkzloBtRlAooK4kPHMkqHY5_MIRbk8pg"
+secret_key = "1102891255"
+
+# Authenticate with Dhan API
+client = dhan.DhanHQ(api_key, secret_key)
+print("Connected to Dhan API ✅")
+  symbol = "NSE:NIFTY 50"
+interval = "5m"
+
+candles = client.get_candlestick_data(symbol=symbol, interval=interval)
+print(candles)  # Prints candlestick data
