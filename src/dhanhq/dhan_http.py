@@ -4,7 +4,7 @@
     This library provides methods to manage orders, retrieve market data,
     and perform various trading operations through the DhanHQ API.
 
-    :copyright: (c) 2024 by Dhan.
+    :copyright: (c) 2025 by Dhan.
     :license: see LICENSE for details.
 """
 

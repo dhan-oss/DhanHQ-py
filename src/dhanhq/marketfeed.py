@@ -2,7 +2,7 @@
     The marketfeed class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket.
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
 
-    :copyright: (c) 2024 by Dhan.
+    :copyright: (c) 2025 by Dhan.
     :license: see LICENSE for details.
 """
 
@@ -14,7 +14,7 @@ from collections import defaultdict
 import json
 
 
-class DhanFeed:
+class MarketFeed:
     # Constants
     """WebSocket URL for DhanHQ Live Market Feed"""
     market_feed_wss = 'wss://api-feed.dhan.co'
@@ -36,7 +36,7 @@ class DhanFeed:
     Full = 21
 
     def __init__(self, dhan_context, instruments, version='v1'):
-        """Initializes the DhanFeed instance with user credentials, instruments to subscribe, and callback functions."""
+        """Initializes the MarketFeed instance with user credentials, instruments to subscribe, and callback functions."""
 
         self.client_id = dhan_context.get_client_id()
         self.access_token = dhan_context.get_access_token()
@@ -64,10 +64,10 @@ class DhanFeed:
         """Initiates the connection to the Websockets."""
         if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
             if self.version == 'v1':
-                self.ws = await websockets.connect(market_feed_wss)
+                self.ws = await websockets.connect(MarketFeed.market_feed_wss)
                 await self.authorize()
             elif self.version == 'v2':
-                url = f"{market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
+                url = f"{MarketFeed.market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
                 self.ws = await websockets.connect(url)
             else:
                 raise ValueError(f"Unsupported version: {self.version}")

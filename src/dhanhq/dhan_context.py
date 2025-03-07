@@ -4,14 +4,13 @@
     This library provides methods to manage orders, retrieve market data,
     and perform various trading operations through the DhanHQ API.
 
-    :copyright: (c) 2024 by Dhan.
+    :copyright: (c) 2025 by Dhan.
     :license: see LICENSE for details.
 """
 
 import logging
 
 from dhanhq.dhan_http import DhanHTTP
-#from dhanhq.dhan_websocket import DhanHQWebSocket # If you have a WebSocket class
 
 class DhanContext:
     """
@@ -24,7 +23,7 @@ class DhanContext:
             self.client_id = client_id
             self.access_token = access_token
             self.dhan_http = DhanHTTP(client_id, access_token, disable_ssl, pool)
-            # self.websocket_connection = DhanWebSocket(client_id, access_token) # Initialize websocket connection
+
         except Exception as e:
             logging.error('Exception in dhanhq>>init : %s', e)
 
@@ -50,6 +49,3 @@ class DhanContext:
         http_connection_request (DhanHTTP): DhanContext enabled HTTP Connection Request object
         """
         return self.dhan_http
-
-    #def get_websocket_connection(self):
-    #    return self.websocket_connection
