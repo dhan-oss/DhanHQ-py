@@ -9,6 +9,7 @@
 import asyncio
 import websockets
 import json
+from typing import Callable, Optional
 
 
 class OrderUpdate:
@@ -20,6 +21,8 @@ class OrderUpdate:
         access_token (str): The access token for authentication.
         order_feed_wss (str): The WebSocket URL for order updates.
     """
+
+    on_update: Optional[Callable[[dict], None]] = None
 
     def __init__(self, dhan_context):
         """
@@ -64,6 +67,9 @@ class OrderUpdate:
             order_update (dict): The order update message received from the WebSocket.
         """
         if order_update.get('Type') == 'order_alert':
+            if self.on_update and callable(self.on_update):
+                return self.on_update(order_update)
+
             data = order_update.get('Data', {})
             if "orderNo" in data:
                 order_id = data["orderNo"]
