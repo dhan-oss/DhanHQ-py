@@ -1,4 +1,4 @@
-# DhanHQ-py : v2.0.2
+# DhanHQ-py : v2.0.8
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 

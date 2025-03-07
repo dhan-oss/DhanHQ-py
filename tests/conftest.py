@@ -1,3 +1,8 @@
+"""
+This is a special file in Pytest that allows you to define fixtures that are available to all tests in your project,
+without you having to import the fixture explicitly in your test files.
+"""
+
 import os
 import pytest
 from dotenv import load_dotenv
@@ -23,4 +28,9 @@ def api_access_token_fixture():
 @pytest.fixture
 def dhanhq_fixture(api_client_id_fixture, api_access_token_fixture):
     dhan_context = DhanContext(api_client_id_fixture, api_access_token_fixture)
+    return dhanhq(dhan_context)
+
+@pytest.fixture
+def dhanhq_obj():
+    dhan_context = DhanContext("test_client_id", "test_access_token")
     return dhanhq(dhan_context)

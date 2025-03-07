@@ -9,6 +9,7 @@ __pycache__/
 .test.env
 .coverage
 .todo
+*.csv
 
 # Temp ignore
 *.toml

@@ -10,6 +10,7 @@ class TestE2E_Dhanhq_Portfolio:
     @pytest.mark.parametrize("expected_dict", [json.load(open(json_file_path))])
     def test_get_holdings(self, expected_dict, dhanhq_fixture):
         actual_response = dhanhq_fixture.get_holdings()
+        pprint("actual_response = " + actual_response)
         assert actual_response['status'] == expected_dict['status']
         assert actual_response['remarks'] == expected_dict['remarks']
         # assert actual_response['data'] == expected_dict['data']
