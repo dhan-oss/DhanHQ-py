@@ -57,9 +57,9 @@ class OrderUpdate:
 
             async for message in websocket:
                 data = json.loads(message)
-                await self.handle_order_update(data)
+                self.handle_order_update(data)
 
-    async def handle_order_update(self, order_update):
+    def handle_order_update(self, order_update):
         """
         Handles incoming order update messages.
 
