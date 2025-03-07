@@ -11,5 +11,5 @@ from ._market_feed import MarketFeed
 from ._historical_data import HistoricalData
 from ._option_chain import OptionChain
 from .dhanhq import dhanhq
-from .marketfeed import DhanFeed
-from .orderupdate import OrderSocket
+from .marketfeed import MarketFeed
+from .orderupdate import OrderUpdate

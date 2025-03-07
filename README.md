@@ -1,4 +1,4 @@
-# DhanHQ-py : v2.0.2
+# DhanHQ-py : v2.0.8
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -10,16 +10,16 @@ DhanHQ-py Rest API is used to automate investing and trading. Execute orders in 
 Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 
-[Dhan](https://dhan.co) (c) 2024. Licensed under the [MIT License](https://github.com/dhan-oss/DhanHQ-py/blob/main/LICENSE)
+[Dhan](https://dhan.co) (c) 2025. Licensed under the [MIT License](https://github.com/dhan-oss/DhanHQ-py/blob/main/LICENSE)
 
 ### Documentation
 
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
 
-## v2.1 - What's new
+## v2.0.8 - What's new
 
-DhanHQ v2.1 is more modular and secure.
+DhanHQ v2.0.8 is more modular and secure.
 
 - The project is restructured to contemporary "best practices" in the python world. How does this affect you? Your imports would change like below:
 
@@ -27,15 +27,15 @@ DhanHQ v2.1 is more modular and secure.
   | Before This Version                                                    | After This Release                               |
   |------------------------------------------------------------------------|--------------------------------------------------|
   | from dhanhq import dhanhq | from dhanhq import dhanhq |
-  | from dhanhq import marketfeed.DhanFeed | from dhanhq import DhanFeed |
-  | from dhanhq import orderupdate.OrderSocket | from dhanhq import OrderSocket |
+  | from dhanhq import marketfeed.MarketFeed | from dhanhq import MarketFeed |
+  | from dhanhq import orderupdate.OrderUpdate | from dhanhq import OrderUpdate |
 
 - The constants that were earlier part of modules `marketfeed` and `orderupdate` are now moved to its respective classes contained in the modules for better developer experience. 
 
   | Before This Version | After This Release |
   |---------------------|--------------------|
-  | marketfeed.NSE      | DhanFeed.NSE       |
-  | marketfeed.Ticker | DhanFeed.Ticker |
+  | marketfeed.NSE      | MarketFeed.NSE       |
+  | marketfeed.Ticker | MarketFeed.Ticker |
 
   Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
 
@@ -45,8 +45,8 @@ DhanHQ v2.1 is more modular and secure.
   | Before This Version                                | After This Release                   |
   |----------------------------------------------------|--------------------------------------|
   | `dhanhq('client_id','access_token')`               | `dhanhq('dhan_context')`              |
-  | `DhanFeed('client_id','access_token',instruments)` | `DhanFeed('dhan_context',instruments)` |
-  | `OrderSocket('client_id','access_token')`          | `OrderSocket('dhan_context')`         |
+  | `MarketFeed('client_id','access_token',instruments)` | `MarketFeed('dhan_context',instruments)` |
+  | `OrderUpdate('client_id','access_token')`          | `OrderUpdate('dhan_context')`         |
 
   **Note:** The **_Hands-on API_** section is updated to reflect this change, for your convenience.
 
@@ -70,17 +70,6 @@ DhanHQ v2 extends execution capability with live order updates, market quotes an
 
 - Margin Calculator (`margin_calculator`) and Kill Switch (`kill_switch`) APIs.
 
-### Breaking Changes
-
-- Replaced `intraday_daily_minute_data` and `historical_minute_charts` as functions from v1.2.4
-
-- `quantity` field needs to be placed order quantity instead of pending order quantity in Order Modification
-
-- EPOCH time instead of Julian time in Historical Data API, and same changed for `convert_to_date_time` function
-
-- `historical_daily_data` takes `security_id` as argument instead of `symbol`
-
-- Nomenclature changes in `get_order_by_corelationID` to `get_order_by_correlationID`.
 
 You can read about all other updates from DhanHQ V2 here: [DhanHQ Releases](https://dhanhq.co/docs/v2/releases/).
 
@@ -235,25 +224,25 @@ dhan.place_forever(
 
 ### Market Feed Usage
 ```python
-from dhanhq import DhanContext, DhanFeed
+from dhanhq import DhanContext, MarketFeed
 
 # Define and use your dhan_context if you haven't already done so like below:
 dhan_context = DhanContext("client_id","access_token")
 
 # Structure for subscribing is (exchange_segment, "security_id", subscription_type)
 
-instruments = [(DhanFeed.NSE, "1333", DhanFeed.Ticker),   # Ticker - Ticker Data
-    (DhanFeed.NSE, "1333", DhanFeed.Quote),     # Quote - Quote Data
-    (DhanFeed.NSE, "1333", DhanFeed.Full),      # Full - Full Packet
-    (DhanFeed.NSE, "11915", DhanFeed.Ticker),
-    (DhanFeed.NSE, "11915", DhanFeed.Full)]
+instruments = [(MarketFeed.NSE, "1333", MarketFeed.Ticker),   # Ticker - Ticker Data
+    (MarketFeed.NSE, "1333", MarketFeed.Quote),     # Quote - Quote Data
+    (MarketFeed.NSE, "1333", MarketFeed.Full),      # Full - Full Packet
+    (MarketFeed.NSE, "11915", MarketFeed.Ticker),
+    (MarketFeed.NSE, "11915", MarketFeed.Full)]
 
 version = "v2"          # Mention Version and set to latest version 'v2'
 
 # In case subscription_type is left as blank, by default Ticker mode will be subscribed.
 
 try:
-    data = DhanFeed(dhan_context, instruments, version)
+    data = MarketFeed(dhan_context, instruments, version)
     while True:
         data.run_forever()
         response = data.get_data()
@@ -266,26 +255,26 @@ except Exception as e:
 data.disconnect()
 
 # Subscribe instruments while connection is open
-sub_instruments = [(DhanFeed.NSE, "14436", DhanFeed.Ticker)]
+sub_instruments = [(MarketFeed.NSE, "14436", MarketFeed.Ticker)]
 
 data.subscribe_symbols(sub_instruments)
 
 # Unsubscribe instruments which are already active on connection
-unsub_instruments = [(DhanFeed.NSE, "1333", 16)]
+unsub_instruments = [(MarketFeed.NSE, "1333", 16)]
 
 data.unsubscribe_symbols(unsub_instruments)
 ```
 
 ### Live Order Update Usage
 ```python
-from dhanhq import DhanContext, OrderSocket
+from dhanhq import DhanContext, OrderUpdate
 import time
 
 # Define and use your dhan_context if you haven't already done so like below:
 dhan_context = DhanContext("client_id","access_token")
 
 def run_order_update():
-    order_client = OrderSocket(dhan_context)
+    order_client = OrderUpdate(dhan_context)
     while True:
         try:
             order_client.connect_to_dhan_websocket_sync()
