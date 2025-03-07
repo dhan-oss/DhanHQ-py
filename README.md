@@ -40,7 +40,7 @@ DhanHQ v2.0.8 is more modular and secure.
   Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
 
 
-- Its SDK users, no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanContext` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanContext just once and use that context for other API classes. Quick glance of how affected code initialization is below:
+- You no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanContext` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanContext just once and use that context for other API classes. Quick glance of how affected code initialization is below:
 
   | Before This Version                                | After This Release                   |
   |----------------------------------------------------|--------------------------------------|
@@ -69,7 +69,6 @@ DhanHQ v2 extends execution capability with live order updates, market quotes an
 - Full Packet in Live Market Feed (`marketfeed`).
 
 - Margin Calculator (`margin_calculator`) and Kill Switch (`kill_switch`) APIs.
-
 
 You can read about all other updates from DhanHQ V2 here: [DhanHQ Releases](https://dhanhq.co/docs/v2/releases/).
 
