@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": {
+    "dhanClientId": "string",
+    "availabelBalance": -3.402823669209385e+38,
+    "sodLimit": -3.402823669209385e+38,
+    "collateralAmount": -3.402823669209385e+38,
+    "receiveableAmount": -3.402823669209385e+38,
+    "utilizedAmount": -3.402823669209385e+38,
+    "blockedPayoutAmount": -3.402823669209385e+38,
+    "withdrawableBalance": -3.402823669209385e+38
+  }
+}

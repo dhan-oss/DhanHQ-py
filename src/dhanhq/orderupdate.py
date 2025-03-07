@@ -2,7 +2,7 @@
     The orderupdate class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket.
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
 
-    :copyright: (c) 2024 by Dhan.
+    :copyright: (c) 2025 by Dhan.
     :license: see LICENSE for details.
 """
 
@@ -11,7 +11,7 @@ import websockets
 import json
 
 
-class OrderSocket:
+class OrderUpdate:
     """
     A class to manage WebSocket connections for order updates.
 
@@ -21,7 +21,7 @@ class OrderSocket:
         order_feed_wss (str): The WebSocket URL for order updates.
     """
 
-    def __init__(self, client_id, access_token):
+    def __init__(self, dhan_context):
         """
         Initializes the OrderSocket with client ID and access token.
 
@@ -29,8 +29,8 @@ class OrderSocket:
             client_id (str): The client ID for authentication.
             access_token (str): The access token for authentication.
         """
-        self.client_id = client_id
-        self.access_token = access_token
+        self.client_id = dhan_context.get_client_id()
+        self.access_token = dhan_context.get_access_token()
         self.order_feed_wss = "wss://api-order-update.dhan.co"
 
     async def connect_order_update(self):

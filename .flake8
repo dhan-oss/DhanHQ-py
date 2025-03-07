@@ -1,0 +1,16 @@
+# https://flake8.pycqa.org/en/latest/user/configuration.html
+[flake8]
+exclude =
+    .venv,
+    .git,
+    .github,
+    .pytest_cache,
+    __pycache__,
+    dhanhq.egg-info,
+    examples,
+    tests,
+    setup.py,
+ignore = E201,E231
+select = E,W,F,N,C
+max-line-length = 120
+max-complexity = 10

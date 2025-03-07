@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": [
+    {
+      "exchange": "NSE",
+      "tradingSymbol": "string",
+      "securityId": "string",
+      "isin": "string",
+      "totalQty": 0,
+      "dpQty": 0,
+      "t1Qty": 0,
+      "availableQty": 0,
+      "collateralQty": 0,
+      "avgCostPrice": 0,
+      "lastTradedPrice": 0
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": [
+    {
+      "dhanClientId": "string",
+      "tradingSymbol": "string",
+      "securityId": "string",
+      "positionType": "LONG",
+      "exchangeSegment": "NSE_EQ",
+      "productType": "CNC",
+      "buyAvg": 0,
+      "costPrice": 0,
+      "buyQty": 0,
+      "sellAvg": 0,
+      "sellQty": 0,
+      "netQty": 0,
+      "realizedProfit": 0,
+      "unrealizedProfit": 0,
+      "rbiReferenceRate": 0,
+      "multiplier": 0,
+      "carryForwardBuyQty": 0,
+      "carryForwardSellQty": 0,
+      "carryForwardBuyValue": 0,
+      "carryForwardSellValue": 0,
+      "dayBuyQty": 0,
+      "daySellQty": 0,
+      "dayBuyValue": 0,
+      "daySellValue": 0,
+      "drvExpiryDate": "string",
+      "drvOptionType": "CALL",
+      "drvStrikePrice": 0,
+      "crossCurrency": true
+    }
+  ]
+}

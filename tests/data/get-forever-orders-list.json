@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": [
+    {
+      "dhanClientId": "string",
+      "orderId": "string",
+      "orderStatus": "PENDING",
+      "transactionType": "BUY",
+      "exchangeSegment": "NSE_EQ",
+      "productType": "CNC",
+      "orderType": "SINGLE",
+      "tradingSymbol": "string",
+      "securityId": "string",
+      "quantity": 0,
+      "price": 0,
+      "triggerPrice": 0,
+      "legName": "TARGET_LEG",
+      "createTime": "string",
+      "updateTime": "string",
+      "exchangeTime": "string",
+      "drvExpiryDate": "string",
+      "drvOptionType": "CALL",
+      "drvStrikePrice": 0
+    }
+  ]
+}
