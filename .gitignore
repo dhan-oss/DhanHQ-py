@@ -13,6 +13,5 @@ __pycache__/
 .coverage.*
 
 # Temp ignore
-*.toml
 *.tmp
 lab/

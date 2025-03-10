@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dhanhq"
+version = "3.0.0"
+description = "The official Python client for communicating with the DhanHQ API"
+readme = "README.md"
+authors = [
+    { name = "Dhan", email = "dhan-oss@dhan.co" }
+]
+license = { text = "MIT LICENSE" }
+requires-python = ">=3.9" # Min Python Version
+dependencies = [
+    "pydantic>=2.10.6",
+    "pandas>=1.4.3",
+    "requests>=2.28.1",
+    "websockets>=12.0.1",
+    "pyOpenSSL>=20.0.1",
+]
+
+[project.urls]
+Homepage = "https://dhanhq.co/"
+
+[project.optional-dependencies]
+dev = [
+    "python-dotenv>=1.0.1",
+    "flake8>=7.1.1",
+    "pylint>=3.3.3",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "responses>=0.25.3",
+    "pyright>=1.1.394",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = { find = { where = ["src"] } }
+
+[tool.setuptools.package-data]
+"dhanhq" = ["*.txt", "*.md"]  # Optional: Include additional files if needed
