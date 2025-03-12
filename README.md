@@ -1,4 +1,4 @@
-# DhanHQ-py : v2.0.8
+# DhanHQ-py : v2.1.0
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
@@ -17,9 +17,11 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
 
-## v2.0.8 - What's new
+## v2.1.0 - What's new
 
-DhanHQ v2.0.8 is more modular and secure.
+- 20 level market depth is now available on DhanHQ APIs and part of the python library.
+
+DhanHQ v2.1.0 is more modular and secure.
 
 - The project is restructured to contemporary "best practices" in the python world. How does this affect you? Your imports would change like below:
 
@@ -162,11 +164,11 @@ dhan.get_positions()
 # Get holdings
 dhan.get_holdings()
 
-# Intraday Minute Data
-dhan.intraday_minute_data(security_id,exchange_segment,instrument_type)
+# Intraday Minute Data 
+dhan.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date)
 
 # Historical Daily Data
-dhan.historical_daily_data(security_id,exchange_segment,instrument_type,expiry_code,from_date,to_date)
+dhan.historical_daily_data(security_id, exchange_segment, instrument_type, from_date, to_date)
 
 # Time Converter
 dhan.convert_to_date_time(EPOCH Date)
@@ -249,7 +251,9 @@ try:
 
 except Exception as e:
     print(e)
+```
 
+```
 # Close Connection
 data.disconnect()
 
@@ -282,6 +286,30 @@ def run_order_update():
             time.sleep(5)
 
 run_order_update()
+```
+
+### 20 Level Market Depth
+```python
+from dhanhq import DhanContext, FullDepth
+
+dhan_context = DhanContext(client_id, access_token)
+
+instruments = [(1, "1333"),(2,"")]
+
+try:
+    response = fulldepth.FullDepth(dhan_context, instruments)
+    response.run_forever()
+    
+    while True:
+        response.get_data()
+        
+        if response.on_close:
+            print("Server disconnection detected. Kindly try again.")
+            break
+
+except Exception as e:
+    print(e)
+
 ```
 
 ## Changelog

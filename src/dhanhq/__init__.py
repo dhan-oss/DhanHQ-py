@@ -13,3 +13,4 @@ from ._option_chain import OptionChain
 from .dhanhq import dhanhq
 from .marketfeed import MarketFeed
 from .orderupdate import OrderUpdate
+from .fulldepth import FullDepth

@@ -57,9 +57,8 @@ class HistoricalData:
             dict: The response containing historical daily data.
         """
         if expiry_code not in [0, 1, 2, 3]:
-            # Raising and catching an exception in same method is bad practice. Replaced it with this clean code
             err = "expiry_code value must be ['0','1','2','3']"
-            logging.error('Exception in dhanhq>>intraday_history_minute_charts: %s', err)
+            logging.error('Exception in dhanhq>>historical_daily_data: %s', err)
             return {
                 'status': 'failure',
                 'remarks': err,
