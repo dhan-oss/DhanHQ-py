@@ -25,7 +25,7 @@ class FullDepth:
     """Constants for Request Code"""
     Depth_20 = 23
 
-    def __init__(self, dhan_context, instruments):
+    def __init__(self, dhan_context, instruments, on_ticks=None):
         """Initializes the FullDepth instance with user credentials, instruments to subscribe, and callback functions."""
         self.client_id = dhan_context.get_client_id()
         self.access_token = dhan_context.get_access_token()
@@ -33,46 +33,103 @@ class FullDepth:
         self.data = ""
         self._is_first_connect = True
         self.ws = None
-        self.on_ticks = None
+        # Validate and set on_ticks
+        if on_ticks is not None and not callable(on_ticks):
+            print("Warning: on_ticks must be callable. Using default callback instead.")
+            self.on_ticks = self._default_on_ticks
+        else:
+            self.on_ticks = on_ticks if on_ticks is not None else self._default_on_ticks
+        self.depth_history = {}   # Store latest depth data by security_id
         self.loop = asyncio.get_event_loop()
         self.on_close = False
+
+    def _default_on_ticks(self, data):
+        """Default callback for depth data if no custom on_ticks is provided."""
+        try:
+            security_id = data.get('security_id', 'Unknown')
+            depth = data.get('depth', [])
+            print(f"Default callback - Security {security_id}:")
+            for line in depth:
+                print(f"  {line}")
+        except (AttributeError, TypeError) as e:
+            print(f"Error in default callback: Invalid data format - {e}")
+
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
         self.loop.run_until_complete(self.connect())
 
     def get_data(self):
-        """Fetch instruments data while the event loop is open."""
-        response = self.loop.run_until_complete(self.ws.recv())
+        """
+        Fetch and process market depth data from the WebSocket feed.
+        
+        Returns:
+            dict: Latest formatted depth data for a security (exchange_segment, security_id, depth),
+                or None if no complete data is available.
+        Raises:
+            websockets.ConnectionClosed: If the WebSocket connection is unexpectedly closed.
+        """
+        try:
+            response = self.loop.run_until_complete(self.ws.recv())
+        except websockets.ConnectionClosed:
+            print("WebSocket connection closed unexpectedly. Attempting to reconnect...")
+            self.loop.run_until_complete(self.connect())
+            return None
+        except Exception as e:
+            print(f"Error receiving data: {e}")
+            return None
+
         remaining_data = response
         bid_data = None
         ask_data = None
-        
+        latest_result = None
+
         while remaining_data:
             update = self.process_data(remaining_data)
             if not update:
                 break
-            
-            # Store remaining data for next iteration
+
             remaining_data = update.pop("remaining_data", None)
-            
-            # Store bid/ask data separately
+
             if update['type'] == "Bid":
                 bid_data = update
             else:
                 ask_data = update
-            
-            # If we have both bid and ask data, format and print them
+
             if bid_data and ask_data and bid_data['security_id'] == ask_data['security_id']:
                 formatted_data = self.combine_and_format_depth(bid_data, ask_data)
-                print(f"\nExchange Segment: {formatted_data['exchange_segment']}, Security ID: {formatted_data['security_id']}")
-                for line in formatted_data['depth']:
-                    print(line)
-                # Reset bid/ask data for this security ID
+                
+                # Store in history
+                self.depth_history[formatted_data['security_id']] = formatted_data
+                
+                # Call the callback with specific error handling
+                try:
+                    self.on_ticks(formatted_data)
+                except TypeError as e:
+                    print(f"Error: on_ticks is not callable - {e}")
+                except Exception as e:
+                    print(f"Error in on_ticks callback: {e}")
+                
+                latest_result = formatted_data
                 bid_data = None
                 ask_data = None
-        
-        return None
+
+        return latest_result
+# Optional helper method to access stored data for a single subscribed instrument
+def get_depth_history(self, security_id=None):
+    """
+    Retrieve stored depth data.
+    
+    Args:
+        security_id (int, optional): Specific security ID to retrieve. If None, returns all data.
+    
+    Returns:
+        dict: Depth data for the specified security, or all stored data if no security_id is provided.
+    """
+    if security_id:
+        return self.depth_history.get(security_id)
+    return self.depth_history
+
 
     def close_connection(self):
         """Close WebSocket connection with this."""
