@@ -1,0 +1,59 @@
+import requests
+import pandas as pd
+from datetime import datetime, timedelta
+
+# ✅ Config
+API_KEY = "your_api_key"
+ACCESS_TOKEN = "your_access_token"
+SECURITY_ID = "INE002A01018"  # Replace with your stock's ID (e.g., Reliance)
+EXCHANGE = "NSE_EQ"
+PRODUCT_TYPE = "INTRADAY"
+QUANTITY = 1
+
+HEADERS = {
+    'access-token': ACCESS_TOKEN,
+    'Content-Type': 'application/json'
+}
+
+def fetch_candle_data(security_id, interval="5minute", days=2):
+    end = datetime.now()
+    start = end - timedelta(days=days)
+    url = f"https://api.dhan.co/market/v1/instruments/history?security_id={security_id}&exchange_segment={EXCHANGE}&instrument_type=EQUITY&interval={interval}&from={start.date()}&to={end.date()}"
+    
+    r = requests.get(url, headers=HEADERS)
+    data = r.json()['data']
+    df = pd.DataFrame(data)
+    df['timestamp'] = pd.to_datetime(df['time'])
+    df.set_index('timestamp', inplace=True)
+    return df
+
+def place_order(transaction_type):
+    payload = {
+        "exchangeSegment": EXCHANGE,
+        "orderType": "MARKET",
+        "transactionType": transaction_type,
+        "securityId": SECURITY_ID,
+        "quantity": QUANTITY,
+        "productType": PRODUCT_TYPE,
+        "price": 0,
+        "orderValidity": "DAY"
+    }
+    r = requests.post("https://api.dhan.co/orders", headers=HEADERS, json=payload)
+    print("Order Response:", r.json())
+
+def strategy():
+    df = fetch_candle_data(SECURITY_ID)
+    df['sma_5'] = df['close'].rolling(5).mean()
+    df['sma_20'] = df['close'].rolling(20).mean()
+
+    if df['sma_5'].iloc[-2] < df['sma_20'].iloc[-2] and df['sma_5'].iloc[-1] > df['sma_20'].iloc[-1]:
+        print("Bullish crossover detected. Placing BUY order.")
+        place_order("BUY")
+    elif df['sma_5'].iloc[-2] > df['sma_20'].iloc[-2] and df['sma_5'].iloc[-1] < df['sma_20'].iloc[-1]:
+        print("Bearish crossover detected. Placing SELL order.")
+        place_order("SELL")
+    else:
+        print("No crossover. No action taken.")
+
+if __name__ == "__main__":
+    strategy()
