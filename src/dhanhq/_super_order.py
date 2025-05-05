@@ -6,7 +6,7 @@ class SuperOrder:
 
     def get_super_order_list(self):
         """
-        Retrieve a list of all super orders requested in a day with their last updated status.
+        Retrieve a list of all super orders requested/live with their last updated status.
 
         Returns:
             dict: The response containing order list status and data.
