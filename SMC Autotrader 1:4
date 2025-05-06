@@ -1,0 +1,34 @@
+Dhann API Integration :
+# Sample Python Webhook Endpoint
+from flask import Flask, request
+import requests
+
+app = Flask(_name_)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.json
+    symbol = data['ticker']
+    action = data['message'].split()[0]
+    sl = float(data['message'].split('SL=')[1].split()[0])
+    tp = float(data['message'].split('TP=')[1].split()[0])
+    
+    # Dhan API Call
+    dhan_order = {
+        "symbol": symbol,
+        "exchange": "NSE" if "NSE" in symbol else "BSE",
+        "order_type": "LIMIT",
+        "price": close_price,
+        "quantity": calculate_position_size(sl),  # Risk-based sizing
+        "stop_loss": sl,
+        "target": tp
+    }
+    requests.post(DHAN_API_URL, json=dhan_order)
+    return 'OK'
+def calculate_position_size(stop_loss):
+    risk_percent = 2  # 2% of capital
+    risk_amount = account_balance * risk_percent / 100
+    return round(risk_amount / (entry_price - stop_loss))
+isCrypto = syminfo.type == "crypto"
+isForex = syminfo.type == "forex"
+leverage = isCrypto ? 10 : isForex ? 50 : 1
