@@ -16,6 +16,5 @@ class TraderControl:
         """
         action = action.upper()
         endpoint = f'/killswitch?killSwitchStatus={action}'
-        # ToDo: This should have been an Update request aka HTTP-PUT and not HTTP-POST
+        
         return self.dhan_http.post(endpoint)
-
