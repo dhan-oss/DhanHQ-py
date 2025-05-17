@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": {
+    "totalMargin": -3.402823669209385e+38,
+    "spanMargin": -3.402823669209385e+38,
+    "exposureMargin": -3.402823669209385e+38,
+    "availableBalance": -3.402823669209385e+38,
+    "variableMargin": -3.402823669209385e+38,
+    "insufficientBalance": -3.402823669209385e+38,
+    "brokerage": -3.402823669209385e+38,
+    "leverage": "string"
+  }
+}

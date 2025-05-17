@@ -18,9 +18,19 @@ INSTALL_REQUIRES = [
     "pandas>=1.4.3",
     "requests>=2.28.1",
     "websockets>=12.0.1",
-    "pyOpenSSL>=20.0.1"
+    "pyOpenSSL>=20.0.1",
     ]
-                    
+
+TEST_SUITE="tests"
+TEST_REQUIRES = [
+    "python-dotenv>=1.0.1",
+    "flake8>=7.1.1",
+    "pylint>=3.3.3",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "responses>=0.25.3",
+    ]
+
 setup(name=PACKAGE_NAME,
       version=VERSION,
       description=DESCRIPTION,
@@ -30,6 +40,10 @@ setup(name=PACKAGE_NAME,
       license=LICENSE,
       author_email=AUTHOR_EMAIL,
       url=URL,
+      package_dir={'': 'src'}, # Tells setuptools where your code is
+      packages=find_packages(where='src'), # Automatically find packages
       install_requires=INSTALL_REQUIRES,
-      packages=find_packages()
+      extras_require={
+          'dev': TEST_REQUIRES
+      },
       )

@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "remarks": "",
+  "data": {
+    "dhanClientId": "string",
+    "narration": "string",
+    "voucherdate": "string",
+    "exchange": "string",
+    "voucherdesc": "string",
+    "vouchernumber": "string",
+    "debit": "string",
+    "credit": "string",
+    "runbal": "string"
+  }
+}

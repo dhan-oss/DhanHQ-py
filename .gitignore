@@ -1,0 +1,15 @@
+# Local Environment Context
+__pycache__/
+*.egg-info/
+.idea/
+.vscode/
+.env/
+.venv/
+.python-version
+.test.env
+.coverage
+.todo
+*.csv
+
+# Temp ignore
+*.toml
