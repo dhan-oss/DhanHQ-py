@@ -8,6 +8,7 @@ import pytest
 from dotenv import load_dotenv
 
 from dhanhq import DhanContext, dhanhq
+from dhanhq.orderupdate import OrderUpdate
 
 
 # Load environment variables from .test.env file
@@ -34,3 +35,8 @@ def dhanhq_fixture(api_client_id_fixture, api_access_token_fixture):
 def dhanhq_obj():
     dhan_context = DhanContext("test_client_id", "test_access_token")
     return dhanhq(dhan_context)
+
+@pytest.fixture
+def orderUpdate_fixture():
+    dhan_context = DhanContext("test_client_id", "test_access_token")
+    return OrderUpdate(dhan_context)
