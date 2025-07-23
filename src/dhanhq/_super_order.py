@@ -1,3 +1,5 @@
+from typing import Optional
+
 class SuperOrder:
     """
     Interface to manage Dhan 'Super Orders', which are composite trading orders that include
@@ -105,9 +107,20 @@ class SuperOrder:
 
         return self.dhan_http.delete(f'/super/orders/{order_id}/{order_leg}')
 
-    def place_super_order(self, security_id, exchange_segment, transaction_type, quantity,
-                      order_type, product_type, price, targetPrice, stopLossPrice,
-                      trailingJump, tag):
+    def place_super_order(
+        self,
+        security_id: str,
+        exchange_segment: str,
+        transaction_type: str,
+        quantity: int,
+        order_type: str,
+        product_type: str,
+        price: Optional[float] = None,
+        targetPrice: Optional[float] = None,
+        stopLossPrice: Optional[float] = None,
+        trailingJump: Optional[float] = None,
+        tag: Optional[str] = None
+    ):
         """
         Place a new Super Order on Dhan platform with entry, target and stop-loss legs.
 
@@ -116,13 +129,13 @@ class SuperOrder:
             exchange_segment (str): Exchange (e.g., NSE, BSE).
             transaction_type (str): BUY or SELL.
             quantity (int): Order quantity (> 0).
-            order_type (str): LIMIT, MARKET, etc.
-            product_type (str): CNC, INTRA, etc.
-            price (float): Entry price.
-            targetPrice (float): Target price.
-            stopLossPrice (float): Stop loss price.
-            trailingJump (float): Trailing SL value.
-            tag (str): Optional correlation ID or tracking label.
+            order_type (str): LIMIT or MARKET.
+            product_type (str): CNC, INTRADAY, MARGIN, MTF.
+            price (float, optional): Entry price. Set to None for market orders. (default: None)
+            targetPrice (float, optional): Target price. (default: None)
+            stopLossPrice (float, optional): Stop loss price. (default: None)
+            trailingJump (float, optional): Trailing SL value. (default: None)
+            tag (str, optional): Optional correlation ID or tracking label. (default: None)
 
         Returns:
             dict: The response containing the order placement status.
@@ -131,39 +144,67 @@ class SuperOrder:
             ValueError: If mandatory inputs are missing or logically invalid.
         """
         # Basic validations
-        if not all([security_id, exchange_segment, transaction_type, quantity, order_type, product_type, price, targetPrice, stopLossPrice]):
+        if not all([security_id, exchange_segment, transaction_type, quantity, order_type, product_type]):
             raise ValueError("Missing required parameters for placing a super order.")
+        
+        security_id = str(security_id)
+        exchange_segment = exchange_segment.upper()
+        transaction_type = transaction_type.upper()
+        quantity = int(quantity)
+        order_type = order_type.upper()
+        product_type = product_type.upper()
+        price = float(price) if price is not None else None
+        targetPrice = float(targetPrice) if targetPrice is not None else None
+        stopLossPrice = float(stopLossPrice) if stopLossPrice is not None else None
+        trailingJump = float(trailingJump) if trailingJump is not None else None
+        tag = str(tag) if tag is not None else None
 
         # Leg validation
-        if price <= 0 or targetPrice <= 0 or stopLossPrice <= 0:
-            raise ValueError("All legs (price, targetPrice, stopLossPrice) must be provided and > 0.")
+        if order_type == "MARKET":
+            if price is not None and price != 0:
+                raise ValueError("For MARKET orders, price must be None or 0.")
+        elif order_type == "LIMIT":
+            if price is None or price <= 0:
+                raise ValueError("For LIMIT orders, price must be provided and > 0.")
+        else:
+            raise ValueError("order_type must be either MARKET or LIMIT.")
 
-        transaction_type = transaction_type.upper()
-        price = float(price)
-        targetPrice = float(targetPrice)
-        stopLossPrice = float(stopLossPrice)
+        if (targetPrice is None or targetPrice <= 0) and (stopLossPrice is None or stopLossPrice <= 0):
+            raise ValueError("At least one of targetPrice or stopLossPrice must be provided and > 0.")
+        
+        if trailingJump:
+            if trailingJump < 0:
+                raise ValueError("trailingJump must be >= 0.")
+            if not stopLossPrice:
+                raise ValueError("trailingJump can only be used with stopLossPrice. Please provide a valid stopLossPrice.")
 
         # Logical leg validation
         if transaction_type == "BUY":
-            if not (targetPrice > price and stopLossPrice < price):
-                raise ValueError("For BUY: targetPrice must be > price and stopLossPrice must be < price.")
+            if order_type != "MARKET":
+                if targetPrice and not (targetPrice > price):
+                    raise ValueError("For BUY: targetPrice must be > price.")
+                if stopLossPrice and not (stopLossPrice < price):
+                    raise ValueError("For BUY: stopLossPrice must be < price.")
         elif transaction_type == "SELL":
-            if not (targetPrice < price and stopLossPrice > price):
-                raise ValueError("For SELL: targetPrice must be < price and stopLossPrice must be > price.")
+            if order_type != "MARKET":
+                if targetPrice and not (targetPrice < price):
+                    raise ValueError("For SELL: targetPrice must be < price.")
+                if stopLossPrice and not (stopLossPrice > price):
+                    raise ValueError("For SELL: stopLossPrice must be > price.")
         else:
             raise ValueError("transaction_type must be either BUY or SELL.")
 
         payload = {
             "transactionType": transaction_type,
-            "exchangeSegment": exchange_segment.upper(),
-            "productType": product_type.upper(),
-            "orderType": order_type.upper(),
+            "exchangeSegment": exchange_segment,
+            "productType": product_type,
+            "orderType": order_type,
             "securityId": security_id,
-            "quantity": int(quantity),
+            "quantity": quantity,
             "price": price,
-            "targetPrice": float(targetPrice),
-            "stopLossPrice": float(stopLossPrice),
-            "trailingJump": float(trailingJump)
+            "targetPrice": targetPrice,
+            "stopLossPrice": stopLossPrice,
+            "trailingJump": trailingJump
         }
 
         if tag:

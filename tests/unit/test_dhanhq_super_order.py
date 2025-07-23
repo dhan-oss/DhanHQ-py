@@ -33,8 +33,8 @@ class TestDhanhq_SuperOrder:
         assert mock_post_request.call_args[0][0] == endpoint
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_place_super_order_invalid_legs(self, mock_post_request, dhanhq_obj):
-        with pytest.raises(ValueError, match="All legs .* must be provided"):
+    def test_place_super_order_invalid_no_legs(self, mock_post_request, dhanhq_obj):
+        with pytest.raises(ValueError, match="At least one of targetPrice or stopLossPrice must be provided and > 0"):
             dhanhq_obj.place_super_order(
                 security_id="SEC123",
                 exchange_segment="NSE",
@@ -42,10 +42,10 @@ class TestDhanhq_SuperOrder:
                 quantity=10,
                 order_type="LIMIT",
                 product_type="INTRA",
-                price=0,
+                price=100,
                 targetPrice=0,
                 stopLossPrice=0,
-                trailingJump=1.5,
+                trailingJump=0,
                 tag=""
             )
 
@@ -65,6 +65,25 @@ class TestDhanhq_SuperOrder:
                 trailingJump=1.5,
                 tag=""
             )
+
+    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    def test_place_super_order_valid_market(self, mock_post_request, dhanhq_obj):
+        endpoint = '/super/orders'
+        dhanhq_obj.place_super_order(
+            security_id="SEC123",
+            exchange_segment="NSE",
+            transaction_type="BUY",
+            quantity=10,
+            order_type="MARKET",
+            product_type="INTRA",
+            price=0,
+            targetPrice=110,
+            stopLossPrice=0,
+            trailingJump=0,
+            tag="TEST_MARKET"
+        )
+        mock_post_request.assert_called_once()
+        assert mock_post_request.call_args[0][0] == endpoint
 
     @patch("dhanhq.dhan_http.DhanHTTP.put")
     def test_modify_super_order_entry_leg(self, mock_put_request, dhanhq_obj):
