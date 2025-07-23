@@ -1,3 +1,5 @@
+from typing import Optional
+
 class SuperOrder:
     """
     Interface to manage Dhan 'Super Orders', which are composite trading orders that include
@@ -113,11 +115,11 @@ class SuperOrder:
         quantity: int,
         order_type: str,
         product_type: str,
-        price: float | None = None,
-        targetPrice: float | None = None,
-        stopLossPrice: float | None = None,
-        trailingJump: float | None = None,
-        tag: str | None = None
+        price: Optional[float] = None,
+        targetPrice: Optional[float] = None,
+        stopLossPrice: Optional[float] = None,
+        trailingJump: Optional[float] = None,
+        tag: Optional[str] = None
     ):
         """
         Place a new Super Order on Dhan platform with entry, target and stop-loss legs.
@@ -129,11 +131,11 @@ class SuperOrder:
             quantity (int): Order quantity (> 0).
             order_type (str): LIMIT or MARKET.
             product_type (str): CNC, INTRADAY, MARGIN, MTF.
-            price (float | None): Entry price. Set to None for market orders. (default: None)
-            targetPrice (float | None): Target price. (default: None)
-            stopLossPrice (float | None): Stop loss price. (default: None)
-            trailingJump (float | None, optional): Trailing SL value. (default: None)
-            tag (str | None, optional): Optional correlation ID or tracking label. (default: None)
+            price (float, optional): Entry price. Set to None for market orders. (default: None)
+            targetPrice (float, optional): Target price. (default: None)
+            stopLossPrice (float, optional): Stop loss price. (default: None)
+            trailingJump (float, optional): Trailing SL value. (default: None)
+            tag (str, optional): Optional correlation ID or tracking label. (default: None)
 
         Returns:
             dict: The response containing the order placement status.
@@ -159,7 +161,7 @@ class SuperOrder:
 
         # Leg validation
         if order_type == "MARKET":
-            if price:
+            if price is not None and price != 0:
                 raise ValueError("For MARKET orders, price must be None or 0.")
         elif order_type == "LIMIT":
             if price is None or price <= 0:
