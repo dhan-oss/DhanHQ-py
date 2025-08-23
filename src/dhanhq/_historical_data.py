@@ -9,7 +9,7 @@ class HistoricalData:
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
 
-    def intraday_minute_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, interval=1):
+    def intraday_minute_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, interval=1, oi = False):
         """
         Retrieve OHLC & Volume of minute candles for desired instrument for last 5 trading day.
 
@@ -17,6 +17,7 @@ class HistoricalData:
             security_id (str): The ID of the security.
             exchange_segment (str): The exchange segment (e.g., NSE, BSE).
             instrument_type (str): The type of instrument (e.g., stock, option).
+            oi (bool): Whether to include open interest data for futures and options.
 
         Returns:
             dict: The response containing intraday minute data.
@@ -37,11 +38,12 @@ class HistoricalData:
             'instrument': instrument_type,
             'interval': interval,
             'fromDate': from_date,
-            'toDate': to_date
+            'toDate': to_date,
+            'oi': oi
         }
         return self.dhan_http.post(endpoint, payload)
 
-    def historical_daily_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, expiry_code=0):
+    def historical_daily_data(self, security_id, exchange_segment, instrument_type, from_date, to_date, expiry_code=0, oi = False):
         """
         Retrieve OHLC & Volume of daily candle for desired instrument.
 
@@ -52,6 +54,7 @@ class HistoricalData:
             expiry_code (str): The expiry code for derivatives.
             from_date (str): The start date for the historical data.
             to_date (str): The end date for the historical data.
+            oi (bool): Whether to include open interest data for futures and options.
 
         Returns:
             dict: The response containing historical daily data.
@@ -71,6 +74,7 @@ class HistoricalData:
             "instrument": instrument_type,
             "expiryCode": expiry_code,
             "fromDate": from_date,
-            "toDate": to_date
+            "toDate": to_date,
+            "oi": oi
         }
         return self.dhan_http.post(endpoint, payload)
