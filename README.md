@@ -14,8 +14,10 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 ### Documentation
 
+- [DhanHQ Python Documentation](https://dhanhq.co/docs/DhanHQ-py/)
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
+
 
 ## v2.1.0 - What's new
 
@@ -323,3 +325,4 @@ except Exception as e:
 ## Changelog
 
 [Check release notes](https://github.com/dhan-oss/DhanHQ-py/releases)
+
