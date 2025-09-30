@@ -16,5 +16,5 @@ class TraderControl:
         """
         action = action.upper()
         endpoint = f'/killswitch?killSwitchStatus={action}'
-        
-        return self.dhan_http.post(endpoint)
+        payload = {}
+        return self.dhan_http.post(endpoint, payload)
