@@ -1,0 +1,66 @@
+pip install dhanhq
+
+
+from dhanhq import dhanhq
+import datetime
+
+# --- Configuration ---
+CLIENT_ID = "YOUR_CLIENT_ID"
+ACCESS_TOKEN = "YOUR_ACCESS_TOKEN"
+# Example underlying instrument (e.g., NIFTY)
+# You need the correct security ID for the *options contract*, not the underlying index/stock
+# The security IDs must be fetched from the Dhan instrument master list
+# For this example, replace with actual option contract security IDs
+CALL_SECURITY_ID = '12345'  # Example: NIFTY ATM Call Option Security ID
+PUT_SECURITY_ID = '67890'  # Example: NIFTY ATM Put Option Security ID
+QUANTITY = 75              # Quantity (check lot size for F&O)
+
+# Initialize Dhan client
+dhan = dhanhq(CLIENT_ID, ACCESS_TOKEN)
+
+def place_straddle_orders():
+    """
+    Places orders for a long straddle strategy (buy ATM Call and buy ATM Put).
+    """
+    try:
+        # --- Place Long Call Order ---
+        call_order_params = {
+            "security_id": CALL_SECURITY_ID,
+            "exchange_segment": dhan.NSE_FNO,  # For F&O
+            "transaction_type": dhan.SELL,
+            "quantity": QUANTITY,
+            "order_type": dhan.MARKET,        # Or dhan.LIMIT with a price
+            "product_type": dhan.INTRA,       # Or dhan.CARRYFORWARD
+            "price": 0,                       # Set to 0 for MARKET orders
+            "validity": dhan.DAY,
+        }
+        call_order_response = dhan.place_order(**call_order_params)
+        print(f"Call Order Response: {call_order_response}")
+
+        # --- Place Long Put Order ---
+        put_order_params = {
+            "security_id": PUT_SECURITY_ID,
+            "exchange_segment": dhan.NSE_FNO,
+            "transaction_type": dhan.SELL,
+            "quantity": QUANTITY,
+            "order_type": dhan.MARKET,
+            "product_type": dhan.INTRA,
+            "price": 0,
+            "validity": dhan.DAY,
+        }
+        put_order_response = dhan.place_order(**put_order_params)
+        print(f"Put Order Response: {put_order_response}")
+
+        if 'orderId' in call_order_response and 'orderId' in put_order_response:
+            print(f"Long Straddle orders placed successfully for {QUANTITY} quantity each.")
+        else:
+            print("There was an issue with placing one or both orders.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    # In a real scenario, you would first use the Option Chain API to dynamically 
+    # find the current ATM strike price and its corresponding security IDs and expiry date.
+    # This example assumes you have the correct security IDs ready.
+    place_straddle_orders()
