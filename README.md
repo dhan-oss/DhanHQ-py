@@ -1,6 +1,12 @@
-# DhanHQ-py : v2.1.0
+# DhanHQ-py : v2.2.0 [Pre-release]
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
+
+> **Note: v2.2.0 is currently in pre-release.**
+> With the release of v2.2.0, there are breaking changes of v2.1.0. You can install pre-release version by using the below code:
+```bash
+pip install --pre dhanhq
+```
 
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co/v2/)  
@@ -17,6 +23,16 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Python Documentation](https://dhanhq.co/docs/DhanHQ-py/)
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
+
+## v2.2.0 - What's new
+- You can now access the entire full market depth (200 Level) via DhanHQ APIs and part of the python library.
+- Expired Options Data are now directly available on the library and you can fetch for all NSE & BSE instruments
+- Super Orders - smart orders for managing risk and profits is now introduced with DhanHQ
+- You can set, modify and change IP for your account, right from the python library - the code for the same is available under example.
+
+And a lot more is available directly on DhanHQ Python Library now.
+
+---
 
 
 ## v2.1.0 - What's new
@@ -55,24 +71,6 @@ DhanHQ v2.1.0 is more modular and secure.
   **Note:** The **_Hands-on API_** section is updated to reflect this change, for your convenience.
 
 - Code coverage improvements with robust unit & integration tests for safe and speed delivery of features. Will strengthen even more in upcoming releases.
-
-## v2.0 - What's New
-
-DhanHQ v2 extends execution capability with live order updates, market quotes and forever orders on superfast APIs. Some of the key highlights from this version are:
-    
-- Fetch LTP, Quote (with OI) and Market Depth data directly on API, for upto 1000 instruments at once with Market Quote API.
-
-- Option Chain API which gives OI, greeks, volume, top bid/ask and price data of all strikes of a particular underlying.
-
-- Place, modify and manage your Forever Orders, including single and OCO orders to manage risk and trade efficiently with Forever Order API.
-
-- Order Updates are sent in real time via websockets, which will update order status of all your orders placed via any platform - `order_update`.
-
-- Intraday Minute Data now provides OHLC with Volume data for last 5 trading days across timeframes such as 1 min, 5 min, 15 min, 25 min and 60 min - `intraday_minute_data`.
-
-- Full Packet in Live Market Feed (`marketfeed`).
-
-- Margin Calculator (`margin_calculator`) and Kill Switch (`kill_switch`) APIs.
 
 You can read about all other updates from DhanHQ V2 here: [DhanHQ Releases](https://dhanhq.co/docs/v2/releases/).
 
@@ -115,6 +113,65 @@ pip install dhanhq
 ```
 
 
+
+### Authentication
+
+You can now generate access tokens using the `DhanLogin` class.
+
+#### Method 1: OAuth Flow
+```python
+from dhanhq import DhanLogin
+
+dhan_login = DhanLogin("YOUR_CLIENT_ID")
+app_id = "YOUR_APP_ID"
+app_secret = "YOUR_APP_SECRET"
+
+# Step 1: Generate Consent and Open Browser for Login
+consent_id = dhan_login.generate_login_session(app_id, app_secret)
+
+# Step 2: Consume Token ID (After user logs in and gets Token ID from redirect URL)
+token_id = "TOKEN_ID_FROM_REDIRECT_URL"
+access_token = dhan_login.consume_token_id(token_id, app_id, app_secret)
+print(access_token)
+```
+
+#### Method 2: PIN & TOTP Flow
+```python
+from dhanhq import DhanLogin
+
+dhan_login = DhanLogin("YOUR_CLIENT_ID")
+pin = "YOUR_PIN"
+totp = "YOUR_TOTP"
+
+access_token_data = dhan_login.generate_token(pin, totp)
+print(access_token_data)
+```
+
+#### Renew Token
+``` python
+dhan_login.renew_token(access_token)
+```
+
+#### User Profile
+``` python
+# Check validity of access token and account setup
+user_info = dhan_login.user_profile(access_token)
+print(user_info)
+```
+
+### IP Management
+You can manage your Static IP (whitelisting) using `set_ip`, `modify_ip`, and `get_ip`.
+```python
+# Set Primary IP
+response = dhan_login.set_ip(access_token, "10.200.10.10", "PRIMARY")
+print(response)
+# Modify Primary IP
+response = dhan_login.modify_ip(access_token, "10.200.10.11", "PRIMARY")
+print(response)
+# Get Configured IPs
+ip_list = dhan_login.get_ip(access_token)
+print(ip_list)
+```
 
 ### Hands-on API
 
@@ -172,6 +229,20 @@ dhan.intraday_minute_data(security_id, exchange_segment, instrument_type, from_d
 # Historical Daily Data
 dhan.historical_daily_data(security_id, exchange_segment, instrument_type, from_date, to_date)
 
+# Expired Options Data
+dhan.expired_options_data(
+    security_id=13,
+    exchange_segment="NSE_FNO",
+    instrument_type="INDEX",
+    expiry_flag="MONTH",
+    expiry_code=1,
+    strike="ATM",
+    drv_option_type="CALL",
+    required_data=["open", "high", "low", "close", "volume"],
+    from_date="2023-01-01",
+    to_date="2023-01-31"
+)
+
 # Time Converter
 dhan.convert_to_date_time(EPOCH Date)
 
@@ -218,6 +289,7 @@ dhan.place_forever(
     security_id="1333",
     exchange_segment= dhan.NSE,
     transaction_type= dhan.BUY,
+    order_type=dhan.LIMIT,
     product_type=dhan.CNC,
     quantity= 10,
     price= 1900,
@@ -298,16 +370,17 @@ def run_order_update():
 run_order_update()
 ```
 
-### 20 Level Market Depth
+### Full Market Depth
 ```python
 from dhanhq import DhanContext, FullDepth
 
 dhan_context = DhanContext(client_id, access_token)
 
-instruments = [(1, "1333"),(2,"")]
+instruments = [(1, "1333")]                     #[(1, "1333"),(2,"")] for 20 depth, upto 50 instruments
+depth_level = 200                               # 20 or 200, default 20 in case this is not passed
 
 try:
-    response = fulldepth.FullDepth(dhan_context, instruments)
+    response = fulldepth.FullDepth(dhan_context, instruments, depth_level)          #depth_level is non mandatory for 20 depth
     response.run_forever()
     
     while True:

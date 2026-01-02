@@ -1,0 +1,13 @@
+{
+    "status": "success",
+    "remarks": "",
+    "data": [
+        {
+            "SEM_EXM_EXCH_ID": "NSE",
+            "SEM_SMST_SECURITY_ID": "1333",
+            "SEM_INSTRUMENT_NAME": "EQUITY",
+            "SEM_TRADING_SYMBOL": "HDFCBANK",
+            "SEM_CUSTOM_SYMBOL": "HDFC Bank Ltd"
+        }
+    ]
+}

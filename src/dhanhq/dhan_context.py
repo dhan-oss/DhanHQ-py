@@ -11,6 +11,7 @@
 import logging
 
 from dhanhq.dhan_http import DhanHTTP
+from dhanhq.auth import DhanLogin
 
 class DhanContext:
     """
@@ -23,6 +24,7 @@ class DhanContext:
             self.client_id = client_id
             self.access_token = access_token
             self.dhan_http = DhanHTTP(client_id, access_token, disable_ssl, pool)
+            self.dhan_login = DhanLogin(client_id)
 
         except Exception as e:
             logging.error('Exception in dhanhq>>init : %s', e)
@@ -49,3 +51,12 @@ class DhanContext:
         http_connection_request (DhanHTTP): DhanContext enabled HTTP Connection Request object
         """
         return self.dhan_http
+
+    def get_dhan_login(self):
+        """
+        Return DhanLogin object to handle authentication
+        
+        Returns:
+            DhanLogin: Object to handle authentication flows
+        """
+        return self.dhan_login

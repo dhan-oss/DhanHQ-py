@@ -3,10 +3,11 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-dhan = dhanhq(your_client_id, "your_access_token")
+dhan_context = DhanContext("client_id","access_token")
+dhan = dhanhq(dhan_context)
 
-# Replace  your_client_id with Dhan Client ID.
-# Replace "your_access_token" with your access token. Do remember it needs to be inside "".
+# Replace  "client_id with" Dhan Client ID.
+# Replace "access_token" with your access token. Do remember it needs to be inside "".
 
 # Place an order for Equity Cash
 dhan.place_order(security_id='1333',            # HDFC Bank
@@ -24,16 +25,6 @@ dhan.place_order(security_id='52175',           # Nifty PE
     quantity=550,
     order_type=dhan.MARKET,
     product_type=dhan.INTRA,
-    price=0)
-    
-# Place an order for Currency
-dhan.place_order(security_id= '10093',          # USDINR
-    exchange_segment= dhan.CUR,
-    transaction_type= dhan.BUY,
-    quantity=1,
-    order_type = dhan.MARKET,
-    validity= dhan.DAY,
-    product_type= dhan.INTRA,
     price=0)
 
 # Place an order for BSE Equity

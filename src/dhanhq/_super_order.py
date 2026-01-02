@@ -106,8 +106,8 @@ class SuperOrder:
         return self.dhan_http.delete(f'/super/orders/{order_id}/{order_leg}')
 
     def place_super_order(self, security_id, exchange_segment, transaction_type, quantity,
-                      order_type, product_type, price, targetPrice, stopLossPrice,
-                      trailingJump, tag):
+                      order_type, product_type, price, targetPrice=0.0, stopLossPrice=0.0,
+                      trailingJump=0.0, tag=None):
         """
         Place a new Super Order on Dhan platform with entry, target and stop-loss legs.
 
@@ -131,12 +131,15 @@ class SuperOrder:
             ValueError: If mandatory inputs are missing or logically invalid.
         """
         # Basic validations
-        if not all([security_id, exchange_segment, transaction_type, quantity, order_type, product_type, price, targetPrice, stopLossPrice]):
+        if not all([security_id, exchange_segment, transaction_type, quantity, order_type, product_type, price]):
             raise ValueError("Missing required parameters for placing a super order.")
 
         # Leg validation
-        if price <= 0 or targetPrice <= 0 or stopLossPrice <= 0:
-            raise ValueError("All legs (price, targetPrice, stopLossPrice) must be provided and > 0.")
+        if price <= 0:
+            raise ValueError("Price must be > 0.")
+
+        if targetPrice <= 0 and stopLossPrice <= 0:
+            raise ValueError("At least one of targetPrice or stopLossPrice must be provided and > 0.")
 
         transaction_type = transaction_type.upper()
         price = float(price)
@@ -145,11 +148,15 @@ class SuperOrder:
 
         # Logical leg validation
         if transaction_type == "BUY":
-            if not (targetPrice > price and stopLossPrice < price):
-                raise ValueError("For BUY: targetPrice must be > price and stopLossPrice must be < price.")
+            if targetPrice > 0 and not (targetPrice > price):
+                raise ValueError("For BUY: targetPrice must be > price.")
+            if stopLossPrice > 0 and not (stopLossPrice < price):
+                raise ValueError("For BUY: stopLossPrice must be < price.")
         elif transaction_type == "SELL":
-            if not (targetPrice < price and stopLossPrice > price):
-                raise ValueError("For SELL: targetPrice must be < price and stopLossPrice must be > price.")
+            if targetPrice > 0 and not (targetPrice < price):
+                raise ValueError("For SELL: targetPrice must be < price.")
+            if stopLossPrice > 0 and not (stopLossPrice > price):
+                raise ValueError("For SELL: stopLossPrice must be > price.")
         else:
             raise ValueError("transaction_type must be either BUY or SELL.")
 
@@ -168,6 +175,8 @@ class SuperOrder:
 
         if tag:
             payload["correlationId"] = tag
+    
+        endpoint = '/super/orders'
 
-        return self.dhan_http.post('/super/orders', payload)
+        return self.dhan_http.post(endpoint, payload)
 

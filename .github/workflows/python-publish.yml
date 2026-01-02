@@ -9,6 +9,8 @@ permissions:
 
 jobs:
   deploy:
+    # Only run when the GitHub Release is marked as stable release
+    if: ${{ github.event.release.prerelease == false }}
     runs-on: ubuntu-latest
 
     steps:

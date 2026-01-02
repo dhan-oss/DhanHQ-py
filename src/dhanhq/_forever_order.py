@@ -20,7 +20,7 @@ class ForeverOrder:
             quantity (int): The quantity of the order.
             price (float): The price of the order.
             trigger_Price (float): The trigger price for the order.
-            order_flag (str): The order flag (default is "SINGLE").
+            order_flag (str): The order flag (default is "SINGLE", can be "OCO").
             disclosed_quantity (int): The disclosed quantity for the order.
             validity (str): The validity of the order (DAY, IOC, etc.).
             price1 (float): The secondary price for the order.

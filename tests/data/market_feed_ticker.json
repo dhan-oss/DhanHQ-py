@@ -1,0 +1,8 @@
+{
+    "type": "Ticker Data",
+    "exchange_segment": "NSE_EQ",
+    "security_id": "1333",
+    "last_price": 1500.0,
+    "last_quantity": 10,
+    "last_trade_time": "10:30:00"
+}

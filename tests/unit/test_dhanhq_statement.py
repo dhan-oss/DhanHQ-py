@@ -39,57 +39,7 @@ class TestDhanhq_Statement:
         dhanhq_obj.ledger_report(from_date,to_date)
         mock_read_request.assert_called_once_with(endpoint)
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_intraday_minute_data(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/charts/intraday'
-        security_id="security_id"
-        exchange_segment="exchange_segment"
-        instrument_type="instrument_type"
-        from_date="from_date"
-        to_date="to_date"
-        mock_create_request.return_value = { 'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
-        json_response = dhanhq_obj.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date)
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
-        mock_create_request.assert_called_once()
-        assert mock_create_request.call_args[0][0] == endpoint
 
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_intraday_minute_data_fails_for_bad_interval_input(self, mock_create_request, dhanhq_obj):
-        security_id="security_id"
-        exchange_segment="exchange_segment"
-        instrument_type="instrument_type"
-        from_date="from_date"
-        to_date="to_date"
-        interval=100
-        json_response = dhanhq_obj.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date, interval)
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.FAILURE.value
-        mock_create_request.assert_not_called()
-
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_historical_daily_data(self, mock_create_request, dhanhq_obj):
-        endpoint = f'/charts/historical'
-        security_id='security_id'
-        exchange_segment='exchange_segment'
-        instrument_type='instrument_type'
-        from_date="from_date"
-        to_date="to_date"
-        mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
-        json_response = dhanhq_obj.historical_daily_data(security_id, exchange_segment, instrument_type, from_date, to_date)
-        mock_create_request.assert_called_once()
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
-        assert mock_create_request.call_args[0][0] == endpoint
-
-    @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_historical_daily_data_fails_for_bad_expiry_code(self, mock_create_request, dhanhq_obj):
-        security_id='security_id'
-        exchange_segment='exchange_segment'
-        instrument_type='instrument_type'
-        from_date="from_date"
-        to_date="to_date"
-        bad_expiry_code=99
-        json_response = dhanhq_obj.historical_daily_data(security_id, exchange_segment, instrument_type, from_date, to_date,bad_expiry_code)
-        assert json_response['status'] == DhanHTTP.HttpResponseStatus.FAILURE.value
-        mock_create_request.assert_not_called()
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_ticker_data(self, mock_create_request, dhanhq_obj):

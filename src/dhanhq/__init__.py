@@ -1,4 +1,5 @@
 from .dhan_context import DhanContext
+from .auth import DhanLogin
 from .dhan_http import DhanHTTP
 from ._order import Order
 from ._forever_order import ForeverOrder

@@ -1,0 +1,70 @@
+name: Publish Python Package (Pre-release Only)
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    # Only run when the GitHub Release is marked as a pre-release
+    if: ${{ github.event.release.prerelease == true }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+
+      - name: Build package
+        run: |
+          python setup.py sdist bdist_wheel
+
+      # Safety: ensure the package version is a pre-release (e.g., 2.1.0rc1 / 2.1.0b1 / 2.1.0a1)
+      # This prevents accidentally uploading a stable version while using a GitHub prerelease.
+      - name: Verify package is a pre-release
+        run: |
+          python -m pip install --upgrade packaging
+          python - <<'PY'
+          import glob
+          from packaging.version import Version
+
+          wheels = glob.glob("dist/*.whl")
+          if not wheels:
+            raise SystemExit("No wheel found in dist/. Build step may have failed.")
+
+          # Extract version from wheel filename: {name}-{version}-...
+          # Example: mypkg-2.1.0rc1-py3-none-any.whl
+          wheel = wheels[0]
+          version = wheel.split("/")[-1].split("-")[1]
+          v = Version(version)
+
+          if not v.is_prerelease:
+            raise SystemExit(f"Refusing to upload stable version {version}. Use a pre-release like 2.1.0rc1.")
+          print(f"OK: Detected pre-release version {version}")
+          PY
+
+      - name: Check package with twine
+        run: |
+          twine check dist/*
+
+      - name: Publish package to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          twine upload dist/*
+
+      - name: Clean up
+        run: |
+          rm -rf dist build *.egg-info

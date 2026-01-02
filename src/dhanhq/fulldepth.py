@@ -1,6 +1,7 @@
 """
     The FullDepth class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket.
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
+    Supports both 20 and 200 depth levels based on user input.
 
     :copyright: (c) 2025 by Dhan.
     :license: see LICENSE for details.
@@ -15,27 +16,47 @@ import json
 
 class FullDepth:
     # Constants
-    """WebSocket URL for DhanHQ Live Market Feed"""
-    depth_feed_wss = 'wss://depth-api-feed.dhan.co/twentydepth'
+    """WebSocket URLs for DhanHQ Live Market Feed"""
+    depth_20_feed_wss = 'wss://depth-api-feed.dhan.co/twentydepth'
+    depth_200_feed_wss = 'wss://full-depth-api.dhan.co/'
 
     """Constants for Exchange Segment"""
     NSE = 1
     NSE_FNO = 2
 
     """Constants for Request Code"""
-    Depth_20 = 23
+    request_code = 23
 
-    def __init__(self, dhan_context, instruments):
-        """Initializes the FullDepth instance with user credentials, instruments to subscribe, and callback functions."""
+    def __init__(self, dhan_context, instruments, depth_level=20):
+        """
+        Initializes the FullDepth instance with user credentials, instruments to subscribe, and callback functions.
+        
+        Args:
+            dhan_context: Dhan context object containing client_id and access_token
+            instruments: List of instruments to subscribe to
+            depth_level: Depth level (20 or 200). Defaults to 20.
+        """
         self.client_id = dhan_context.get_client_id()
         self.access_token = dhan_context.get_access_token()
         self.instruments = instruments
+        self.depth_level = depth_level
         self.data = ""
         self._is_first_connect = True
         self.ws = None
         self.on_ticks = None
         self.loop = asyncio.get_event_loop()
         self.on_close = False
+        self.request_code = self.request_code
+        
+        # Validate depth level
+        if depth_level not in [20, 200]:
+            raise ValueError("Depth level must be either 20 or 200")
+        
+        # Set appropriate endpoint and request code based on depth level
+        if depth_level == 20:
+            self.ws_url = self.depth_20_feed_wss
+        else:
+            self.ws_url = self.depth_200_feed_wss
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
@@ -81,7 +102,8 @@ class FullDepth:
     async def connect(self):
         """Initiates the connection to the Websockets."""
         if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
-            url = f"{FullDepth.depth_feed_wss}?token={self.access_token}&clientId={self.client_id}&authType=2"
+            url = f"{self.ws_url}?token={self.access_token}&clientId={self.client_id}&authType=2"
+            print(f"Connecting to WebSocket URL: {url}")
             self.ws = await websockets.connect(url)
             await self.subscribe_instruments()
         else:
@@ -117,8 +139,8 @@ class FullDepth:
         print("Connection closed!")
 
     """Creating Instruments List to be subscribed"""
-    def validate_and_process_tuples(self, tuples_list, batch_size=50):
-        """Create a list of all instruments to be added and a maximum of 50 instruments in single socket"""
+    def validate_and_process_tuples(self, tuples_list, batch_size=None):
+        """Create a list of all instruments to be added with appropriate batch size based on depth level"""
         # Convert 2-element tuples to standard format
         processed_tuples = []
         for tup in tuples_list:
@@ -132,24 +154,38 @@ class FullDepth:
         # Eliminate duplicates
         processed_tuples = list(set(processed_tuples))
         
-        # Create batches of 50 instruments
+        # Set batch size based on depth level
+        if batch_size is None:
+            batch_size = 1 if self.depth_level == 200 else 50
+        
+        # Create batches with appropriate size
         return [processed_tuples[i:i+batch_size] for i in range(0, len(processed_tuples), batch_size)]
 
     async def subscribe_instruments(self):
         """Subscribe Instruments on the Open Websocket"""
         instrument_batches = self.validate_and_process_tuples(self.instruments)
         for batch in instrument_batches:
-            subscription_message = {
-                "RequestCode": self.Depth_20,
-                "InstrumentCount": len(batch),
-                "InstrumentList": [
-                    {
-                        "ExchangeSegment": self.get_exchange_segment(ex),
-                        "SecurityId": token
-                    } for ex, token in batch
-                ]
-            }
+            if self.depth_level == 200:
+                # Only one instrument per batch for 200 depth
+                ex, token = batch[0]
+                subscription_message = {
+                    "RequestCode": self.request_code,
+                    "ExchangeSegment": self.get_exchange_segment(ex),
+                    "SecurityId": token
+                }
+            else:
+                subscription_message = {
+                    "RequestCode": self.request_code,
+                    "InstrumentCount": len(batch),
+                    "InstrumentList": [
+                        {
+                            "ExchangeSegment": self.get_exchange_segment(ex),
+                            "SecurityId": token
+                        } for ex, token in batch
+                    ]
+                }
             await self.ws.send(json.dumps(subscription_message))
+            print(f"Subscribed to {len(batch)} instruments with {self.depth_level} depth")
             print(subscription_message)
 
     def get_exchange_segment(self, exchange_code):
@@ -166,6 +202,16 @@ class FullDepth:
         
         # Process just one message and return it
         if offset + 12 <= len(data):  # Need 12 bytes for complete header
+            if self.depth_level == 20:
+                return self.process_20_depth_data(data, offset)
+            else:
+                return self.process_200_depth_data(data, offset)
+        
+        return None
+
+    def process_20_depth_data(self, data, offset):
+        """Process data for 20 depth level"""
+        if offset + 12 <= len(data):
             header = struct.unpack('<hBBiI', data[offset:offset+12])
             msg_length = header[0]      # Message Length (2 bytes)
             msg_code = header[1]        # Feed Response Code (1 byte)
@@ -175,7 +221,7 @@ class FullDepth:
             if msg_length > 0 and offset + msg_length <= len(data):
                 message_data = data[offset:offset+msg_length]
                 if msg_code in [41, 51]:  # Either Bid (41) or Ask (51) data
-                    depth_data = self.process_depth_data(message_data, is_bid=(msg_code == 41))
+                    depth_data = self.process_20_depth_data_body(message_data, is_bid=(msg_code == 41))
                     return {
                         "exchange_segment": exchange_segment,
                         "security_id": security_id,
@@ -188,8 +234,35 @@ class FullDepth:
         
         return None
 
-    def process_depth_data(self, data, is_bid=True):
-        """Parse and process depth data for both bid and ask"""
+    def process_200_depth_data(self, data, offset):
+        """Process data for 200 depth level"""
+        if offset + 12 <= len(data):
+            # Parse BcastHeader structure
+            header = struct.unpack('<hBBiI', data[offset:offset+12])
+            msg_length = header[0]      # Message Length (2 bytes)
+            msg_code = header[1]        # Feed Response Code (1 byte)
+            exchange_segment = header[2] # Exchange Segment (1 byte)
+            security_id = header[3]      # Security ID (4 bytes)
+            no_of_rows = header[4]      # NoofRows (4 bytes)
+            
+            if msg_length > 0 and offset + msg_length <= len(data):
+                message_data = data[offset:offset+msg_length]
+                if msg_code in [41, 51]:  # Either Bid (41) or Ask (51) data
+                    depth_data = self.process_200_depth_data_body(message_data, no_of_rows, is_bid=(msg_code == 41))
+                    return {
+                        "exchange_segment": exchange_segment,
+                        "security_id": security_id,
+                        "type": "Bid" if msg_code == 41 else "Ask",
+                        "depth": depth_data["depth"],
+                        "remaining_data": data[offset+msg_length:] if offset+msg_length < len(data) else None
+                    }
+                elif msg_code == 50:
+                    self.server_disconnection(message_data)
+        
+        return None
+
+    def process_20_depth_data_body(self, data, is_bid=True):
+        """Parse and process depth data for 20 depth level"""
         # Only unpack the header first (12 bytes)
         header = struct.unpack('<hBBiI', data[0:12])
         exchange_segment = header[2]
@@ -222,6 +295,41 @@ class FullDepth:
             "depth": depth
         }
 
+    def process_200_depth_data_body(self, data, no_of_rows, is_bid=True):
+        """Parse and process depth data for 200 depth level"""
+        # Only unpack the header first (12 bytes)
+        header = struct.unpack('<hBBiI', data[0:12])
+        exchange_segment = header[2]
+        sec_id = header[3]
+        
+        # Skip the header and process the body directly
+        market_depth_binary = data[12:]
+        packet_format = '<dII'  # float64 (price) + uint32 (quantity) + uint32 (orders)
+        packet_size = struct.calcsize(packet_format)
+        depth = []
+        
+        # Iterate over the actual number of rows received
+        for i in range(min(no_of_rows, 200)):  # Cap at 200 for safety
+            start_idx = i * packet_size
+            end_idx = start_idx + packet_size
+            
+            if end_idx > len(market_depth_binary):
+                break
+                
+            current_packet = struct.unpack(packet_format, market_depth_binary[start_idx:end_idx])
+            depth.append({
+                "price": current_packet[0],
+                "quantity": current_packet[1],
+                "orders": current_packet[2]
+            })
+        
+        return {
+            "type": 'Bid Data' if is_bid else 'Ask Data',
+            "exchange_segment": exchange_segment,
+            "security_id": sec_id,
+            "depth": depth
+        }
+
     def combine_and_format_depth(self, bid_data, ask_data):
         """Combine and sort bid/ask data, then format for display"""
         # Sort bid prices in descending order (highest first)
@@ -230,7 +338,12 @@ class FullDepth:
         ask_depth = sorted(ask_data["depth"], key=lambda x: x["price"])
         
         formatted_output = []
-        for bid, ask in zip(bid_depth, ask_depth):
+        # Use the minimum length to avoid index errors
+        min_length = min(len(bid_depth), len(ask_depth))
+        
+        for i in range(min_length):
+            bid = bid_depth[i]
+            ask = ask_depth[i]
             line = (
                 f"bid : {{price:{bid['price']:.2f}, quantity:{bid['quantity']}, no_of_orders:{bid['orders']}}} | "
                 f"ask : {{price:{ask['price']:.2f}, quantity:{ask['quantity']}, no_of_orders:{ask['orders']}}}"

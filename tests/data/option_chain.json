@@ -1,0 +1,10 @@
+{
+    "status": "success",
+    "remarks": "",
+    "data": {
+        "last_price": 20000.0,
+        "implied_volatility": 12.5,
+        "oi": 100000,
+        "volume": 50000
+    }
+}

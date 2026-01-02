@@ -35,7 +35,8 @@ class MarketFeed:
     Depth = 19
     Full = 21
 
-    def __init__(self, dhan_context, instruments, version='v1'):
+    def __init__(self, dhan_context, instruments, version='v2', 
+                 on_connect=None, on_message=None, on_close=None, on_error=None, on_ticks=None):
         """Initializes the MarketFeed instance with user credentials, instruments to subscribe, and callback functions."""
 
         self.client_id = dhan_context.get_client_id()
@@ -44,9 +45,19 @@ class MarketFeed:
         self.data = ""
         self._is_first_connect = True
         self.ws = None
-        self.on_ticks = None
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
         self.version = version
+        
+        # Callbacks
+        self.on_connect = on_connect
+        self.on_message = on_message
+        if not on_message and on_ticks:
+            self.on_message = on_ticks
+        self.on_close = on_close
+        self.on_error = on_error
+        
+        self._running = False
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
@@ -58,20 +69,103 @@ class MarketFeed:
 
     def close_connection(self):
         """Close WebSocket connection with this."""
-        return self.loop.run_until_complete(self.disconnect())
+        self._running = False
+        try:
+            loop = asyncio.get_running_loop()
+            if loop == self.loop:
+                asyncio.create_task(self.disconnect())
+                return
+        except RuntimeError:
+            pass
+
+        if self.loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(self.disconnect(), self.loop)
+            return future.result()
+        else:
+            return self.loop.run_until_complete(self.disconnect())
+        
+    def run(self):
+        """
+        Blocking call to run the WebSocket connection.
+        This method handles the connection, receiving messages, and calling callbacks.
+        """
+        self._running = True
+        try:
+            self.loop.run_until_complete(self._run_async())
+        except KeyboardInterrupt:
+            self.close_connection()
+            
+    def start(self):
+        """
+        Starts the WebSocket connection in a separate thread.
+        Returns the thread object.
+        """
+        import threading
+        t = threading.Thread(target=self.run, daemon=True)
+        t.start()
+        return t
+
+    async def _run_async(self):
+        """Internal async method to handle the connection loop."""
+        await self.connect()
+        while self._running:
+            try:
+                if self.ws and not self._is_ws_closed():
+                    data = await self.get_instrument_data()
+                    if self.on_message:
+                        self.on_message(self, data)
+                else:
+                    await asyncio.sleep(1)
+                    if not self.ws or self._is_ws_closed():
+                         await self.connect()
+            except Exception as e:
+                if self.on_error:
+                    self.on_error(self, e)
+                await asyncio.sleep(1)
+
+    def _run_coroutine(self, coro):
+        """Helper to run coroutine in the event loop from any thread."""
+        try:    
+            loop = asyncio.get_running_loop()
+            if loop == self.loop:
+                asyncio.create_task(coro)
+                return
+        except RuntimeError:
+            pass
+        
+        asyncio.run_coroutine_threadsafe(coro, self.loop)
+
+    def _is_ws_closed(self):
+        """Helper method to safely check if WebSocket is closed."""
+        if not self.ws:
+            return True
+        try:
+            return getattr(self.ws, 'closed', False) or self.ws.state == websockets.protocol.State.CLOSED
+        except Exception:
+            return True
 
     async def connect(self):
         """Initiates the connection to the Websockets."""
         if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
-            if self.version == 'v1':
-                self.ws = await websockets.connect(MarketFeed.market_feed_wss)
-                await self.authorize()
-            elif self.version == 'v2':
-                url = f"{MarketFeed.market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
-                self.ws = await websockets.connect(url)
-            else:
-                raise ValueError(f"Unsupported version: {self.version}")
-            await self.subscribe_instruments()
+            try:
+                if self.version == 'v1':
+                    self.ws = await websockets.connect(MarketFeed.market_feed_wss)
+                    await self.authorize()
+                elif self.version == 'v2':
+                    url = f"{MarketFeed.market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
+                    self.ws = await websockets.connect(url)
+                else:
+                    raise ValueError(f"Unsupported version: {self.version}")
+                
+                await self.subscribe_instruments()
+                
+                if self.on_connect:
+                    self.on_connect(self)
+                    
+            except Exception as e:
+                if self.on_error:
+                    self.on_error(self, e)
+                raise e
         else:
             try:
                 await self.ws.ping()
@@ -92,9 +186,16 @@ class MarketFeed:
                 disconnect_message = {
                     "RequestCode": 12
                 }
-                await self.ws.send(json.dumps(disconnect_message))
-                header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
-                await self.ws.send(header_message)
+                try:
+                    await self.ws.send(json.dumps(disconnect_message))
+                    header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
+                    await self.ws.send(header_message)
+                except Exception:
+                    pass
+            await self.ws.close()
+            
+        if self.on_close:
+            self.on_close(self)
         print("Connection closed!")
 
     async def authorize(self):
@@ -128,6 +229,8 @@ class MarketFeed:
         except Exception as e:
             print(f"Authorization failed: {e}")
             self.is_authorized = False
+            if self.on_error:
+                self.on_error(self, e)
 
 
     """Creating Instruments List to be subscribed"""
@@ -222,7 +325,6 @@ class MarketFeed:
     def process_data(self, data):
         """Read binary data and initiate processing in received format"""
         first_byte = struct.unpack('<B', data[0:1])[0]
-        self.on_close = False
         if first_byte == 2:
             return self.process_ticker(data)
         elif first_byte == 3:
@@ -391,22 +493,19 @@ class MarketFeed:
     def server_disconnection(self, data):
         """Parse and process server disconnection error"""
         disconnection_packet = [struct.unpack('<BHBIH', data[0:10])]
-        self.on_close = False
         if disconnection_packet[0][4] == 805:
             print ("Disconnected: No. of active websocket connections exceeded")
-            self.on_close = True
         elif disconnection_packet[0][4] == 806:
             print ("Disconnected: Subscribe to Data APIs to continue")
-            self.on_close = True
         elif disconnection_packet[0][4] == 807:
             print ("Disconnected: Access Token is expired")
-            self.on_close = True
         elif disconnection_packet[0][4] == 808:
             print ("Disconnected: Invalid Client ID")
-            self.on_close = True
         elif disconnection_packet[0][4] == 809:
             print ("Disconnected: Authentication Failed - check ")
-            self.on_close = True
+        
+        if self.on_close:
+            self.on_close(self)
 
     async def on_connection_opened(self, websocket):
         "Callback function executed when the WebSocket connection is opened."
@@ -458,7 +557,7 @@ class MarketFeed:
         self.instruments = list(unique_symbols_set)
 
         # If the WebSocket is open, send the subscription packet for the new symbols
-        if self.ws and not self.ws.closed:
+        if self.ws and not self._is_ws_closed():
             # Prepare the instruments list for subscription
             group_size = 100
             new_instrument_list = self.validate_and_process_tuples(symbols, group_size)
@@ -468,7 +567,7 @@ class MarketFeed:
                     if new_instrument_list[instrument_type]:
                         for instrument_group in new_instrument_list[instrument_type]:
                             subscription_packet = self.create_subscription_packet(instrument_group, int(instrument_type))
-                            asyncio.ensure_future(self.ws.send(subscription_packet))
+                            self._run_coroutine(self.ws.send(subscription_packet))
             elif self.version == 'v2':
                 new_instrument_list = self.validate_and_process_tuples(symbols)
                 for instrument_type, instrument_groups in new_instrument_list.items():
@@ -485,7 +584,7 @@ class MarketFeed:
                                     } for ex, token in batch
                                 ]
                             }
-                            asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
+                            self._run_coroutine(self.ws.send(json.dumps(subscription_message)))
 
     def unsubscribe_symbols(self, symbols):
         """Function to unsubscribe symbols from connection when connection is already active."""
@@ -495,7 +594,7 @@ class MarketFeed:
         self.instruments = list(unique_symbols_set)
 
         # If the WebSocket is open, send the unsubscription packet for the symbols
-        if self.ws and not self.ws.closed:
+        if self.ws and not self._is_ws_closed():
             # Prepare the instruments list for unsubscription
             group_size = 100
             instrument_list_to_unsubscribe = self.validate_and_process_tuples(symbols, group_size)
@@ -507,7 +606,7 @@ class MarketFeed:
                         for instrument_group in instrument_list_to_unsubscribe[instrument_type]:
                             # Use the original instrument_type for grouping, but increment for the actual request
                             unsubscription_packet = self.create_subscription_packet(instrument_group, int(instrument_type) + 1)
-                            asyncio.ensure_future(self.ws.send(unsubscription_packet))
+                            self._run_coroutine(self.ws.send(unsubscription_packet))
 
             elif self.version == 'v2':
                 for instrument_type, instrument_groups in instrument_list_to_unsubscribe.items():
@@ -525,4 +624,4 @@ class MarketFeed:
                                     } for ex, token in batch
                                 ]
                             }
-                            asyncio.ensure_future(self.ws.send(json.dumps(unsubscription_message)))
+                            self._run_coroutine(self.ws.send(json.dumps(unsubscription_message)))
