@@ -4,6 +4,7 @@ from .dhan_http import DhanHTTP
 from ._order import Order
 from ._forever_order import ForeverOrder
 from ._super_order import SuperOrder
+from ._conditional_trigger import ConditionalTrigger
 from ._portfolio import Portfolio
 from ._funds import Funds
 from ._statement import Statement

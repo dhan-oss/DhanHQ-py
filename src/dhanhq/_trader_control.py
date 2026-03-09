@@ -14,8 +14,11 @@ class TraderControl:
         Returns:
             dict: Status of Kill Switch for account.
 
-        Raises:
-            ValueError: If action parameter is missing or invalid.
+        Notes:
+            The method upper-cases the provided `action` and sends it to the
+            killswitch endpoint. Prior validation may be performed by the
+            service; this SDK method does not raise on invalid actions but
+            returns the upstream response.
         """
         
         if not action:
@@ -26,16 +29,8 @@ class TraderControl:
             }
 
         action = action.upper()
-
-        if action not in ['ACTIVATE', 'DEACTIVATE']:
-            return {
-                'status': 'failure',
-                'remarks': f"Invalid action '{action}'. Must be 'ACTIVATE' or 'DEACTIVATE'",
-                'data': ''
-            }
-
         endpoint = f'/killswitch?killSwitchStatus={action}'
-        return self.dhan_http.post(endpoint, {})
+        return self.dhan_http.post(endpoint)
 
     def status_kill_switch(self):
         """
