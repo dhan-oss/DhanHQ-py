@@ -23,6 +23,9 @@ class ConditionalTrigger:
         Returns:
             dict: API response from POST /alerts/orders
         """
+        if not condition or not orders:
+            raise ValueError("Both 'condition' and 'orders' must be provided")
+
         endpoint = '/alerts/orders'
         payload = {
             "dhanClientId": dhan_client_id,
@@ -43,6 +46,8 @@ class ConditionalTrigger:
         Returns:
             dict: API response from PUT /alerts/orders/{alertId}
         """
+        if not alert_id:
+            raise ValueError("alert_id is required to modify a conditional trigger")
         endpoint = f'/alerts/orders/{alert_id}'
         payload = {
             "dhanClientId": dhan_client_id,

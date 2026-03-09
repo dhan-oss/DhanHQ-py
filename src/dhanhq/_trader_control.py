@@ -14,8 +14,11 @@ class TraderControl:
         Returns:
             dict: Status of Kill Switch for account.
 
-        Raises:
-            ValueError: If action parameter is missing or invalid.
+        Notes:
+            The method upper-cases the provided `action` and sends it to the
+            killswitch endpoint. Prior validation may be performed by the
+            service; this SDK method does not raise on invalid actions but
+            returns the upstream response.
         """
         
         if not action:
