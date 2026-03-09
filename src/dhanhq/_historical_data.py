@@ -26,6 +26,16 @@ class HistoricalData:
             dict: The response containing intraday minute data.
         """
 
+        # validate interval
+        if interval not in [1, 5, 15, 25, 60]:
+            err = "interval value must be [1, 5, 15, 25, 60]"
+            logging.error('Exception in dhanhq>>intraday_minute_data: %s', err)
+            return {
+                'status': 'failure',
+                'remarks': err,
+                'data': '',
+            }
+
         endpoint = '/charts/intraday'
         payload = {
             'securityId': security_id,
