@@ -68,7 +68,7 @@ class OrderUpdate:
         while self._running:
             try:
                 if self.ws and not self._is_ws_closed():
-                    message = await self.ws.recv()
+                    message = await asyncio.wait_for(self.ws.recv(), timeout=1)
                     data = json.loads(message)
                     self.handle_order_update(data)
                 else:
@@ -77,6 +77,8 @@ class OrderUpdate:
                         break
                     if not self.ws or self._is_ws_closed():
                         await self.connect()
+            except asyncio.TimeoutError:
+                continue
             except websockets.ConnectionClosed:
                 if self._running:
                     await asyncio.sleep(1)
