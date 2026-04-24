@@ -2,7 +2,7 @@
     The orderupdate class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket.
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
 
-    :copyright: (c) 2025 by Dhan.
+    :copyright: (c) 2026 by Dhan.
     :license: see LICENSE for details.
 """
 

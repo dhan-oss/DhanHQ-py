@@ -2,7 +2,7 @@
     The marketfeed class is designed to facilitate asynchronous communication with the DhanHQ API via WebSocket.
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
 
-    :copyright: (c) 2025 by Dhan.
+    :copyright: (c) 2026 by Dhan.
     :license: see LICENSE for details.
 """
 
@@ -506,14 +506,6 @@ class MarketFeed:
         
         if self.on_close:
             self.on_close(self)
-
-    async def on_connection_opened(self, websocket):
-        "Callback function executed when the WebSocket connection is opened."
-        await websocket.send(self.create_subscription_packet(self.instruments, subscribe=True))
-
-        while True:
-            response = await websocket.recv()
-            await self.on_message_received(response)
 
     def pad_with_zeros(self, data, length):
         """Pads a binary data string with zeros to a specified length for server to read."""

@@ -69,8 +69,8 @@ class Security:
         if response['status'] == DhanHTTP.HttpResponseStatus.FAILURE.value:
             return response
 
-        data = json_loads(response['data'])
-        form_html = data['edisFormHtml']  # data['edisFormHtml']
+        data = response['data']
+        form_html = data['edisFormHtml']
         form_html = form_html.replace('\\', '')
         # print(form_html)
         self._save_as_temp_html_file_and_open_in_browser(form_html)

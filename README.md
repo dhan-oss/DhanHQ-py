@@ -1,11 +1,10 @@
-# DhanHQ-py : v2.2.0 [Pre-release]
+# DhanHQ-py : v2.2.0
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
-> **Note: v2.2.0 is currently in pre-release.**
-> With the release of v2.2.0, there are breaking changes of v2.1.0. You can install pre-release version by using the below code:
+> With the release of v2.2.0, there are breaking changes. You can install previous stable version by using the below code:
 ```bash
-pip install --pre dhanhq
+pip install dhanhq==2.0.2
 ```
 
 
@@ -16,7 +15,7 @@ DhanHQ-py Rest API is used to automate investing and trading. Execute orders in 
 Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 
-[Dhan](https://dhan.co) (c) 2025. Licensed under the [MIT License](https://github.com/dhan-oss/DhanHQ-py/blob/main/LICENSE)
+[Dhan](https://dhan.co) (c) 2026. Licensed under the [MIT License](https://github.com/dhan-oss/DhanHQ-py/blob/main/LICENSE)
 
 ### Documentation
 
@@ -212,7 +211,7 @@ dhan.modify_order(order_id, order_type, leg_name, quantity, price, trigger_price
 dhan.cancel_order(order_id)
 
 # Get order by correlation id
-dhan.get_order_by_corelationID(corelationID)
+dhan.get_order_by_correlationID(correlationID)
 
 # Get Instrument List
 dhan.fetch_security_list("compact")
@@ -244,7 +243,7 @@ dhan.expired_options_data(
 )
 
 # Time Converter
-dhan.convert_to_date_time(EPOCH Date)
+dhan.convert_to_date_time(epoch_date)
 
 # Get trade book
 dhan.get_trade_book(order_id)
@@ -264,7 +263,7 @@ dhan.open_browser_for_tpin(isin='INE00IN01015',
     exchange='NSE')
 
 # EDIS Status and Inquiry
-dhan.edis_inquiry()
+dhan.edis_inquiry(isin='INE00IN01015')
 
 # Expiry List of Underlying
 dhan.expiry_list(
@@ -318,8 +317,9 @@ version = "v2"          # Mention Version and set to latest version 'v2'
 
 try:
     data = MarketFeed(dhan_context, instruments, version)
+    data.run_forever()
+    
     while True:
-        data.run_forever()
         response = data.get_data()
         print(response)
 
@@ -329,7 +329,7 @@ except Exception as e:
 
 ```
 # Close Connection
-data.disconnect()
+data.close_connection()
 
 # Subscribe instruments while connection is open
 sub_instruments = [(MarketFeed.NSE, "14436", MarketFeed.Ticker)]
@@ -380,7 +380,7 @@ instruments = [(1, "1333")]                     #[(1, "1333"),(2,"")] for 20 dep
 depth_level = 200                               # 20 or 200, default 20 in case this is not passed
 
 try:
-    response = fulldepth.FullDepth(dhan_context, instruments, depth_level)          #depth_level is non mandatory for 20 depth
+    response = FullDepth(dhan_context, instruments, depth_level)          #depth_level is non mandatory for 20 depth
     response.run_forever()
     
     while True:

@@ -3,7 +3,7 @@
     It enables users to subscribe to market data for a list of instruments and receive real-time updates.
     Supports both 20 and 200 depth levels based on user input.
 
-    :copyright: (c) 2025 by Dhan.
+    :copyright: (c) 2026 by Dhan.
     :license: see LICENSE for details.
 """
 
@@ -44,7 +44,8 @@ class FullDepth:
         self._is_first_connect = True
         self.ws = None
         self.on_ticks = None
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
         self.on_close = False
         self.request_code = self.request_code
         
@@ -68,32 +69,30 @@ class FullDepth:
         remaining_data = response
         bid_data = None
         ask_data = None
-        
+        results = []
+
         while remaining_data:
             update = self.process_data(remaining_data)
             if not update:
                 break
-            
-            # Store remaining data for next iteration
+
             remaining_data = update.pop("remaining_data", None)
-            
-            # Store bid/ask data separately
+
             if update['type'] == "Bid":
                 bid_data = update
             else:
                 ask_data = update
-            
-            # If we have both bid and ask data, format and print them
+
             if bid_data and ask_data and bid_data['security_id'] == ask_data['security_id']:
                 formatted_data = self.combine_and_format_depth(bid_data, ask_data)
                 print(f"\nExchange Segment: {formatted_data['exchange_segment']}, Security ID: {formatted_data['security_id']}")
                 for line in formatted_data['depth']:
                     print(line)
-                # Reset bid/ask data for this security ID
+                results.append(formatted_data)
                 bid_data = None
                 ask_data = None
-        
-        return None
+
+        return results if results else None
 
     def close_connection(self):
         """Close WebSocket connection with this."""
@@ -360,29 +359,21 @@ class FullDepth:
         """Parse and process server disconnection error"""
         disconnection_packet = [struct.unpack('<hBBiI', data[0:12])]
         self.on_close = False
-        if disconnection_packet[0][5] == 805:
+        if disconnection_packet[0][4] == 805:
             print ("Disconnected: No. of active websocket connections exceeded")
             self.on_close = True
-        elif disconnection_packet[0][5] == 806:
+        elif disconnection_packet[0][4] == 806:
             print ("Disconnected: Subscribe to Data APIs to continue")
             self.on_close = True
-        elif disconnection_packet[0][5] == 807:
+        elif disconnection_packet[0][4] == 807:
             print ("Disconnected: Access Token is expired")
             self.on_close = True
-        elif disconnection_packet[0][5] == 808:
+        elif disconnection_packet[0][4] == 808:
             print ("Disconnected: Invalid Client ID")
             self.on_close = True
-        elif disconnection_packet[0][5] == 809:
+        elif disconnection_packet[0][4] == 809:
             print ("Disconnected: Authentication Failed - check ")
             self.on_close = True
-
-    async def on_connection_opened(self, websocket):
-        "Callback function executed when the WebSocket connection is opened."
-        await websocket.send(self.create_subscription_packet(self.instruments, subscribe=True))
-
-        while True:
-            response = await websocket.recv()
-            await self.on_message_received(response)
 
     def pad_with_zeros(self, data, length):
         """Pads a binary data string with zeros to a specified length for server to read."""
@@ -420,53 +411,40 @@ class FullDepth:
 
     def subscribe_symbols(self, symbols):
         """Function to subscribe to additional symbols when connection is already established."""
-        # Update the instruments list
         unique_symbols_set = set(self.instruments)
         unique_symbols_set.update(symbols)
         self.instruments = list(unique_symbols_set)
 
-        # If the WebSocket is open, send the subscription packet for the new symbols
         if self.ws and not self.ws.closed:
-            # Prepare the instruments list for subscription
-            new_instrument_list = self.validate_and_process_tuples(symbols)
-            for instrument_type, instrument_groups in new_instrument_list.items():
-                for instrument_group in instrument_groups:
-                    for i in range(0, len(instrument_group), 50):
-                        batch = instrument_group[i:i+50]
-                        subscription_message = {
-                            "RequestCode": int(instrument_type),
-                            "InstrumentCount": len(batch),
-                            "InstrumentList": [
-                                {
-                                    "ExchangeSegment": self.get_exchange_segment(ex),
-                                    "SecurityId": token
-                                } for ex, token in batch
-                            ]
-                        }
-                        asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
+            for batch in self.validate_and_process_tuples(symbols):
+                subscription_message = {
+                    "RequestCode": self.request_code,
+                    "InstrumentCount": len(batch),
+                    "InstrumentList": [
+                        {
+                            "ExchangeSegment": self.get_exchange_segment(ex),
+                            "SecurityId": token
+                        } for ex, token in batch
+                    ]
+                }
+                asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
 
     def unsubscribe_symbols(self, symbols):
         """Function to unsubscribe symbols from connection when connection is already active."""
-        # Update the instruments list by removing the specified symbols
         unique_symbols_set = set(self.instruments)
         unique_symbols_set.difference_update(symbols)
         self.instruments = list(unique_symbols_set)
 
-        # If the WebSocket is open, send the unsubscription packet for the symbols
         if self.ws and not self.ws.closed:
-            instrument_list_to_unsubscribe = self.validate_and_process_tuples(symbols)
-            for instrument_type, instrument_groups in instrument_list_to_unsubscribe.items():
-                for instrument_group in instrument_groups:
-                    for i in range(0, len(instrument_group), 50):
-                        batch = instrument_group[i:i+50]
-                        unsubscription_message = {
-                            "RequestCode": int(instrument_type) + 1,
-                            "InstrumentCount": len(batch),
-                            "InstrumentList": [
-                                {
-                                    "ExchangeSegment": self.get_exchange_segment(ex),
-                                    "SecurityId": token
-                                } for ex, token in batch
-                            ]
-                        }
-                        asyncio.ensure_future(self.ws.send(json.dumps(unsubscription_message)))
+            for batch in self.validate_and_process_tuples(symbols):
+                unsubscription_message = {
+                    "RequestCode": self.request_code + 1,
+                    "InstrumentCount": len(batch),
+                    "InstrumentList": [
+                        {
+                            "ExchangeSegment": self.get_exchange_segment(ex),
+                            "SecurityId": token
+                        } for ex, token in batch
+                    ]
+                }
+                asyncio.ensure_future(self.ws.send(json.dumps(unsubscription_message)))

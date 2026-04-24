@@ -4,7 +4,7 @@
     This library provides methods to manage orders, retrieve market data,
     and perform various trading operations through the DhanHQ API.
 
-    :copyright: (c) 2025 by Dhan.
+    :copyright: (c) 2026 by Dhan.
     :license: see LICENSE for details.
 """
 
@@ -15,7 +15,7 @@ from dhanhq.auth import DhanLogin
 
 class DhanContext:
     """
-        A class that encapsulates connection context to Dhan APIs like client-id, access-tocken, base-url
+        A class that encapsulates connection context to Dhan APIs like client-id, access-token, base-url
         and passes this to all the connection protocols like http and websocket that it is composed of.
     """
 

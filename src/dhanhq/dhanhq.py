@@ -4,7 +4,7 @@
     This library provides methods to manage orders, retrieve market data,
     and perform various trading operations through the DhanHQ API.
 
-    :copyright: (c) 2025 by Dhan.
+    :copyright: (c) 2026 by Dhan.
     :license: see LICENSE for details.
 """
 
@@ -58,7 +58,6 @@ class dhanhq(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Se
             parent.__init__(self,dhan_context)
         self.dhan_http = dhan_context.get_dhan_http()
 
-    @staticmethod
     def convert_to_date_time(self, epoch):
         """
         Convert EPOCH time to Python datetime object in IST.
