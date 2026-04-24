@@ -26,16 +26,8 @@ class TraderControl:
             }
 
         action = action.upper()
-
-        if action not in ['ACTIVATE', 'DEACTIVATE']:
-            return {
-                'status': 'failure',
-                'remarks': f"Invalid action '{action}'. Must be 'ACTIVATE' or 'DEACTIVATE'",
-                'data': ''
-            }
-
         endpoint = f'/killswitch?killSwitchStatus={action}'
-        return self.dhan_http.post(endpoint, {})
+        return self.dhan_http.post(endpoint)
 
     def status_kill_switch(self):
         """

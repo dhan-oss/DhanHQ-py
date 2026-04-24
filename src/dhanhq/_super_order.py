@@ -132,7 +132,7 @@ class SuperOrder:
         """
         # Basic validations
         if not all([security_id, exchange_segment, transaction_type, quantity, order_type, product_type, price]):
-            raise ValueError("Missing required parameters for placing a super order.")
+            raise ValueError("All legs (entry/target/stop loss) must be provided")
 
         # Leg validation
         if price <= 0:
