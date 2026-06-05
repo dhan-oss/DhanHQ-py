@@ -40,6 +40,7 @@ class OrderUpdate:
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self._running = False
+        self._connecting = False
         self.on_connect = on_connect
         self.on_close = on_close
 
@@ -47,63 +48,81 @@ class OrderUpdate:
         """
         Connects to the WebSocket and authenticates.
         """
-        self.ws = await websockets.connect(self.order_feed_wss)
-        auth_message = {
-            "LoginReq": {
-                "MsgCode": 42,
-                "ClientId": str(self.client_id),
-                "Token": str(self.access_token)
-            },
-            "UserType": "SELF"
-        }
-        await self.ws.send(json.dumps(auth_message))
-        print(f"Sent subscribe message: {auth_message}")
+        ws = self.ws
+        if ws and not self._is_ws_closed(ws):
+            return
 
-        if self.on_connect:
-            self.on_connect(self)
+        while self._connecting:
+            await asyncio.sleep(0.1)
+
+        ws = self.ws
+        if ws and not self._is_ws_closed(ws):
+            return
+
+        self._connecting = True
+        try:
+            self.ws = await websockets.connect(self.order_feed_wss)
+            auth_message = {
+                "LoginReq": {
+                    "MsgCode": 42,
+                    "ClientId": str(self.client_id),
+                    "Token": str(self.access_token)
+                },
+                "UserType": "SELF"
+            }
+            await self.ws.send(json.dumps(auth_message))
+            print(f"Sent subscribe message: {auth_message}")
+
+            if self.on_connect:
+                self.on_connect(self)
+        finally:
+            self._connecting = False
 
     async def _run_async(self):
         """Internal async method to handle the connection loop."""
         await self.connect()
         while self._running:
+            ws = self.ws
             try:
-                if self.ws and not self._is_ws_closed():
-                    message = await asyncio.wait_for(self.ws.recv(), timeout=1)
+                if ws and not self._is_ws_closed(ws):
+                    message = await asyncio.wait_for(ws.recv(), timeout=1)
                     data = json.loads(message)
                     self.handle_order_update(data)
                 else:
                     await asyncio.sleep(1)
-                    if not self._running:
-                        break
-                    if not self.ws or self._is_ws_closed():
+                    ws = self.ws
+                    if self._running and (not ws or self._is_ws_closed(ws)):
                         await self.connect()
             except asyncio.TimeoutError:
                 continue
             except websockets.ConnectionClosed:
                 if self._running:
                     await asyncio.sleep(1)
-                    if not self._running:
-                        break
-                    await self.connect()
+                    if self._running:
+                        await self.connect()
             except Exception as e:
                 if self._running:
                     print(f"Error in order update: {e}")
                     await asyncio.sleep(1)
 
-    def _is_ws_closed(self):
+    def _is_ws_closed(self, ws=None):
         """Helper method to safely check if WebSocket is closed."""
-        if not self.ws:
+        if ws is None:
+            ws = self.ws
+        if not ws:
             return True
         try:
-            return getattr(self.ws, 'closed', False) or self.ws.state == websockets.protocol.State.CLOSED
+            return getattr(ws, 'closed', False) or ws.state == websockets.protocol.State.CLOSED
         except Exception:
             return True
 
     async def disconnect(self):
         """Closes the WebSocket connection gracefully."""
-        if self.ws:
+        ws = self.ws
+        self.ws = None
+        if ws:
             try:
-                await self.ws.close()
+                await ws.close()
             except Exception as e:
                 print(f"Error during disconnect: {e}")
 
@@ -127,9 +146,12 @@ class OrderUpdate:
             try:
                 return future.result(timeout=5)
             except TimeoutError:
+                future.cancel()
                 print("Warning: disconnect timed out")
                 return
         else:
+            if self.loop.is_closed():
+                return
             return self.loop.run_until_complete(self.disconnect())
 
     def run(self):
@@ -142,8 +164,10 @@ class OrderUpdate:
             self.loop.run_until_complete(self._run_async())
         except KeyboardInterrupt:
             self._running = False
-            if self.ws and not self._is_ws_closed():
+            if self.ws:
                 self.loop.run_until_complete(self.disconnect())
+            else:
+                self.ws = None
             self.loop.close()
 
     def start(self):
@@ -177,13 +201,12 @@ class OrderUpdate:
     # Keep for backward compatibility
     async def connect_order_update(self):
         """Deprecated: Use run() or start() instead."""
-        await self.connect()
-        while self._running:
-            message = await self.ws.recv()
-            data = json.loads(message)
-            self.handle_order_update(data)
+        self._running = True
+        await self._run_async()
 
     def connect_to_dhan_websocket_sync(self):
         """Deprecated: Use run() or start() instead."""
-        self._running = True
-        self.run()
+        try:
+            self.run()
+        except Exception as e:
+            print(f"Error in connect_to_dhan_websocket: {e}")
