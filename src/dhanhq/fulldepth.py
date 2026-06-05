@@ -96,7 +96,26 @@ class FullDepth:
 
     def close_connection(self):
         """Close WebSocket connection with this."""
-        return self.loop.run_until_complete(self.disconnect())
+        try:
+            loop = asyncio.get_running_loop()
+            if loop == self.loop:
+                asyncio.create_task(self.disconnect())
+                return
+        except RuntimeError:
+            pass
+
+        if self.loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(self.disconnect(), self.loop)
+            try:
+                return future.result(timeout=5)
+            except TimeoutError:
+                future.cancel()
+                print("Warning: WebSocket disconnect timed out")
+                return
+        else:
+            if self.loop.is_closed():
+                return
+            return self.loop.run_until_complete(self.disconnect())
 
     async def connect(self):
         """Initiates the connection to the Websockets."""
@@ -128,13 +147,20 @@ class FullDepth:
 
     async def disconnect(self):
         """Closes the WebSocket connection and sends a disconnect message."""
-        if self.ws:
-            disconnect_message = {
-                "RequestCode": 12
-            }
-            await self.ws.send(json.dumps(disconnect_message))
-            header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
-            await self.ws.send(header_message)
+        ws = self.ws
+        self.ws = None
+        if ws:
+            try:
+                disconnect_message = {"RequestCode": 12}
+                await asyncio.wait_for(ws.send(json.dumps(disconnect_message)), timeout=1)
+                header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
+                await asyncio.wait_for(ws.send(header_message), timeout=1)
+            except Exception:
+                pass
+            try:
+                await asyncio.wait_for(ws.close(), timeout=3)
+            except Exception:
+                pass
         print("Connection closed!")
 
     """Creating Instruments List to be subscribed"""
