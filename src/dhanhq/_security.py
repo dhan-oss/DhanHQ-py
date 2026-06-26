@@ -1,10 +1,12 @@
-from json import loads as json_loads
+import logging
+import os
+import requests
 from pathlib import Path
 from webbrowser import open as web_open
-import logging
-import requests
 
 from dhanhq import DhanHTTP
+
+logger = logging.getLogger(__name__)
 
 
 class Security:
@@ -21,9 +23,15 @@ class Security:
 
     def _save_as_temp_html_file_and_open_in_browser(self, form_html):
         temp_web_form_html = "temp_form.html"
-        with open(temp_web_form_html, "w") as f:
-            f.write(form_html)
-        web_open(Path.cwd().joinpath(temp_web_form_html).as_uri())
+        try:
+            with open(temp_web_form_html, "w") as f:
+                f.write(form_html)
+            web_open(Path.cwd().joinpath(temp_web_form_html).as_uri())
+        finally:
+            try:
+                os.unlink(temp_web_form_html)
+            except OSError:
+                pass
 
     def generate_tpin(self):
         """
@@ -34,14 +42,18 @@ class Security:
         """
         endpoint = '/edis/tpin'
         response = self.dhan_http.get(endpoint)
-        response['data'] = ''
-        # ToDo: This is inconsistent. If success then data should be set and not remarks field
         if response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value:
-            response['remarks'] = self.OTP_SENT
+            return {
+                'status': response['status'],
+                'remarks': self.OTP_SENT,
+                'data': '',
+            }
         else:
-            # ToDo: Why this redundant code here?
-            response['remarks'] = 'status code : ' + response['remarks']['error_code']
-        return response
+            return {
+                'status': response['status'],
+                'remarks': 'status code : ' + str(response['remarks'].get('error_code', '')),
+                'data': '',
+            }
 
     def open_browser_for_tpin(self, isin, qty, exchange, segment='EQ', bulk=False):
         """
@@ -72,7 +84,6 @@ class Security:
         data = response['data']
         form_html = data['edisFormHtml']
         form_html = form_html.replace('\\', '')
-        # print(form_html)
         self._save_as_temp_html_file_and_open_in_browser(form_html)
         return response
 
@@ -96,12 +107,20 @@ class Security:
 
         Args:
             mode (str): The mode to fetch the CSV ('compact' or 'detailed').
-            filename (str): The name of the file to save the CSV as (default is 'data.csv').
+            filename (str): The name of the file to save the CSV as.
 
         Returns:
             pd.DataFrame: The DataFrame containing the CSV data.
         """
         import pandas as pd
+
+        # Sanitize filename to prevent path traversal
+        safe_name = os.path.basename(filename)
+        if not safe_name or safe_name != filename or '..' in filename:
+            raise ValueError("filename must be a plain filename with no path components")
+        if not safe_name.endswith('.csv'):
+            raise ValueError("filename must end with .csv")
+
         try:
             if mode == 'compact':
                 csv_url = Security.COMPACT_CSV_URL
@@ -113,10 +132,10 @@ class Security:
             response = requests.get(csv_url)
             response.raise_for_status()
 
-            with open(filename, 'wb') as f:
+            with open(safe_name, 'wb') as f:
                 f.write(response.content)
-            df = pd.read_csv(filename)
+            df = pd.read_csv(safe_name)
             return df
         except Exception as e:
-            logging.error('Exception in dhanhq>>fetch_security_list: %s', e)
+            logger.error('Exception in dhanhq>>fetch_security_list: %s', e)
             return None

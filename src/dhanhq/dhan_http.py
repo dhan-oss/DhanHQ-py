@@ -59,7 +59,8 @@ class DhanHTTP:
             response = getattr(self.session, method.value.lower())(url,
                                                                    data=payload,
                                                                    headers=self.header,
-                                                                   timeout=self.timeout)
+                                                                   timeout=self.timeout,
+                                                                   verify=not self.disable_ssl)
             return self._parse_response(response)
         except Exception as e:
             logging.error('Exception in DhanHQConnection.%s: %s', method.value.upper(), e)

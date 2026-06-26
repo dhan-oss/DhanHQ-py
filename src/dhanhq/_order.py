@@ -107,8 +107,24 @@ class Order:
             dict: The response containing the status of the order placement.
         """
 
+        _valid_segments = {'NSE_EQ', 'NSE_FNO', 'NSE_CURRENCY', 'BSE_EQ', 'BSE_FNO',
+                           'BSE_CURRENCY', 'MCX_COMM', 'IDX_I'}
+        _valid_transaction = {'BUY', 'SELL'}
+        _valid_order_type = {'LIMIT', 'MARKET', 'STOP_LOSS', 'STOP_LOSS_MARKET'}
+        _valid_validity = {'DAY', 'IOC', 'GTC'}
+
+        if not security_id or not str(security_id).strip():
+            raise ValueError("security_id must be a non-empty string")
+        if exchange_segment.upper() not in _valid_segments:
+            raise ValueError(f"exchange_segment must be one of {sorted(_valid_segments)}")
+        if transaction_type.upper() not in _valid_transaction:
+            raise ValueError("transaction_type must be 'BUY' or 'SELL'")
+        if order_type.upper() not in _valid_order_type:
+            raise ValueError(f"order_type must be one of {sorted(_valid_order_type)}")
+        if validity.upper() not in _valid_validity:
+            raise ValueError(f"validity must be one of {sorted(_valid_validity)}")
         if after_market_order and (amo_time not in ['OPEN', 'OPEN_30', 'OPEN_60']):
-            raise Exception("amo_time value must be one of ['OPEN','OPEN_30','OPEN_60']")
+            raise ValueError("amo_time value must be one of ['OPEN','OPEN_30','OPEN_60']")
 
         payload = {
             "transactionType": transaction_type.upper(),

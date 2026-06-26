@@ -6,12 +6,16 @@
     :license: see LICENSE for details.
 """
 
-import websockets
 import asyncio
-import struct
-from datetime import datetime
-from collections import defaultdict
 import json
+import logging
+import struct
+from collections import defaultdict
+from datetime import datetime
+
+import websockets
+
+logger = logging.getLogger(__name__)
 
 
 class MarketFeed:
@@ -46,16 +50,15 @@ class MarketFeed:
         self._is_first_connect = True
         self.ws = None
         self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
         self.version = version
-        
-        # Callbacks
-        self.on_connect = on_connect
-        self.on_message = on_message
-        if not on_message and on_ticks:
+
+        # Callbacks — validate before storing
+        self.on_connect = on_connect if callable(on_connect) else None
+        self.on_message = on_message if callable(on_message) else None
+        if not self.on_message and callable(on_ticks):
             self.on_message = on_ticks
-        self.on_close = on_close
-        self.on_error = on_error
+        self.on_close = on_close if callable(on_close) else None
+        self.on_error = on_error if callable(on_error) else None
         
         self._running = False
 
@@ -190,22 +193,22 @@ class MarketFeed:
                     await self.ws.send(json.dumps(disconnect_message))
                     header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
                     await self.ws.send(header_message)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("Error sending disconnect message: %s", e)
             await self.ws.close()
-            
+
         if self.on_close:
             self.on_close(self)
-        print("Connection closed!")
+        logger.info("Connection closed!")
 
     async def authorize(self):
         """Establishes the WebSocket connection and authorizes the user"""
         if self.version != 'v1':
-            print("Authorization not needed for this version.")
+            logger.debug("Authorization not needed for this version.")
             self.is_authorized = True
             return
         try:
-            print("Authorizing...")
+            logger.info("Authorizing...")
 
             # Authorization packet creation
             api_access_token = self.access_token.encode('utf-8')
@@ -225,9 +228,9 @@ class MarketFeed:
             # Send authorization packet
             await self.ws.send(authorization_packet)
             self.is_authorized = True
-            print("Authorization successful!")
+            logger.info("Authorization successful!")
         except Exception as e:
-            print(f"Authorization failed: {e}")
+            logger.error("Authorization failed: %s", e)
             self.is_authorized = False
             if self.on_error:
                 self.on_error(self, e)
@@ -274,7 +277,7 @@ class MarketFeed:
         """Subscribe Instruments on the Open Websocket"""
         if self.version == 'v1':
             if not self.is_authorized:
-                print("Not authorized. Please authorize first.")
+                logger.warning("Not authorized. Please authorize first.")
                 return
 
             # Subscription packet creation
@@ -494,15 +497,15 @@ class MarketFeed:
         """Parse and process server disconnection error"""
         disconnection_packet = [struct.unpack('<BHBIH', data[0:10])]
         if disconnection_packet[0][4] == 805:
-            print ("Disconnected: No. of active websocket connections exceeded")
+            logger.warning("Disconnected: No. of active websocket connections exceeded")
         elif disconnection_packet[0][4] == 806:
-            print ("Disconnected: Subscribe to Data APIs to continue")
+            logger.warning("Disconnected: Subscribe to Data APIs to continue")
         elif disconnection_packet[0][4] == 807:
-            print ("Disconnected: Access Token is expired")
+            logger.warning("Disconnected: Access Token is expired")
         elif disconnection_packet[0][4] == 808:
-            print ("Disconnected: Invalid Client ID")
+            logger.warning("Disconnected: Invalid Client ID")
         elif disconnection_packet[0][4] == 809:
-            print ("Disconnected: Authentication Failed - check ")
+            logger.warning("Disconnected: Authentication Failed")
         
         if self.on_close:
             self.on_close(self)

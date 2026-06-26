@@ -7,9 +7,12 @@
 """
 
 import asyncio
-import websockets
 import json
+import logging
+import websockets
 from typing import Callable, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class OrderUpdate:
@@ -53,7 +56,7 @@ class OrderUpdate:
             }
 
             await websocket.send(json.dumps(auth_message))
-            print(f"Sent subscribe message: {auth_message}")
+            logger.debug("Sent subscribe message to order update feed")
 
             async for message in websocket:
                 data = json.loads(message)
@@ -74,11 +77,11 @@ class OrderUpdate:
             if "orderNo" in data:
                 order_id = data["orderNo"]
                 status = data.get("status", "Unknown status")
-                print(f"Status: {status}, Order ID: {order_id}, Data: {data}")
+                logger.info("Status: %s, Order ID: %s", status, order_id)
             else:
-                print(f"Order Update received: {data}")
+                logger.info("Order Update received: %s", data)
         else:
-            print(f"Unknown message received: {order_update}")
+            logger.debug("Unknown message received: %s", order_update)
 
     def connect_to_dhan_websocket_sync(self):
         """
@@ -87,10 +90,9 @@ class OrderUpdate:
         This method runs the asynchronous connect_order_update method in a new event loop.
         """
         loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
             loop.run_until_complete(self.connect_order_update())
         except Exception as e:
-            print(f"Error in connect_to_dhan_websocket: {e}")
+            logger.error("Error in connect_to_dhan_websocket: %s", e)
         finally:
             loop.close()
