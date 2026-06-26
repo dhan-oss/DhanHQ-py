@@ -38,11 +38,10 @@ class Funds:
             "transactionType": transaction_type.upper(),
             "quantity": int(quantity),
             "productType": product_type.upper(),
-            "price": float(price)
+            "price": round(float(price), 2)
         }
-        # ToDo: Shouldn't price and trigger_price being float vlaues be rounded to 2 or 3 decimal places as precision??
         if trigger_price >= 0:
-            payload["triggerPrice"] = float(trigger_price)
+            payload["triggerPrice"] = round(float(trigger_price), 2)
 
         return self.dhan_http.post(endpoint, payload)
 

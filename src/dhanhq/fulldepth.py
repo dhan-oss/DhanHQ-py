@@ -7,11 +7,15 @@
     :license: see LICENSE for details.
 """
 
-import websockets
 import asyncio
+import json
+import logging
 import struct
 from datetime import datetime
-import json
+
+import websockets
+
+logger = logging.getLogger(__name__)
 
 
 class FullDepth:
@@ -45,7 +49,6 @@ class FullDepth:
         self.ws = None
         self.on_ticks = None
         self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
         self.on_close = False
         self.request_code = self.request_code
         
@@ -58,6 +61,15 @@ class FullDepth:
             self.ws_url = self.depth_20_feed_wss
         else:
             self.ws_url = self.depth_200_feed_wss
+
+    def _is_ws_closed(self):
+        """Safely check if WebSocket is closed without risking AttributeError."""
+        if not self.ws:
+            return True
+        try:
+            return getattr(self.ws, 'closed', False) or self.ws.state == websockets.protocol.State.CLOSED
+        except Exception:
+            return True
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
@@ -85,9 +97,9 @@ class FullDepth:
 
             if bid_data and ask_data and bid_data['security_id'] == ask_data['security_id']:
                 formatted_data = self.combine_and_format_depth(bid_data, ask_data)
-                print(f"\nExchange Segment: {formatted_data['exchange_segment']}, Security ID: {formatted_data['security_id']}")
+                logger.debug("Exchange Segment: %s, Security ID: %s", formatted_data['exchange_segment'], formatted_data['security_id'])
                 for line in formatted_data['depth']:
-                    print(line)
+                    logger.debug(line)
                 results.append(formatted_data)
                 bid_data = None
                 ask_data = None
@@ -102,7 +114,7 @@ class FullDepth:
         """Initiates the connection to the Websockets."""
         if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
             url = f"{self.ws_url}?token={self.access_token}&clientId={self.client_id}&authType=2"
-            print(f"Connecting to WebSocket URL: {url}")
+            logger.debug("Connecting to WebSocket")
             self.ws = await websockets.connect(url)
             await self.subscribe_instruments()
         else:
@@ -135,7 +147,7 @@ class FullDepth:
             await self.ws.send(json.dumps(disconnect_message))
             header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
             await self.ws.send(header_message)
-        print("Connection closed!")
+        logger.info("Connection closed!")
 
     """Creating Instruments List to be subscribed"""
     def validate_and_process_tuples(self, tuples_list, batch_size=None):
@@ -184,8 +196,7 @@ class FullDepth:
                     ]
                 }
             await self.ws.send(json.dumps(subscription_message))
-            print(f"Subscribed to {len(batch)} instruments with {self.depth_level} depth")
-            print(subscription_message)
+            logger.info("Subscribed to %d instruments with %d depth", len(batch), self.depth_level)
 
     def get_exchange_segment(self, exchange_code):
         """Convert numeric exchange code to string representation"""
@@ -360,19 +371,19 @@ class FullDepth:
         disconnection_packet = [struct.unpack('<hBBiI', data[0:12])]
         self.on_close = False
         if disconnection_packet[0][4] == 805:
-            print ("Disconnected: No. of active websocket connections exceeded")
+            logger.warning("Disconnected: No. of active websocket connections exceeded")
             self.on_close = True
         elif disconnection_packet[0][4] == 806:
-            print ("Disconnected: Subscribe to Data APIs to continue")
+            logger.warning("Disconnected: Subscribe to Data APIs to continue")
             self.on_close = True
         elif disconnection_packet[0][4] == 807:
-            print ("Disconnected: Access Token is expired")
+            logger.warning("Disconnected: Access Token is expired")
             self.on_close = True
         elif disconnection_packet[0][4] == 808:
-            print ("Disconnected: Invalid Client ID")
+            logger.warning("Disconnected: Invalid Client ID")
             self.on_close = True
         elif disconnection_packet[0][4] == 809:
-            print ("Disconnected: Authentication Failed - check ")
+            logger.warning("Disconnected: Authentication Failed")
             self.on_close = True
 
     def pad_with_zeros(self, data, length):
@@ -415,7 +426,7 @@ class FullDepth:
         unique_symbols_set.update(symbols)
         self.instruments = list(unique_symbols_set)
 
-        if self.ws and not self.ws.closed:
+        if self.ws and not self._is_ws_closed():
             for batch in self.validate_and_process_tuples(symbols):
                 subscription_message = {
                     "RequestCode": self.request_code,
@@ -427,7 +438,7 @@ class FullDepth:
                         } for ex, token in batch
                     ]
                 }
-                asyncio.ensure_future(self.ws.send(json.dumps(subscription_message)))
+                asyncio.create_task(self.ws.send(json.dumps(subscription_message)))
 
     def unsubscribe_symbols(self, symbols):
         """Function to unsubscribe symbols from connection when connection is already active."""
@@ -435,7 +446,7 @@ class FullDepth:
         unique_symbols_set.difference_update(symbols)
         self.instruments = list(unique_symbols_set)
 
-        if self.ws and not self.ws.closed:
+        if self.ws and not self._is_ws_closed():
             for batch in self.validate_and_process_tuples(symbols):
                 unsubscription_message = {
                     "RequestCode": self.request_code + 1,
@@ -447,4 +458,4 @@ class FullDepth:
                         } for ex, token in batch
                     ]
                 }
-                asyncio.ensure_future(self.ws.send(json.dumps(unsubscription_message)))
+                asyncio.create_task(self.ws.send(json.dumps(unsubscription_message)))

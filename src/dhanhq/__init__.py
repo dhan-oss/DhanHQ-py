@@ -1,3 +1,6 @@
+import logging
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 from .dhan_context import DhanContext
 from .auth import DhanLogin
 from .dhan_http import DhanHTTP
@@ -9,7 +12,7 @@ from ._funds import Funds
 from ._statement import Statement
 from ._trader_control import TraderControl
 from ._security import Security
-from ._market_feed import MarketFeed
+from ._market_feed import MarketFeed as LegacyMarketFeed
 from ._historical_data import HistoricalData
 from ._option_chain import OptionChain
 from .dhanhq import dhanhq
