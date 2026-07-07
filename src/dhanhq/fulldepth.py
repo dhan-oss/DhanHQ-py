@@ -10,7 +10,7 @@
 import websockets
 import asyncio
 import struct
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 
@@ -391,7 +391,7 @@ class FullDepth:
 
     def utc_time(self, epoch_time):
         """Converts EPOCH time to UTC time."""
-        return datetime.utcfromtimestamp(epoch_time).strftime('%H:%M:%S')
+        return datetime.fromtimestamp(epoch_time, timezone.utc).strftime('%H:%M:%S')
 
     def create_subscription_packet(self, instruments, feed_request_code):
         """Creates the subscription packet with specified instruments and subscription code"""
