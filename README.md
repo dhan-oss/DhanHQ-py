@@ -1,12 +1,11 @@
-# DhanHQ-py : v2.2.0
+# DhanHQ-py : v2.3.0-rc1 (Pre-release)
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
-> With the release of v2.2.0, there are breaking changes. You can install previous stable version by using the below code:
+> ⚠️ **Pre-release / Release Candidate.** `v2.3.0rc1` is a release candidate for testing the new features below. It is not the latest stable release, so `pip install dhanhq` will not pick it up. Install it explicitly:
 ```bash
-pip install dhanhq==2.0.2
+pip install --pre dhanhq==2.3.0rc1
 ```
-
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co/v2/)  
 
@@ -19,9 +18,23 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 ### Documentation
 
-- [DhanHQ Python Documentation](https://dhanhq.co/docs/DhanHQ-py/)
+- [DhanHQ Python Documentation](https://docs.dhanhq.co/api/v2/guides/sdks/python)
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
-- [DhanHQ API Documentation](https://dhanhq.co/docs/v2/)
+- [DhanHQ API Documentation](https://docs.dhanhq.co/api/v2/)
+
+## v2.3.0-rc1 - What's new (Pre-release)
+> This is a **release candidate**. APIs in this section are new and may change before the final `v2.3.0` release. Install with `pip install --pre dhanhq==2.3.0rc1`.
+
+- **Conditional Orders** - place one or more orders automatically when a price or technical-indicator condition is met (Equities & Indices).
+- **Global Stocks** - trade US stocks: orders, trades, holdings, fund limit, market status, order/charge estimate and margin. A separate Global Stocks instrument list is available too.
+- **Global Stocks Live Feed** - real-time US stock Trade and OHLC packets over WebSocket via the new `GlobalStocksFeed`.
+- **P&L based Exit** - auto square-off when cumulative profit or loss hits the configured absolute value thresholds (Trader's Control).
+- **Multi-leg Margin Calculator** - compute combined margin for multiple orders with hedge benefits.
+
+And a lot more is available directly on DhanHQ Python Library now.
+
+---
+
 
 ## v2.2.0 - What's new
 - You can now access the entire full market depth (200 Level) via DhanHQ APIs and part of the python library.
@@ -31,48 +44,9 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 
 And a lot more is available directly on DhanHQ Python Library now.
 
+You can read about all other updates from DhanHQ V2 here: [DhanHQ Releases](https://docs.dhanhq.co/api/v2/guides/releases/).
+
 ---
-
-
-## v2.1.0 - What's new
-
-- 20 level market depth is now available on DhanHQ APIs and part of the python library.
-
-DhanHQ v2.1.0 is more modular and secure.
-
-- The project is restructured to contemporary "best practices" in the python world. How does this affect you? Your imports would change like below:
-
-
-  | Before This Version                                                    | After This Release                               |
-  |------------------------------------------------------------------------|--------------------------------------------------|
-  | from dhanhq import dhanhq | from dhanhq import dhanhq |
-  | from dhanhq import marketfeed.MarketFeed | from dhanhq import MarketFeed |
-  | from dhanhq import orderupdate.OrderUpdate | from dhanhq import OrderUpdate |
-
-- The constants that were earlier part of modules `marketfeed` and `orderupdate` are now moved to its respective classes contained in the modules for better developer experience. 
-
-  | Before This Version | After This Release |
-  |---------------------|--------------------|
-  | marketfeed.NSE      | MarketFeed.NSE       |
-  | marketfeed.Ticker | MarketFeed.Ticker |
-
-  Note: This improves developer experience to not knowing the entire package hierarchy and stay productive to know the interfaces he is working with. 
-
-
-- You no longer have to repeat and spread the `client-id` and `access-token` around their code based in using our APIs. With this release, you defined it once for `DhanContext` and pass on this to different classes of the SDK instead of the raw credential strings, making your codebase much secure from data leaks and your coding a lot easier by defining DhanContext just once and use that context for other API classes. Quick glance of how affected code initialization is below:
-
-  | Before This Version                                | After This Release                   |
-  |----------------------------------------------------|--------------------------------------|
-  | `dhanhq('client_id','access_token')`               | `dhanhq('dhan_context')`              |
-  | `MarketFeed('client_id','access_token',instruments)` | `MarketFeed('dhan_context',instruments)` |
-  | `OrderUpdate('client_id','access_token')`          | `OrderUpdate('dhan_context')`         |
-
-  **Note:** The **_Hands-on API_** section is updated to reflect this change, for your convenience.
-
-- Code coverage improvements with robust unit & integration tests for safe and speed delivery of features. Will strengthen even more in upcoming releases.
-
-You can read about all other updates from DhanHQ V2 here: [DhanHQ Releases](https://dhanhq.co/docs/v2/releases/).
-
 
 ## Features
 
@@ -90,6 +64,15 @@ Single function which gives entire Option Chain across exchanges and segments, g
 
 * **Forever Order**  
 Place, modify or delete Forever Orders, whether single or OCO to better manage your swing trades.
+
+* **Conditional Orders**  
+Place one or more orders automatically when a price or technical-indicator condition is met, for Equities & Indices.
+
+* **Global Stocks**  
+Trade US stocks - place, modify and cancel orders, fetch trades, holdings, fund limit and market status, plus order/charge and margin estimates. A live feed for US stocks is available too.
+
+* **P&L based Exit & Multi-leg Margin**  
+Auto square-off on cumulative profit/loss thresholds and calculate combined margin for multiple orders with hedge benefits.
 
 * **Portfolio Management**  
 With this set of APIs, retrieve your holdings and positions in your portfolio as well as manage them.
@@ -294,6 +277,61 @@ dhan.place_forever(
     price= 1900,
     trigger_Price= 1950
 )
+
+# Place a Conditional Order (triggers orders when condition is met; Equities & Indices only)
+dhan.place_conditional_order(
+    condition={
+        "comparisonType": "PRICE_WITH_VALUE",
+        "exchangeSegment": dhan.NSE,
+        "securityId": "1333",
+        "operator": "GREATER_THAN",
+        "comparingValue": 250,
+        "frequency": "ONCE"                 # ONCE or ALWAYS
+    },
+    orders=[{
+        "transactionType": dhan.BUY,
+        "exchangeSegment": dhan.NSE,
+        "productType": dhan.CNC,
+        "orderType": dhan.LIMIT,
+        "securityId": "1333",
+        "quantity": 10,
+        "validity": dhan.DAY,
+        "price": "250.00"
+    }]
+)
+dhan.get_conditional_orders()
+dhan.cancel_conditional_order("12345")
+
+# Global Stocks (US) - prices in USD
+dhan.place_global_order(
+    security_id="AAPL_SECURITY_ID",
+    transaction_type=dhan.BUY,
+    order_type=dhan.LIMIT,
+    quantity=5,
+    price=150.50
+)
+dhan.get_global_holdings()
+dhan.get_global_fund_limit()
+dhan.get_global_market_status()
+
+# Fetch the Global Stocks (US) instrument list (distinct from the Indian list)
+dhan.fetch_global_security_list()
+
+# P&L based Exit (values are absolute amounts, not percentages)
+dhan.set_pnl_exit(profit_value=1500, loss_value=500,
+    product_type=["INTRADAY", "DELIVERY"], enable_kill_switch=True)
+dhan.get_pnl_exit()
+dhan.stop_pnl_exit()
+
+# Multi-leg Margin Calculator
+dhan.margin_calculator_multi(
+    scrip_list=[
+        {"securityId": "26009", "exchangeSegment": dhan.NSE_FNO, "transactionType": dhan.BUY,
+         "quantity": 50, "productType": dhan.INTRA, "price": 45000.00},
+        {"securityId": "26010", "exchangeSegment": dhan.NSE_FNO, "transactionType": dhan.SELL,
+         "quantity": 50, "productType": dhan.INTRA, "price": 45500.00}
+    ]
+)
 ```
 
 ### Market Feed Usage
@@ -340,6 +378,33 @@ data.subscribe_symbols(sub_instruments)
 unsub_instruments = [(MarketFeed.NSE, "1333", 16)]
 
 data.unsubscribe_symbols(unsub_instruments)
+```
+
+### Global Stocks Live Feed Usage
+```python
+from dhanhq import DhanContext, GlobalStocksFeed
+
+# Define and use your dhan_context if you haven't already done so like below:
+dhan_context = DhanContext("client_id","access_token")
+
+# Structure for subscribing is (exchange_segment, "security_id", request_code)
+# request_code is GlobalStocksFeed.SubscribeTrade (15) or GlobalStocksFeed.SubscribeOHLC (17).
+# A 2-tuple defaults to the Trade feed.
+instruments = [
+    (GlobalStocksFeed.INX_EQ, "1234"),                                  # Trade
+    (GlobalStocksFeed.INX_EQ, "5678", GlobalStocksFeed.SubscribeOHLC),  # OHLC
+]
+
+try:
+    feed = GlobalStocksFeed(dhan_context, instruments, auth_type=GlobalStocksFeed.AUTH_SELF)
+    feed.run_forever()
+
+    while True:
+        response = feed.get_data()
+        print(response)
+
+except Exception as e:
+    print(e)
 ```
 
 ### Live Order Update Usage

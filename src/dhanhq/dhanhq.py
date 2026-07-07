@@ -12,11 +12,13 @@ from datetime import datetime, timedelta, timezone
 
 
 from dhanhq import (Order, ForeverOrder, Portfolio, Statement, TraderControl, Security,
-                    HistoricalData, OptionChain, MarketFeed, Funds, SuperOrder)
+                    HistoricalData, OptionChain, MarketFeed, Funds, SuperOrder,
+                    ConditionalOrder, GlobalStocks)
 
 
 class dhanhq(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
-             MarketFeed, HistoricalData, OptionChain, SuperOrder):
+             MarketFeed, HistoricalData, OptionChain, SuperOrder,
+             ConditionalOrder, GlobalStocks):
     """DhanHQ Class having Core APIs"""
 
     """Constants for Exchange Segment"""
@@ -28,6 +30,7 @@ class dhanhq(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Se
     NSE_FNO = 'NSE_FNO'
     BSE_FNO = 'BSE_FNO'
     INDEX = 'IDX_I'
+    INX = 'INX_EQ'  # Global Stocks (US) exchange segment
 
     """Constants for Transaction Type"""
     BUY = 'BUY'
@@ -54,7 +57,8 @@ class dhanhq(Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Se
 
     def __init__(self, dhan_context):
         for parent in [Order, ForeverOrder, Portfolio, Funds, Statement, TraderControl, Security,
-                       MarketFeed, HistoricalData, OptionChain, SuperOrder]:
+                       MarketFeed, HistoricalData, OptionChain, SuperOrder,
+                       ConditionalOrder, GlobalStocks]:
             parent.__init__(self,dhan_context)
         self.dhan_http = dhan_context.get_dhan_http()
 

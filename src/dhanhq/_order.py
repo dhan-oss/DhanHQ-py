@@ -121,10 +121,14 @@ class Order:
             "disclosedQuantity": int(disclosed_quantity),
             "price": float(price),
             "afterMarketOrder": after_market_order,
+            "amoTime": amo_time if after_market_order else None,
             "boProfitValue": bo_profit_value,
             "boStopLossValue": bo_stop_loss_Value,
             "triggerPrice": float(trigger_price)
         }
+
+        if not after_market_order:
+            payload.pop("amoTime")
 
         if tag is not None and tag != '':
             payload["correlationId"] = tag

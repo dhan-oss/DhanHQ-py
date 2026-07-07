@@ -12,7 +12,10 @@ from ._security import Security
 from ._market_feed import MarketFeed
 from ._historical_data import HistoricalData
 from ._option_chain import OptionChain
+from ._conditional_order import ConditionalOrder
+from ._global_stocks import GlobalStocks
 from .dhanhq import dhanhq
 from .marketfeed import MarketFeed
 from .orderupdate import OrderUpdate
 from .fulldepth import FullDepth
+from .global_stocks_feed import GlobalStocksFeed

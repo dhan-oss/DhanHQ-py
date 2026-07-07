@@ -15,6 +15,8 @@ class Security:
     """CSV URL for Security ID List"""
     COMPACT_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master.csv'
     DETAILED_CSV_URL = 'https://images.dhan.co/api-data/api-scrip-master-detailed.csv'
+    """CSV URL for the Global Stocks (US) instrument list - distinct from the Indian list"""
+    GLOBAL_STOCKS_CSV_URL = 'https://api-global-stocks.dhan.co/api-data/us-stock-scrip-master.csv'
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
@@ -119,4 +121,33 @@ class Security:
             return df
         except Exception as e:
             logging.error('Exception in dhanhq>>fetch_security_list: %s', e)
+            return None
+
+    @staticmethod
+    def fetch_global_security_list(filename='global_security_id_list.csv'):
+        """
+        Fetch the Global Stocks (US) instrument list CSV from Dhan and save it to the
+        current directory. This list is distinct from the Indian instrument list fetched
+        by fetch_security_list.
+
+        The CSV contains US stock Security IDs and details such as EXCHANGE, SEGMENT,
+        SCRIP_CODE, ISIN_CODE, SYMBOL, SYMBOL_NAME, EXCH_SYMBOL, CUSTOM_SYMBOL,
+        TRADING_SYMBOL, FRACTION, CUSTOM_EXCH, INSTRUMENT_NAME, TICK_SIZE, LOT_SIZE,
+        UPPER_LIMIT, LOWER_LIMIT and UPDATE_DATE.
+
+        Args:
+            filename (str): The name of the file to save the CSV as.
+
+        Returns:
+            pd.DataFrame: The DataFrame containing the CSV data, or None on failure.
+        """
+        import pandas as pd
+        try:
+            response = requests.get(Security.GLOBAL_STOCKS_CSV_URL)
+            response.raise_for_status()
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            return pd.read_csv(filename)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>fetch_global_security_list: %s', e)
             return None

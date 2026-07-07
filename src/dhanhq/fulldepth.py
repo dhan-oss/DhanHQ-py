@@ -85,9 +85,12 @@ class FullDepth:
 
             if bid_data and ask_data and bid_data['security_id'] == ask_data['security_id']:
                 formatted_data = self.combine_and_format_depth(bid_data, ask_data)
-                print(f"\nExchange Segment: {formatted_data['exchange_segment']}, Security ID: {formatted_data['security_id']}")
-                for line in formatted_data['depth']:
-                    print(line)
+                if self.on_ticks and callable(self.on_ticks):
+                    self.on_ticks(formatted_data)
+                else:
+                    print(f"\nExchange Segment: {formatted_data['exchange_segment']}, Security ID: {formatted_data['security_id']}")
+                    for line in formatted_data['depth']:
+                        print(line)
                 results.append(formatted_data)
                 bid_data = None
                 ask_data = None

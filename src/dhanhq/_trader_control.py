@@ -46,3 +46,42 @@ class TraderControl:
         """
         endpoint = '/killswitch'
         return self.dhan_http.get(endpoint)
+
+    def set_pnl_exit(self, profit_value, loss_value, product_type, enable_kill_switch=False):
+        """
+        Configure automatic exit rules based on cumulative profit or loss thresholds.
+
+        Args:
+            profit_value (float): Target profit amount in absolute value terms (₹), not percentage.
+            loss_value (float): Target loss amount in absolute value terms (₹), not percentage.
+            product_type (list): List of product types to apply the rule to, e.g. ['INTRADAY', 'DELIVERY'].
+            enable_kill_switch (bool): Activate the kill switch when triggered. Defaults to False.
+
+        Returns:
+            dict: The response containing the status of the P&L exit configuration.
+        """
+        payload = {
+            "profitValue": float(profit_value),
+            "lossValue": float(loss_value),
+            "productType": product_type,
+            "enableKillSwitch": enable_kill_switch
+        }
+        return self.dhan_http.post('/pnlExit', payload)
+
+    def get_pnl_exit(self):
+        """
+        Fetch the currently active P&L based exit configuration.
+
+        Returns:
+            dict: The response containing the current P&L exit configuration.
+        """
+        return self.dhan_http.get('/pnlExit')
+
+    def stop_pnl_exit(self):
+        """
+        Disable the active P&L based exit configuration.
+
+        Returns:
+            dict: The response containing the status of the operation.
+        """
+        return self.dhan_http.delete('/pnlExit')

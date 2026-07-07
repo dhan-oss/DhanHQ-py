@@ -22,6 +22,15 @@ class Portfolio:
         """
         return self.dhan_http.get('/positions')
 
+    def exit_all_positions(self):
+        """
+        Exit all open positions for the day.
+
+        Returns:
+            dict: The response confirming exit of all positions.
+        """
+        return self.dhan_http.delete('/positions')
+
     def convert_position(self, from_product_type, exchange_segment, position_type,
                          security_id, convert_qty, to_product_type):
         """

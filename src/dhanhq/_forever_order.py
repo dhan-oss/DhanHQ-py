@@ -7,7 +7,7 @@ class ForeverOrder:
 
     def place_forever(self, security_id, exchange_segment, transaction_type, product_type, order_type,
                       quantity, price, trigger_Price, order_flag="SINGLE", disclosed_quantity=0, validity='DAY',
-                      price1=0, trigger_Price1=0, quantity1=0, tag=None, symbol=""):
+                      price1=0, trigger_Price1=0, quantity1=0, tag=None):
         """
         Place a new forever order in the Dhan account.
 
@@ -27,7 +27,6 @@ class ForeverOrder:
             trigger_Price1 (float): The secondary trigger price for the order.
             quantity1 (int): The secondary quantity for the order.
             tag (str): Optional correlation ID for tracking.
-            symbol (str): The trading symbol for the order.
 
         Returns:
             dict: The response containing the status of the order placement.
@@ -40,7 +39,6 @@ class ForeverOrder:
             "productType": product_type.upper(),
             "orderType": order_type.upper(),
             "validity": validity.upper(),
-            "tradingSymbol": symbol,
             "securityId": security_id,
             "quantity": int(quantity),
             "disclosedQuantity": int(disclosed_quantity),
@@ -50,6 +48,7 @@ class ForeverOrder:
             "triggerPrice1": float(trigger_Price1),
             "quantity1": int(quantity1),
         }
+
 
         if tag not in (None, ''):
             payload["correlationId"] = tag

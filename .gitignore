@@ -10,6 +10,11 @@ __pycache__/
 .coverage
 .todo
 *.csv
+.DS_Store
 
 # Temp ignore
 *.toml
+
+.claude/
+scripts/
+.gitignore

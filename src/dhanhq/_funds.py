@@ -40,9 +40,31 @@ class Funds:
             "productType": product_type.upper(),
             "price": float(price)
         }
-        # ToDo: Shouldn't price and trigger_price being float vlaues be rounded to 2 or 3 decimal places as precision??
+        
         if trigger_price >= 0:
             payload["triggerPrice"] = float(trigger_price)
 
+        return self.dhan_http.post(endpoint, payload)
+
+    def margin_calculator_multi(self, scrip_list, include_position=False, include_order=False):
+        """
+        Calculate the combined margin required for multiple orders, with hedge benefits.
+
+        Args:
+            scrip_list (list): List of order/leg dicts. Each item keys (camelCase):
+                exchangeSegment, transactionType (BUY/SELL), quantity, productType
+                (CNC / INTRADAY / MARGIN / MTF), securityId, price, triggerPrice.
+            include_position (bool): Include existing positions in the calculation. Defaults to False.
+            include_order (bool): Include pending orders in the calculation. Defaults to False.
+
+        Returns:
+            dict: The response containing the combined margin calculation result.
+        """
+        endpoint = '/margincalculator/multi'
+        payload = {
+            "includePosition": include_position,
+            "includeOrder": include_order,
+            "scripList": scrip_list
+        }
         return self.dhan_http.post(endpoint, payload)
 
