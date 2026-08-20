@@ -26,6 +26,7 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 > This is a **release candidate**. APIs in this section are new and may change before the final `v2.3.0` release. Install with `pip install --pre dhanhq==2.3.0rc1`.
 
 - **Conditional Orders** - place one or more orders automatically when a price or technical-indicator condition is met (Equities & Indices).
+- **Multi Order** - place up to 15 orders in a single request, directly and without any condition.
 - **Global Stocks** - trade US stocks: orders, trades, holdings, fund limit, market status, order/charge estimate and margin. A separate Global Stocks instrument list is available too.
 - **Global Stocks Live Feed** - real-time US stock Trade and OHLC packets over WebSocket via the new `GlobalStocksFeed`.
 - **P&L based Exit** - auto square-off when cumulative profit or loss hits the configured absolute value thresholds (Trader's Control).
@@ -67,6 +68,9 @@ Place, modify or delete Forever Orders, whether single or OCO to better manage y
 
 * **Conditional Orders**  
 Place one or more orders automatically when a price or technical-indicator condition is met, for Equities & Indices.
+
+* **Multi Order**  
+Place up to 15 orders in a single request, directly and without any condition, with each order tracked by its sequence number.
 
 * **Global Stocks**  
 Trade US stocks - place, modify and cancel orders, fetch trades, holdings, fund limit and market status, plus order/charge and margin estimates. A live feed for US stocks is available too.
@@ -301,6 +305,32 @@ dhan.place_conditional_order(
 )
 dhan.get_conditional_orders()
 dhan.cancel_conditional_order("12345")
+
+# Place a Multi Order (up to 15 orders in one request, no condition attached)
+dhan.place_multi_order([
+    {
+        "sequence": "1",                    # required, starts at 1
+        "correlationId": "my-batch-1",      # optional, up to 30 characters
+        "transactionType": dhan.BUY,
+        "exchangeSegment": dhan.NSE,
+        "productType": dhan.CNC,
+        "orderType": dhan.LIMIT,
+        "validity": dhan.DAY,
+        "securityId": "1333",
+        "quantity": 10,
+        "price": 250.00
+    },
+    {
+        "sequence": "2",
+        "transactionType": dhan.SELL,
+        "exchangeSegment": dhan.NSE,
+        "productType": dhan.INTRA,
+        "orderType": dhan.MARKET,
+        "validity": dhan.DAY,
+        "securityId": "11536",
+        "quantity": 5
+    }
+])
 
 # Global Stocks (US) - prices in USD
 dhan.place_global_order(
