@@ -10,7 +10,7 @@
 import asyncio
 import json
 import struct
-from datetime import datetime
+from datetime import datetime, timezone
 
 import websockets
 
@@ -378,4 +378,4 @@ class GlobalStocksFeed:
 
     def utc_time(self, epoch_time):
         """Convert EPOCH time to a UTC HH:MM:SS string."""
-        return datetime.utcfromtimestamp(epoch_time).strftime('%H:%M:%S')
+        return datetime.fromtimestamp(epoch_time, timezone.utc).strftime('%H:%M:%S')
