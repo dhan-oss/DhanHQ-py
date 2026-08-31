@@ -22,13 +22,11 @@ try:
     print("Connecting to Market Feed...")
     market_feed.run_forever()
     
-    # In a real application, you would consume data here
-    # data = market_feed.get_data()
-    # print(data)
+    while True:
+        data = market_feed.get_data()
+        print(data)
     
 except Exception as e:
     print(f"Error: {e}")
 except KeyboardInterrupt:
     print("Market Feed Stopped")
-finally:
-    market_feed.disconnect()
