@@ -53,3 +53,32 @@ dhan.modify_conditional_order("12345", condition, orders)
 
 # Cancel a conditional order
 dhan.cancel_conditional_order("12345")
+
+# Multi Order places several orders in one request, directly and without any condition.
+# Up to 15 orders per request, placed in the sequence given.
+multi_orders = [
+    {
+        "sequence": "1",                    # required, starts at 1
+        "correlationId": "my-batch-1",      # optional, up to 30 characters
+        "transactionType": dhan.BUY,
+        "exchangeSegment": dhan.NSE,        # NSE_EQ
+        "productType": dhan.CNC,
+        "orderType": dhan.LIMIT,
+        "validity": dhan.DAY,
+        "securityId": "1333",               # HDFC Bank
+        "quantity": 10,
+        "price": 250.00,
+    },
+    {
+        "sequence": "2",
+        "transactionType": dhan.SELL,
+        "exchangeSegment": dhan.NSE,
+        "productType": dhan.INTRA,          # INTRADAY
+        "orderType": dhan.MARKET,
+        "validity": dhan.DAY,
+        "securityId": "11536",              # TCS
+        "quantity": 5,
+    },
+]
+# Each entry in the response holds orderId, sequence and orderStatus.
+dhan.place_multi_order(multi_orders)
