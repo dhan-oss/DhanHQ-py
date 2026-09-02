@@ -17,7 +17,7 @@ class OptionChain:
             dict: The response containing Open Interest (OI), Greeks, Volume, Last Traded Price,
                     Best Bid/Ask, and Implied Volatility (IV) across all strikes for the specified underlying.
         """
-        endpoint = '/optionchain'
+        endpoint = '/v2/optionchain'
         payload = {
             "UnderlyingScrip": under_security_id,
             "UnderlyingSeg": under_exchange_segment,
@@ -37,7 +37,7 @@ class OptionChain:
             dict: The response containing list of dates for which option expiries
                     are present for the specified underlying instrument.
         """
-        endpoint = '/optionchain/expirylist'
+        endpoint = '/v2/optionchain/expirylist'
         payload = {
             "UnderlyingScrip": under_security_id,
             "UnderlyingSeg": under_exchange_segment
