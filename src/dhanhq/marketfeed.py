@@ -80,8 +80,15 @@ class MarketFeed:
 
         if self.loop.is_running():
             future = asyncio.run_coroutine_threadsafe(self.disconnect(), self.loop)
-            return future.result()
+            try:
+                return future.result(timeout=5)
+            except TimeoutError:
+                future.cancel()
+                print("Warning: WebSocket disconnect timed out")
+                return
         else:
+            if self.loop.is_closed():
+                return
             return self.loop.run_until_complete(self.disconnect())
         
     def run(self):
@@ -181,19 +188,24 @@ class MarketFeed:
 
     async def disconnect(self):
         """Closes the WebSocket connection and sends a disconnect message."""
-        if self.ws:
+        ws = self.ws
+        self.ws = None
+        if ws:
             if self.version == 'v2':
                 disconnect_message = {
                     "RequestCode": 12
                 }
                 try:
-                    await self.ws.send(json.dumps(disconnect_message))
+                    await asyncio.wait_for(ws.send(json.dumps(disconnect_message)), timeout=1)
                     header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
-                    await self.ws.send(header_message)
+                    await asyncio.wait_for(ws.send(header_message), timeout=1)
                 except Exception:
                     pass
-            await self.ws.close()
-            
+            try:
+                await asyncio.wait_for(ws.close(), timeout=3)
+            except Exception:
+                pass
+
         if self.on_close:
             self.on_close(self)
         print("Connection closed!")
