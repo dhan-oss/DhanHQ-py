@@ -59,13 +59,35 @@ class MarketFeed:
         
         self._running = False
 
+    def _run_sync(self, coro):
+        """Run a coroutine to completion from synchronous code.
+
+        When called from inside an already-running event loop (for example a
+        user's own ``async`` application), the coroutine is scheduled on that
+        loop and the resulting task is returned instead of raising
+        ``RuntimeError: This event loop is already running``.
+        """
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop is not None:
+            return loop.create_task(coro)
+        if self.loop.is_running():
+            return asyncio.run_coroutine_threadsafe(coro, self.loop)
+        return self.loop.run_until_complete(coro)
+
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
-        self.loop.run_until_complete(self.connect())
+        return self._run_sync(self.connect())
 
     def get_data(self):
-        """Fetch instruments data while the event loop is open."""
-        return self.loop.run_until_complete(self.get_instrument_data())
+        """Fetch instruments data while the event loop is open.
+
+        When called from async code, returns an ``asyncio.Task``; await it
+        to get the instrument data.
+        """
+        return self._run_sync(self.get_instrument_data())
 
     def close_connection(self):
         """Close WebSocket connection with this."""
@@ -88,10 +110,13 @@ class MarketFeed:
         """
         Blocking call to run the WebSocket connection.
         This method handles the connection, receiving messages, and calling callbacks.
+
+        When called from async code, the message loop is scheduled on the
+        running loop and its task is returned instead of blocking.
         """
         self._running = True
         try:
-            self.loop.run_until_complete(self._run_async())
+            return self._run_sync(self._run_async())
         except KeyboardInterrupt:
             self.close_connection()
             
