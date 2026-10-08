@@ -2,6 +2,11 @@
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
 
+> v2.3.0 is the latest stable release. You can install the previous stable version by using the below code:
+```bash
+pip install dhanhq==2.2.0
+```
+
 The official Python client for communicating with the [Dhan API](https://api.dhan.co/v2/)  
 
 DhanHQ-py Rest API is used to automate investing and trading. Execute orders in real time along with position management, live and historical data, tradebook and more with simple API collection.
