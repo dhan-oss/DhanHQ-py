@@ -31,12 +31,16 @@ class DhanHTTP:
         DELETE = 'DELETE'
 
     HTTP_DEFAULT_TIME_OUT = 60
-    API_BASE_URL = 'https://api.dhan.co/v2'
+    API_BASE_URL = "https://api.dhan.co/v2"
+    SANDBOX_BASE_URL = "https://sandbox.dhan.co/v2"
 
-    def __init__(self, client_id, access_token, disable_ssl=False, pool=None):
+    def __init__(self, client_id, access_token, disable_ssl=False, pool=None, is_sandbox=False):
         self.client_id = client_id
         self.access_token = access_token
-        self.base_url = DhanHTTP.API_BASE_URL
+        if is_sandbox:
+            self.base_url = DhanHTTP.SANDBOX_BASE_URL
+        else:
+            self.base_url = DhanHTTP.API_BASE_URL
         self.timeout = DhanHTTP.HTTP_DEFAULT_TIME_OUT
         self.header = {
             'access-token': self.access_token,
