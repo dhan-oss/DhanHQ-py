@@ -1,11 +1,6 @@
-# DhanHQ-py : v2.3.0-rc1 (Pre-release)
+# DhanHQ-py : v2.3.0
 
 [![PyPI](https://img.shields.io/pypi/v/dhanhq.svg)](https://pypi.org/project/dhanhq/)
-
-> ⚠️ **Pre-release / Release Candidate.** `v2.3.0rc1` is a release candidate for testing the new features below. It is not the latest stable release, so `pip install dhanhq` will not pick it up. Install it explicitly:
-```bash
-pip install --pre dhanhq==2.3.0rc1
-```
 
 The official Python client for communicating with the [Dhan API](https://api.dhan.co/v2/)  
 
@@ -22,8 +17,7 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://docs.dhanhq.co/api/v2/)
 
-## v2.3.0-rc1 - What's new (Pre-release)
-> This is a **release candidate**. APIs in this section are new and may change before the final `v2.3.0` release. Install with `pip install --pre dhanhq==2.3.0rc1`.
+## v2.3.0 - What's new
 
 - **Conditional Orders** - place one or more orders automatically when a price or technical-indicator condition is met (Equities & Indices).
 - **Global Stocks** - trade US stocks: orders, trades, holdings, fund limit, market status, order/charge estimate and margin. A separate Global Stocks instrument list is available too.
