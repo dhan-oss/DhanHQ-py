@@ -9,6 +9,7 @@ dhan_context = DhanContext(client_id, access_token)
 # Format: (ExchangeSegment, SecurityID) defaults to Trade feed, or
 #         (ExchangeSegment, SecurityID, RequestCode) where RequestCode is
 #         GlobalStocksFeed.SubscribeTrade (15) or GlobalStocksFeed.SubscribeOHLC (17).
+# Security IDs are listed in the Global Stocks instrument list: dhanhq.fetch_global_security_list()
 instruments = [
     (GlobalStocksFeed.INX_EQ, "1234"),                                  # Trade feed
     (GlobalStocksFeed.INX_EQ, "5678", GlobalStocksFeed.SubscribeOHLC),  # OHLC feed
@@ -22,13 +23,14 @@ try:
     print("Connecting to Global Stocks Live Feed...")
     global_feed.run_forever()
 
-    # In a real application, you would consume data here
-    # data = global_feed.get_data()
-    # print(data)
+    while True:
+        # A single call can return one packet (dict) or several concatenated packets (list)
+        data = global_feed.get_data()
+        print(data)
 
 except Exception as e:
     print(f"Error: {e}")
 except KeyboardInterrupt:
     print("Global Stocks Feed Stopped")
 finally:
-    global_feed.disconnect()
+    global_feed.close_connection()
