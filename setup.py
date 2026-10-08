@@ -3,9 +3,7 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-# Pre-release (release candidate). PEP 440 normalizes 'rc01' -> 'rc1'.
-# pip will only install this with `pip install --pre dhanhq` or an explicit version pin.
-VERSION = '2.3.0rc1'
+VERSION = '2.3.0'
 PACKAGE_NAME = 'dhanhq'
 AUTHOR = 'Dhan'
 AUTHOR_EMAIL = 'dhan-oss@dhan.co'
