@@ -105,7 +105,7 @@ class FullDepth:
         """Initiates the connection to the Websockets."""
         if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
             url = f"{self.ws_url}?token={self.access_token}&clientId={self.client_id}&authType=2"
-            print(f"Connecting to WebSocket URL: {url}")
+            print(f"Connecting to WebSocket URL: {self.ws_url}")
             self.ws = await websockets.connect(url)
             await self.subscribe_instruments()
         else:

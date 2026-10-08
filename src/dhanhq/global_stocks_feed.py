@@ -35,6 +35,9 @@ class GlobalStocksFeed:
     AUTH_SELF = 2
     AUTH_PARTNER = 3
 
+    """Packet size in bytes by MsgCode, used when MsgLength is not set"""
+    PACKET_SIZES = {1: 27, 3: 27, 29: 18, 32: 15, 33: 19, 36: 19, 50: 13}
+
     def __init__(self, dhan_context, instruments, auth_type=AUTH_SELF,
                  on_connect=None, on_message=None, on_close=None, on_error=None, on_ticks=None):
         """
@@ -234,22 +237,20 @@ class GlobalStocksFeed:
 
     def process_data(self, data):
         """Parse a binary message that may contain one or more concatenated packets."""
-        # Error packets are standalone and start with MsgCode (50) at offset 0.
-        if data and data[0] == 50:
-            return self.process_error(data)
-
         packets = []
         offset = 0
         total = len(data)
         while offset + 11 <= total:
-            msg_length = data[offset + 9]
             msg_code = data[offset + 10]
+            expected = GlobalStocksFeed.PACKET_SIZES.get(msg_code, 11)
+            msg_length = data[offset + 9] or expected
+            # Stop on malformed or truncated data instead of reading past the buffer.
+            if msg_length < expected or offset + msg_length > total:
+                break
             packet = data[offset:offset + msg_length]
             parsed = self.process_packet(msg_code, packet)
             if parsed is not None:
                 packets.append(parsed)
-            if msg_length <= 0:
-                break
             offset += msg_length
         if len(packets) == 1:
             return packets[0]
@@ -274,21 +275,20 @@ class GlobalStocksFeed:
             return self.process_circuit_limit(packet)
         elif msg_code == 36:
             return self.process_52_week(packet)
+        elif msg_code == 50:
+            return self.process_error(packet)
         return None
 
     def process_trade(self, packet):
-        """Parse a Trade packet (MsgCode 1, 37 bytes). Price fields (LTP, ATP) are float32."""
+        """Parse a Trade packet (MsgCode 1, 27 bytes). LTP is float32."""
         exch_seg, scrip_id = self._parse_header(packet)
-        ltp, ltq, volume, atp, oi, ltt, lut = struct.unpack('<fhifiii', packet[11:37])
+        ltp, volume, ltt, lut = struct.unpack('<fiii', packet[11:27])
         return {
             "type": "Trade",
             "exchange_segment": exch_seg,
             "security_id": scrip_id,
             "LTP": "{:.2f}".format(ltp),
-            "LTQ": ltq,
             "volume": volume,
-            "ATP": "{:.2f}".format(atp),
-            "OI": oi,
             "LTT": self.utc_time(ltt),
             "LUT": self.utc_time(lut)
         }
@@ -308,15 +308,14 @@ class GlobalStocksFeed:
         }
 
     def process_prev_close(self, packet):
-        """Parse a Previous Close packet (MsgCode 32, 19 bytes)."""
+        """Parse a Previous Close packet (MsgCode 32, 15 bytes)."""
         exch_seg, scrip_id = self._parse_header(packet)
-        prev_close, prev_oi = struct.unpack('<ff', packet[11:19])
+        prev_close, = struct.unpack('<f', packet[11:15])
         return {
             "type": "Previous Close",
             "exchange_segment": exch_seg,
             "security_id": scrip_id,
-            "prev_close": prev_close,
-            "prev_OI": prev_oi
+            "prev_close": prev_close
         }
 
     def process_circuit_limit(self, packet):
@@ -356,8 +355,9 @@ class GlobalStocksFeed:
         }
 
     def process_error(self, packet):
-        """Parse an Error packet (MsgCode 50, 10 bytes)."""
-        msg_code, _msg_length, exch_seg, scrip_id, err_code = struct.unpack('<BHBiH', packet[0:10])
+        """Parse an Error packet (MsgCode 50, 13 bytes): the 11-byte header followed by an int16 error code."""
+        exch_seg, scrip_id = self._parse_header(packet)
+        err_code, = struct.unpack('<h', packet[11:13])
         messages = {
             805: "Connection limit exceeded.",
             806: "Payment not done for broadcast.",
