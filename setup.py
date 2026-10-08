@@ -44,7 +44,7 @@ setup(name=PACKAGE_NAME,
       packages=find_packages(where='src'), # Automatically find packages
       python_requires='>=3.10',
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
       ],
       install_requires=INSTALL_REQUIRES,
       extras_require={
