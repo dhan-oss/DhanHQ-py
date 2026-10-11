@@ -56,8 +56,23 @@ class MarketFeed:
             self.on_message = on_ticks
         self.on_close = on_close
         self.on_error = on_error
-        
+
         self._running = False
+
+        # Reconnect backoff (fork patch -- see
+        # https://github.com/dhan-oss/DhanHQ-py/issues/163): run()/
+        # _run_async() used to retry a dropped connection at a flat 1s
+        # cadence forever, with no way for a caller to throttle it (it
+        # never returns/raises out of run() on a connection drop), which
+        # can hammer the server into an HTTP 429 and then keep hammering
+        # through the rate limit. Doubles each consecutive failure up to
+        # reconnect_backoff_max; a 429 specifically parks for
+        # rate_limit_backoff_seconds and resets the doubling. A
+        # successful message resets it to reconnect_backoff_base.
+        self.reconnect_backoff_base = 1.0
+        self.reconnect_backoff_max = 60.0
+        self.rate_limit_backoff_seconds = 60.0
+        self._reconnect_backoff = self.reconnect_backoff_base
 
     def run_forever(self):
         """Starts the WebSocket connection and runs the event loop."""
@@ -107,21 +122,32 @@ class MarketFeed:
 
     async def _run_async(self):
         """Internal async method to handle the connection loop."""
-        await self.connect()
+        try:
+            await self.connect()
+        except Exception as e:
+            if self.on_error:
+                self.on_error(self, e)
         while self._running:
             try:
                 if self.ws and not self._is_ws_closed():
                     data = await self.get_instrument_data()
                     if self.on_message:
                         self.on_message(self, data)
+                    self._reconnect_backoff = self.reconnect_backoff_base
                 else:
-                    await asyncio.sleep(1)
                     if not self.ws or self._is_ws_closed():
                          await self.connect()
+                         self._reconnect_backoff = self.reconnect_backoff_base
+                    else:
+                        await asyncio.sleep(1)
             except Exception as e:
                 if self.on_error:
                     self.on_error(self, e)
-                await asyncio.sleep(1)
+                rate_limited = "429" in str(e)
+                sleep_for = self.rate_limit_backoff_seconds if rate_limited else self._reconnect_backoff
+                self._reconnect_backoff = (self.reconnect_backoff_base if rate_limited
+                                           else min(self._reconnect_backoff * 2, self.reconnect_backoff_max))
+                await asyncio.sleep(sleep_for)
 
     def _run_coroutine(self, coro):
         """Helper to run coroutine in the event loop from any thread."""
@@ -145,27 +171,29 @@ class MarketFeed:
             return True
 
     async def connect(self):
-        """Initiates the connection to the Websockets."""
+        """Initiates the connection to the Websockets.
+
+        Fork patch: no longer calls on_error itself -- every caller of
+        connect() (the initial call and the reconnect-loop call in
+        _run_async()) already wraps it in its own try/except that calls
+        on_error exactly once. The old code called on_error here AND let
+        the exception propagate into that same outer except, firing
+        on_error twice per real failure (confirmed by duplicate
+        identical-timestamp log lines downstream)."""
         if not self.ws or self.ws.state == websockets.protocol.State.CLOSED:
-            try:
-                if self.version == 'v1':
-                    self.ws = await websockets.connect(MarketFeed.market_feed_wss)
-                    await self.authorize()
-                elif self.version == 'v2':
-                    url = f"{MarketFeed.market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
-                    self.ws = await websockets.connect(url)
-                else:
-                    raise ValueError(f"Unsupported version: {self.version}")
-                
-                await self.subscribe_instruments()
-                
-                if self.on_connect:
-                    self.on_connect(self)
-                    
-            except Exception as e:
-                if self.on_error:
-                    self.on_error(self, e)
-                raise e
+            if self.version == 'v1':
+                self.ws = await websockets.connect(MarketFeed.market_feed_wss)
+                await self.authorize()
+            elif self.version == 'v2':
+                url = f"{MarketFeed.market_feed_wss}?version=2&token={self.access_token}&clientId={self.client_id}&authType=2"
+                self.ws = await websockets.connect(url)
+            else:
+                raise ValueError(f"Unsupported version: {self.version}")
+
+            await self.subscribe_instruments()
+
+            if self.on_connect:
+                self.on_connect(self)
         else:
             try:
                 await self.ws.ping()
