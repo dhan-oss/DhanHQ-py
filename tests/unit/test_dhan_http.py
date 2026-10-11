@@ -60,6 +60,29 @@ class TestDhan_Private_ParseResponse:
         assert json_response["data"] == ""
 
 class TestDhan_Private_SendRequest:
+    @pytest.mark.parametrize("method", [DhanHTTP.HttpMethods.POST, DhanHTTP.HttpMethods.PUT])
+    @pytest.mark.parametrize("client_id", [None, "original_client_id"])
+    def test_send_request_preserves_caller_payload(
+        self, method, client_id, dhan_http, mock_success_response
+    ):
+        payload = {"key": "value"}
+        if client_id is not None:
+            payload["dhanClientId"] = client_id
+        original_payload = payload.copy()
+        with patch.object(
+            dhan_http.session, method.value.lower(), return_value=mock_success_response
+        ) as mock_request:
+            response = dhan_http._send_request(method, "/endpoint", payload)
+
+        assert response["status"] == "success"
+        assert payload == original_payload
+        mock_request.assert_called_once_with(
+            dhan_http.base_url + "/endpoint",
+            data=json.dumps({**original_payload, "dhanClientId": dhan_http.client_id}),
+            headers=dhan_http.header,
+            timeout=dhan_http.timeout,
+        )
+
     @patch("requests.Session.post")
     def test_send_request_with_payload_add_clientid_to_it(self,mock_requests_session_post, dhan_http):
         """Tests POST request with a payload and verifies payload content."""

@@ -53,7 +53,7 @@ class DhanHTTP:
     def _send_request(self, method, endpoint, payload=None):
         url = self.base_url + endpoint
         if payload:
-            payload["dhanClientId"] = self.client_id
+            payload = {**payload, "dhanClientId": self.client_id}
             payload = json_dumps(payload)
         try:
             response = getattr(self.session, method.value.lower())(url,
