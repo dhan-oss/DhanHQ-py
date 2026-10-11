@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 
 class TestDhanhq_ConditionalOrder:
     @patch("dhanhq.dhan_http.DhanHTTP.post")
@@ -29,6 +31,56 @@ class TestDhanhq_ConditionalOrder:
         payload = mock_post_request.call_args[0][1]
         assert payload["condition"] == condition
         assert payload["orders"] == orders
+
+    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    def test_place_multi_order(self, mock_post_request, dhanhq_obj):
+        endpoint = '/alerts/multi/orders'
+        orders = [
+            {
+                "sequence": "1",
+                "correlationId": "my-batch-1",
+                "transactionType": "BUY",
+                "exchangeSegment": "NSE_EQ",
+                "productType": "CNC",
+                "orderType": "LIMIT",
+                "validity": "DAY",
+                "securityId": "1333",
+                "quantity": 10,
+                "afterMarketOrder": False,
+                "price": 250.00,
+                "triggerPrice": 0,
+                "disclosedQuantity": 0
+            },
+            {
+                "sequence": "2",
+                "transactionType": "SELL",
+                "exchangeSegment": "NSE_EQ",
+                "productType": "INTRADAY",
+                "orderType": "MARKET",
+                "validity": "DAY",
+                "securityId": "11536",
+                "quantity": 5
+            }
+        ]
+        dhanhq_obj.place_multi_order(orders)
+        mock_post_request.assert_called_once()
+        assert mock_post_request.call_args[0][0] == endpoint
+        payload = mock_post_request.call_args[0][1]
+        assert payload["orders"] == orders
+
+    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    def test_place_multi_order_rejects_empty_list(self, mock_post_request, dhanhq_obj):
+        with pytest.raises(ValueError, match="At least one order"):
+            dhanhq_obj.place_multi_order([])
+        mock_post_request.assert_not_called()
+
+    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    def test_place_multi_order_passes_through_batch_larger_than_cap(self, mock_post_request, dhanhq_obj):
+        """The 15 order cap is enforced by the API, not the client."""
+        orders = [{"sequence": str(i), "transactionType": "BUY"} for i in range(1, 17)]
+        dhanhq_obj.place_multi_order(orders)
+        mock_post_request.assert_called_once()
+        assert mock_post_request.call_args[0][1]["orders"] == orders
 
     @patch("dhanhq.dhan_http.DhanHTTP.get")
     def test_get_conditional_orders(self, mock_get_request, dhanhq_obj):

@@ -1,5 +1,6 @@
 
 class ConditionalOrder:
+    """Conditional (alert-based) orders and multi order placement - the /alerts/ endpoints."""
 
     def __init__(self, dhan_context):
         self.dhan_http = dhan_context.get_dhan_http()
@@ -34,6 +35,44 @@ class ConditionalOrder:
             "orders": orders
         }
         return self.dhan_http.post('/alerts/orders', payload)
+
+    def place_multi_order(self, orders):
+        """
+        Place multiple orders in a single request, directly and without any condition.
+
+        Args:
+            orders (list): List of order dicts to place, up to 15 per request.
+                Orders are placed in the sequence given. Each order keys (camelCase):
+                sequence (required, str): Sequence number to identify order in the batch,
+                    starting with 1 for the first order,
+                correlationId (str, up to 30 characters): The user/partner generated id
+                    for tracking back,
+                transactionType (required, BUY / SELL),
+                exchangeSegment (required, NSE_EQ / NSE_FNO / NSE_COMM / BSE_EQ /
+                    BSE_FNO / MCX_COMM),
+                productType (CNC / INTRADAY / MARGIN / MTF),
+                orderType (LIMIT / MARKET / STOP_LOSS / STOP_LOSS_MARKET),
+                validity (DAY / IOC), securityId, quantity,
+                afterMarketOrder (bool), amoTime (OPEN / OPEN_30 / OPEN_60 / PRE_OPEN),
+                price, triggerPrice, disclosedQuantity.
+
+        Returns:
+            dict: The response containing the list of order responses, each holding
+                orderId, sequence and orderStatus (TRANSIT / PENDING / REJECTED /
+                CANCELLED / PART_TRADED / TRADED / EXPIRED / MODIFIED / TRIGGERED /
+                INACTIVE).
+
+        Raises:
+            ValueError: If no orders are given. The 15 order cap is enforced by the
+                API itself, which reports the received and allowed counts.
+        """
+        if not orders:
+            raise ValueError("At least one order must be provided.")
+
+        payload = {
+            "orders": orders
+        }
+        return self.dhan_http.post('/alerts/multi/orders', payload)
 
     def get_conditional_orders(self):
         """
