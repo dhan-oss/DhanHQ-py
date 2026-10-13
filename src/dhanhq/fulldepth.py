@@ -132,12 +132,18 @@ class FullDepth:
     async def disconnect(self):
         """Closes the WebSocket connection and sends a disconnect message."""
         if self.ws:
-            disconnect_message = {
-                "RequestCode": 12
-            }
-            await self.ws.send(json.dumps(disconnect_message))
-            header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
-            await self.ws.send(header_message)
+            try:
+                disconnect_message = {
+                    "RequestCode": 12
+                }
+                await self.ws.send(json.dumps(disconnect_message))
+                header_message = self.create_header(feed_request_code=12, message_length=83, client_id=self.client_id)
+                await self.ws.send(header_message)
+            except websockets.ConnectionClosed:
+                pass  # The server may close after the first disconnect message.
+            finally:
+                await self.ws.close()
+                self.ws = None
         print("Connection closed!")
 
     """Creating Instruments List to be subscribed"""

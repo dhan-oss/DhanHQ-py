@@ -84,7 +84,8 @@ class TestDhanhq_HistoricalData:
         mock_create_request.assert_not_called()
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_intraday_minute_data(self, mock_create_request, dhanhq_obj):
+    @pytest.mark.parametrize("interval", [1, 5, 15, 25, 60])
+    def test_intraday_minute_data(self, mock_create_request, dhanhq_obj, interval):
         endpoint = '/charts/intraday'
         security_id = "security_id"
         exchange_segment = "exchange_segment"
@@ -93,11 +94,12 @@ class TestDhanhq_HistoricalData:
         to_date = "to_date"
         mock_create_request.return_value = {'status': DhanHTTP.HttpResponseStatus.SUCCESS.value}
         
-        json_response = dhanhq_obj.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date)
+        json_response = dhanhq_obj.intraday_minute_data(security_id, exchange_segment, instrument_type, from_date, to_date, interval)
         
         assert json_response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
         mock_create_request.assert_called_once()
         assert mock_create_request.call_args[0][0] == endpoint
+        assert mock_create_request.call_args[0][1]['interval'] == interval
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_intraday_minute_data_fails_for_bad_interval_input(self, mock_create_request, dhanhq_obj):

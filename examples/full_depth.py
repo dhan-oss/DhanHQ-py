@@ -29,4 +29,4 @@ except Exception as e:
 except KeyboardInterrupt:
     print("Full Depth Feed Stopped")
 finally:
-    full_depth.disconnect()
+    full_depth.close_connection()

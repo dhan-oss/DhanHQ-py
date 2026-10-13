@@ -53,7 +53,7 @@ class OrderUpdate:
             }
 
             await websocket.send(json.dumps(auth_message))
-            print(f"Sent subscribe message: {auth_message}")
+            print("Sent order-update subscription message.")
 
             async for message in websocket:
                 data = json.loads(message)

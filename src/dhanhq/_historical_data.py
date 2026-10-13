@@ -26,6 +26,12 @@ class HistoricalData:
             dict: The response containing intraday minute data.
         """
 
+        if interval not in [1, 5, 15, 25, 60]:
+            return {
+                'status': 'failure',
+                'remarks': 'interval value must be [1, 5, 15, 25, 60]',
+                'data': '',
+            }
         endpoint = '/charts/intraday'
         payload = {
             'securityId': security_id,

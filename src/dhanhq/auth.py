@@ -34,7 +34,8 @@ class DhanLogin:
         }
         
         try:
-            response = requests.post(url, params=params, headers=headers)
+            response = requests.post(url, params=params, headers=headers,
+                                     timeout=DhanHTTP.HTTP_DEFAULT_TIME_OUT)
             response_json = response.json()
             
             if response.status_code == 200 and response_json.get("status") == "success":
@@ -72,7 +73,8 @@ class DhanLogin:
         }
         
         try:
-            response = requests.get(url, params=params, headers=headers)
+            response = requests.get(url, params=params, headers=headers,
+                                    timeout=DhanHTTP.HTTP_DEFAULT_TIME_OUT)
             response_json = response.json()
             
             if response.status_code == 200:
@@ -105,7 +107,7 @@ class DhanLogin:
         }
         
         try:
-            response = requests.post(url, params=params)
+            response = requests.post(url, params=params, timeout=DhanHTTP.HTTP_DEFAULT_TIME_OUT)
             response_json = response.json()
             
             # Check for success. The docs don't explicitly show the success response structure for this specific endpoint 
@@ -136,7 +138,7 @@ class DhanLogin:
         }
         
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=DhanHTTP.HTTP_DEFAULT_TIME_OUT)
             response_json = response.json()
             
             if response.status_code == 200:
@@ -165,7 +167,7 @@ class DhanLogin:
         }
         
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=DhanHTTP.HTTP_DEFAULT_TIME_OUT)
             response_json = response.json()
             
             if response.status_code == 200:

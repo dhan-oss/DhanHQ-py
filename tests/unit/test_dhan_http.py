@@ -59,6 +59,24 @@ class TestDhan_Private_ParseResponse:
         assert json_response["remarks"]["error_message"] == "test message"
         assert json_response["data"] == ""
 
+    @pytest.mark.parametrize("status_code,body,expected_status", [
+        (204, b"", "success"),
+        (200, b"", "failure"),
+        (200, b"not json", "failure"),
+        (400, b"", "failure"),
+    ])
+    def test_empty_and_malformed_responses(self, dhan_http, status_code, body, expected_status):
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = body
+        result = dhan_http._parse_response(response)
+        assert result["status"] == expected_status
+        assert result["data"] == ""
+        if expected_status == "success":
+            assert result["remarks"] == ""
+        else:
+            assert result["remarks"]
+
 class TestDhan_Private_SendRequest:
     @patch("requests.Session.post")
     def test_send_request_with_payload_add_clientid_to_it(self,mock_requests_session_post, dhan_http):
