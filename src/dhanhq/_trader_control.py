@@ -85,3 +85,12 @@ class TraderControl:
             dict: The response containing the status of the operation.
         """
         return self.dhan_http.delete('/pnlExit')
+
+    def get_profile(self):
+        """
+        Retrieve user profile details for the authenticated account.
+
+        Returns:
+            dict: The response containing user profile details.
+        """
+        return self.dhan_http.get('/profile')
