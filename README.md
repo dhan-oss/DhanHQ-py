@@ -198,6 +198,9 @@ dhan.get_order_by_correlationID(correlationID)
 # Get Instrument List
 dhan.fetch_security_list("compact")
 
+# Get Instrument List for a single exchange segment
+dhan.fetch_segment_security_list("NSE_EQ")
+
 # Get positions
 dhan.get_positions()
 
