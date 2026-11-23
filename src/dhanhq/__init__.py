@@ -20,3 +20,4 @@ from .marketfeed import MarketFeed
 from .orderupdate import OrderUpdate
 from .fulldepth import FullDepth
 from .global_stocks_feed import GlobalStocksFeed
+from .cas_feed import CASFeed

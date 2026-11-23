@@ -416,6 +416,36 @@ except Exception as e:
     print(e)
 ```
 
+### CAS Live Feed Usage
+```python
+from dhanhq import DhanContext, CASFeed
+
+# Closing Auction Session data (Pro Traders Plan). Data streams during the closing auction session.
+dhan_context = DhanContext("client_id","access_token")
+
+# Structure for subscribing is (exchange_segment, "security_id").
+# Subscribe indices with CASFeed.IDX to receive their indicative close values.
+instruments = [(CASFeed.NSE, "1333"), (CASFeed.BSE, "500325"), (CASFeed.IDX, "13")]
+
+try:
+    cas_feed = CASFeed(dhan_context, instruments)
+    cas_feed.run_forever()
+
+    while True:
+        response = cas_feed.get_data()   # a dict, or a list when several packets arrive together
+        print(response)
+
+except Exception as e:
+    print(e)
+
+# Close Connection
+cas_feed.close_connection()
+
+# Subscribe / unsubscribe instruments while connection is open
+cas_feed.subscribe_symbols([(CASFeed.NSE, "2885")])
+cas_feed.unsubscribe_symbols([(CASFeed.NSE, "1333")])
+```
+
 ### Live Order Update Usage
 ```python
 from dhanhq import DhanContext, OrderUpdate
