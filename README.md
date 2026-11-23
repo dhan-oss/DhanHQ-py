@@ -334,6 +334,13 @@ dhan.margin_calculator_multi(
          "quantity": 50, "productType": dhan.INTRA, "price": 45500.00}
     ]
 )
+
+# Market Analytics (Technical Data, Market Movers and News need the Pro Traders Plan)
+dhan.technical_data("14366", dhan.NSE, "EQUITY", "D", ["SMA_20", "RSI_14", "MACD_HIST"])
+dhan.company_info("14366", dhan.NSE, ["CO", "RATIOS", "SHP"])
+dhan.market_movers(dhan.NSE, ["EQUITY"], "PRICE_GAINERS", universe="NIFTY_50", limit=5)
+dhan.market_movers(dhan.NSE_FNO, ["OPTIDX"], "HIGHEST_OI", expiry="2026-11-25", limit=5)
+dhan.news_headline(["COMPANIES"], 10, stock_list=["14366"])
 ```
 
 ### Market Feed Usage
