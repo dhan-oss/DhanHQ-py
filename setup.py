@@ -3,7 +3,9 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '2.3.0'
+# Pre-release (release candidate).
+# pip will only install this with `pip install --pre dhanhq` or an explicit version pin.
+VERSION = '2.4.0rc1'
 PACKAGE_NAME = 'dhanhq'
 AUTHOR = 'Dhan'
 AUTHOR_EMAIL = 'dhan-oss@dhan.co'
@@ -44,7 +46,7 @@ setup(name=PACKAGE_NAME,
       packages=find_packages(where='src'), # Automatically find packages
       python_requires='>=3.10',
       classifiers=[
-          'Development Status :: 5 - Production/Stable',
+          'Development Status :: 4 - Beta',
       ],
       install_requires=INSTALL_REQUIRES,
       extras_require={

@@ -7,6 +7,11 @@
 pip install dhanhq==2.2.0
 ```
 
+> 🧪 v2.4.0rc1 (pre-release) is available for testing the new APIs:
+```bash
+pip install --pre dhanhq==2.4.0rc1
+```
+
 The official Python client for communicating with the [Dhan API](https://api.dhan.co/v2/)  
 
 DhanHQ-py Rest API is used to automate investing and trading. Execute orders in real time along with position management, live and historical data, tradebook and more with simple API collection.
@@ -22,10 +27,19 @@ Not just this, you also get real-time market data via DhanHQ Live Market Feed.
 - [DhanHQ Developer Kit](https://api.dhan.co/v2/)
 - [DhanHQ API Documentation](https://docs.dhanhq.co/api/v2/)
 
+## v2.4.0rc1 - What's new (Pre-release)
+
+- **Segment-wise Instrument List** - fetch the instrument list for a single exchange segment with `fetch_segment_security_list`.
+- **Market Analytics** - technical indicators, company fundamentals, market movers and live news headlines with sentiment.
+- **CAS Live Feed** - real-time Closing Auction Session data over WebSocket via the new `CASFeed`: indicative equilibrium price, quantities, depth and indicative index values.
+- **Multi Order** - place up to 15 orders in a single request, directly and without any condition.
+
+---
+
+
 ## v2.3.0 - What's new
 
 - **Conditional Orders** - place one or more orders automatically when a price or technical-indicator condition is met (Equities & Indices).
-- **Multi Order** - place up to 15 orders in a single request, directly and without any condition.
 - **Global Stocks** - trade US stocks: orders, trades, holdings, fund limit, market status, order/charge estimate and margin. A separate Global Stocks instrument list is available too.
 - **Global Stocks Live Feed** - real-time US stock Trade and OHLC packets over WebSocket via the new `GlobalStocksFeed`.
 - **P&L based Exit** - auto square-off when cumulative profit or loss hits the configured absolute value thresholds (Trader's Control).
@@ -56,8 +70,14 @@ The order management APIs lets you place a new order, cancel or modify the pendi
 * **Live Market Feed**  
 Get real-time market data to power your trading systems, with easy to implement functions and data across exchanges.
 
+* **CAS Live Feed**  
+Real-time Closing Auction Session data over WebSocket - indicative equilibrium price, buy/sell quantities, market depth and indicative index values.
+
 * **Market Quote**  
 REST APIs based market quotes which given you snapshot of ticker mode, quote mode or full mode.
+
+* **Market Analytics**  
+Technical indicator values, company fundamentals, top market movers by OI, volume or price, and live news headlines with sentiment.
 
 * **Option Chain**  
 Single function which gives entire Option Chain across exchanges and segments, giving OI, greeks, volume, top bid/ask and price data.
