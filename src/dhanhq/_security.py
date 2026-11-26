@@ -124,6 +124,40 @@ class Security:
             return None
 
     @staticmethod
+    def fetch_segment_security_list(exchange_segment, filename=None):
+        """
+        Fetch the detailed instrument list CSV for a single exchange segment and save it
+        to the current directory.
+
+        Uses GET /v2/instrument/{exchangeSegment}, which returns the same columns as the
+        detailed list from fetch_security_list('detailed'), filtered to one segment.
+        The returned list also includes index instruments (SEGMENT 'I').
+
+        Args:
+            exchange_segment (str): Exchange segment as per the Annexure, e.g. 'NSE_EQ',
+                'BSE_EQ', 'NSE_FNO', 'BSE_FNO', 'NSE_CURRENCY', 'BSE_CURRENCY',
+                'MCX_COMM' or 'IDX_I'.
+            filename (str): The name of the file to save the CSV as
+                (default is 'security_id_list_<exchange_segment>.csv').
+
+        Returns:
+            pd.DataFrame: The DataFrame containing the CSV data, or None on failure.
+        """
+        import pandas as pd
+        try:
+            if filename is None:
+                filename = f'security_id_list_{exchange_segment}.csv'
+            url = f'{DhanHTTP.API_BASE_URL}/instrument/{exchange_segment}'
+            response = requests.get(url)
+            response.raise_for_status()
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            return pd.read_csv(filename, low_memory=False)
+        except Exception as e:
+            logging.error('Exception in dhanhq>>fetch_segment_security_list: %s', e)
+            return None
+
+    @staticmethod
     def fetch_global_security_list(filename='global_security_id_list.csv'):
         """
         Fetch the Global Stocks (US) instrument list CSV from Dhan and save it to the

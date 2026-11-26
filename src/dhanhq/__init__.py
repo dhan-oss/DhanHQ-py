@@ -14,8 +14,10 @@ from ._historical_data import HistoricalData
 from ._option_chain import OptionChain
 from ._conditional_order import ConditionalOrder
 from ._global_stocks import GlobalStocks
+from ._market_analytics import MarketAnalytics
 from .dhanhq import dhanhq
 from .marketfeed import MarketFeed
 from .orderupdate import OrderUpdate
 from .fulldepth import FullDepth
 from .global_stocks_feed import GlobalStocksFeed
+from .cas_feed import CASFeed

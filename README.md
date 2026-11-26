@@ -198,6 +198,9 @@ dhan.get_order_by_correlationID(correlationID)
 # Get Instrument List
 dhan.fetch_security_list("compact")
 
+# Get Instrument List for a single exchange segment
+dhan.fetch_segment_security_list("NSE_EQ")
+
 # Get positions
 dhan.get_positions()
 
@@ -331,6 +334,13 @@ dhan.margin_calculator_multi(
          "quantity": 50, "productType": dhan.INTRA, "price": 45500.00}
     ]
 )
+
+# Market Analytics (Technical Data, Market Movers and News need the Pro Traders Plan)
+dhan.technical_data("14366", dhan.NSE, "EQUITY", "D", ["SMA_20", "RSI_14", "MACD_HIST"])
+dhan.company_info("14366", dhan.NSE, ["CO", "RATIOS", "SHP"])
+dhan.market_movers(dhan.NSE, ["EQUITY"], "PRICE_GAINERS", universe="NIFTY_50", limit=5)
+dhan.market_movers(dhan.NSE_FNO, ["OPTIDX"], "HIGHEST_OI", expiry="2026-11-25", limit=5)
+dhan.news_headline(["COMPANIES"], 10, stock_list=["14366"])
 ```
 
 ### Market Feed Usage
@@ -404,6 +414,36 @@ try:
 
 except Exception as e:
     print(e)
+```
+
+### CAS Live Feed Usage
+```python
+from dhanhq import DhanContext, CASFeed
+
+# Closing Auction Session data (Pro Traders Plan). Data streams during the closing auction session.
+dhan_context = DhanContext("client_id","access_token")
+
+# Structure for subscribing is (exchange_segment, "security_id").
+# Subscribe indices with CASFeed.IDX to receive their indicative close values.
+instruments = [(CASFeed.NSE, "1333"), (CASFeed.BSE, "500325"), (CASFeed.IDX, "13")]
+
+try:
+    cas_feed = CASFeed(dhan_context, instruments)
+    cas_feed.run_forever()
+
+    while True:
+        response = cas_feed.get_data()   # a dict, or a list when several packets arrive together
+        print(response)
+
+except Exception as e:
+    print(e)
+
+# Close Connection
+cas_feed.close_connection()
+
+# Subscribe / unsubscribe instruments while connection is open
+cas_feed.subscribe_symbols([(CASFeed.NSE, "2885")])
+cas_feed.unsubscribe_symbols([(CASFeed.NSE, "1333")])
 ```
 
 ### Live Order Update Usage
