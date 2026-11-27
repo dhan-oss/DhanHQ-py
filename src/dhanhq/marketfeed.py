@@ -72,9 +72,8 @@ class MarketFeed:
         self._running = False
         try:
             loop = asyncio.get_running_loop()
-            if loop == self.loop:
-                asyncio.create_task(self.disconnect())
-                return
+            if loop.is_running():
+                return loop.create_task(self.disconnect())
         except RuntimeError:
             pass
 
@@ -83,7 +82,7 @@ class MarketFeed:
             return future.result()
         else:
             return self.loop.run_until_complete(self.disconnect())
-        
+
     def run(self):
         """
         Blocking call to run the WebSocket connection.
@@ -91,10 +90,10 @@ class MarketFeed:
         """
         self._running = True
         try:
-            self.loop.run_until_complete(self._run_async())
+            self.loop.run_until_complete(self.run_async())
         except KeyboardInterrupt:
             self.close_connection()
-            
+
     def start(self):
         """
         Starts the WebSocket connection in a separate thread.
@@ -105,22 +104,46 @@ class MarketFeed:
         t.start()
         return t
 
+    async def run_async(self):
+        """
+        Asynchronously runs the WebSocket connection and message receive loop.
+
+        Connects to the WebSocket, processes incoming messages, and dispatches callbacks.
+        Runs until disconnected, closed, or cancelled.
+        """
+        self._running = True
+        try:
+            await self._run_async()
+        except asyncio.CancelledError:
+            self._running = False
+            await self.disconnect()
+            raise
+        finally:
+            self._running = False
+
     async def _run_async(self):
         """Internal async method to handle the connection loop."""
-        await self.connect()
+        if not self.ws or self._is_ws_closed():
+            await self.connect()
         while self._running:
             try:
                 if self.ws and not self._is_ws_closed():
                     data = await self.get_instrument_data()
                     if self.on_message:
-                        self.on_message(self, data)
+                        res = self.on_message(self, data)
+                        if asyncio.iscoroutine(res):
+                            await res
                 else:
                     await asyncio.sleep(1)
                     if not self.ws or self._is_ws_closed():
-                         await self.connect()
+                        await self.connect()
             except Exception as e:
+                if not self._running:
+                    break
                 if self.on_error:
-                    self.on_error(self, e)
+                    res = self.on_error(self, e)
+                    if asyncio.iscoroutine(res):
+                        await res
                 await asyncio.sleep(1)
 
     def _run_coroutine(self, coro):
@@ -160,11 +183,15 @@ class MarketFeed:
                 await self.subscribe_instruments()
                 
                 if self.on_connect:
-                    self.on_connect(self)
+                    res = self.on_connect(self)
+                    if asyncio.iscoroutine(res):
+                        await res
                     
             except Exception as e:
                 if self.on_error:
-                    self.on_error(self, e)
+                    res = self.on_error(self, e)
+                    if asyncio.iscoroutine(res):
+                        await res
                 raise e
         else:
             try:
@@ -181,6 +208,7 @@ class MarketFeed:
 
     async def disconnect(self):
         """Closes the WebSocket connection and sends a disconnect message."""
+        self._running = False
         if self.ws:
             if self.version == 'v2':
                 disconnect_message = {
@@ -195,7 +223,9 @@ class MarketFeed:
             await self.ws.close()
             
         if self.on_close:
-            self.on_close(self)
+            res = self.on_close(self)
+            if asyncio.iscoroutine(res):
+                await res
         print("Connection closed!")
 
     async def authorize(self):
