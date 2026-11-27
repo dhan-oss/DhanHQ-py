@@ -19,11 +19,12 @@ class DhanContext:
         and passes this to all the connection protocols like http and websocket that it is composed of.
     """
 
-    def __init__(self, client_id, access_token, disable_ssl=False, pool=None):
+    def __init__(self, client_id, access_token, disable_ssl=False, pool=None, is_sandbox=False):
         try:
             self.client_id = client_id
             self.access_token = access_token
-            self.dhan_http = DhanHTTP(client_id, access_token, disable_ssl, pool)
+            self.is_sandbox = is_sandbox
+            self.dhan_http = DhanHTTP(client_id, access_token, disable_ssl, pool, is_sandbox)
             self.dhan_login = DhanLogin(client_id)
 
         except Exception as e:
@@ -55,8 +56,15 @@ class DhanContext:
     def get_dhan_login(self):
         """
         Return DhanLogin object to handle authentication
-        
+
         Returns:
             DhanLogin: Object to handle authentication flows
         """
         return self.dhan_login
+
+    def get_is_sandbox(self):
+        """
+        Return boolean value to identify if the connection is to sandbox or not
+        Returns is_sandbox that is used to identify if the connection is to sandbox or not
+        """
+        return self.is_sandbox
