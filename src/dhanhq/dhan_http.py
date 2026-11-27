@@ -79,6 +79,12 @@ class DhanHTTP:
         Returns:
             dict: Parsed response containing status, remarks, and data.
         """
+        if response.status_code == 204 and not response.content:
+            return {
+                'status': DhanHTTP.HttpResponseStatus.SUCCESS.value,
+                'remarks': '',
+                'data': '',
+            }
         try:
             status = DhanHTTP.HttpResponseStatus.FAILURE.value
             remarks = ''

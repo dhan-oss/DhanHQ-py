@@ -10,11 +10,18 @@ from dhanhq.dhanhq import dhanhq
 
 class TestDhanhq_TraderControls:
     @patch("dhanhq.dhan_http.DhanHTTP.post")
-    def test_kill_switch(self, mock_post_request, dhanhq_obj):
-        action = "action"
+    @pytest.mark.parametrize("action", ["activate", "deactivate"])
+    def test_kill_switch(self, mock_post_request, dhanhq_obj, action):
         endpoint = f'/killswitch?killSwitchStatus={action.upper()}'
         dhanhq_obj.kill_switch(action)
-        mock_post_request.assert_called_once_with(endpoint)
+        mock_post_request.assert_called_once_with(endpoint, {})
+
+    @patch("dhanhq.dhan_http.DhanHTTP.post")
+    @pytest.mark.parametrize("action", ["action", "", None])
+    def test_kill_switch_rejects_invalid_action(self, mock_post_request, dhanhq_obj, action):
+        result = dhanhq_obj.kill_switch(action)
+        assert result["status"] == "failure"
+        mock_post_request.assert_not_called()
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_set_pnl_exit(self, mock_post_request, dhanhq_obj):

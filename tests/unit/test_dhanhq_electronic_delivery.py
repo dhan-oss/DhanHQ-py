@@ -32,20 +32,20 @@ class TestDhanhq_ElectronicDelivery:
         assert json_response['data'] == ''
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
-    @patch("dhanhq.dhanhq._save_as_temp_html_file_and_open_in_browser")
+    @patch("dhanhq._security.Security._save_as_temp_html_file_and_open_in_browser")
     def test_open_browser_for_tpin_success(self, mock_save_and_open, mock_create_request, dhanhq_obj):
         # print(mock_create_request)
         # print(mock_save_and_open)
         mock_create_request.return_value = {
             'status': DhanHTTP.HttpResponseStatus.SUCCESS.value,
-            'data': '{"edisFormHtml": "<html></html>"}'
+            'data': {"edisFormHtml": "<html></html>"}
         }
         response = dhanhq_obj.open_browser_for_tpin('isin', 1, 'exchange')
         assert response['status'] == DhanHTTP.HttpResponseStatus.SUCCESS.value
-        mock_save_and_open.assert_called_once()
+        mock_save_and_open.assert_called_once_with("<html></html>")
 
     @patch('dhanhq.dhan_http.DhanHTTP.post')
-    @patch("dhanhq.dhanhq._save_as_temp_html_file_and_open_in_browser")
+    @patch("dhanhq._security.Security._save_as_temp_html_file_and_open_in_browser")
     def test_open_browser_for_tpin_failure(self, mock_save_and_open, mock_create_request, dhanhq_obj):
         mock_create_request.return_value = {
             'status': DhanHTTP.HttpResponseStatus.FAILURE.value,

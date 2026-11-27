@@ -34,7 +34,7 @@ class TestDhanhq_SuperOrder:
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_place_super_order_invalid_legs(self, mock_post_request, dhanhq_obj):
-        with pytest.raises(ValueError, match="All legs .* must be provided"):
+        with pytest.raises(ValueError, match="At least one of targetPrice or stopLossPrice"):
             dhanhq_obj.place_super_order(
                 security_id="SEC123",
                 exchange_segment="NSE",
@@ -42,12 +42,13 @@ class TestDhanhq_SuperOrder:
                 quantity=10,
                 order_type="LIMIT",
                 product_type="INTRA",
-                price=0,
+                price=100,
                 targetPrice=0,
                 stopLossPrice=0,
                 trailingJump=1.5,
                 tag=""
             )
+        mock_post_request.assert_not_called()
 
     @patch("dhanhq.dhan_http.DhanHTTP.post")
     def test_place_super_order_invalid_buy_logic(self, mock_post_request, dhanhq_obj):
